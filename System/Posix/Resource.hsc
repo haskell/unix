@@ -93,7 +93,7 @@ packResource ResourceTotalMemory   = (#const RLIMIT_AS)
 
 unpackRLimit :: CRLim -> ResourceLimit
 unpackRLimit (#const RLIM_INFINITY)  = ResourceLimitInfinity
-#if defined(RLIM_SAVED_MAX) && (RLIM_SAVED_MAX != RLIM_INFINITY)
+#ifdef RLIM_SAVED_MAX
 unpackRLimit (#const RLIM_SAVED_MAX) = ResourceLimitUnknown
 unpackRLimit (#const RLIM_SAVED_CUR) = ResourceLimitUnknown
 #endif
