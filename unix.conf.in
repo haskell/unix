@@ -4,7 +4,7 @@ Package {
 	name		= "unix",
 	auto		= True,
 #ifdef INSTALLING
-	import_dirs	= [ "$libdir/imports/unix" ],
+	import_dirs	= [ "$libdir/imports" ],
 #else
 	import_dirs	= [ "$libdir/libraries/unix" ],
 #endif
