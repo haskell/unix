@@ -25,8 +25,8 @@ module System.Posix.IO (
     openFd, createFile,
     closeFd,
 
-    -- ** Reading/writing data
 {-
+    -- ** Reading/writing data
     fdRead, fdWrite,
 -}
 
@@ -50,7 +50,7 @@ module System.Posix.IO (
     -- ** Duplicating file descriptors
     dup, dupTo,
 
-    -- ** Converting file descriptors to/from Handles
+    -- ** Converting file descriptors to\/from Handles
     handleToFd, fdToHandle,  
 
   ) where
