@@ -37,18 +37,18 @@ library-dirs:	LIB_DIR
 hs-libraries:   "HSunix"
 
 #if !(defined HAVE_FRAMEWORK_HASKELLSUPPORT) && defined(HAVE_LIBDL)
-extra-libs:	"HSunix_cbits", "dl"
+extra-libraries:	"HSunix_cbits", "dl"
 #else
-extra-libs:	"HSunix_cbits"
+extra-libraries:	"HSunix_cbits"
 #endif
 
 include-dirs: 	INCLUDE_DIR
 includes:	HsUnix.h
 depends:	base
-extra-hugs-opts:
-extra-cc-opts:
-extra-ld-opts:
+hugs-options:
+cc-options:
+ld-options:
 framework-dirs:
-extra-frameworks:
+frameworks:
 haddock-interfaces:	HADDOCK_IFACE
 haddock-html:		HTML_DIR
