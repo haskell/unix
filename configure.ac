@@ -6,13 +6,6 @@ AC_CONFIG_SRCDIR([include/HsUnix.h])
 AC_CONFIG_HEADERS([include/HsUnixConfig.h])
 
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
-dnl ** Solaris2 needs additionl flag for getpw*_r()
-case "$TargetPlatform" in
-  *-solaris2*)
-    unix_SRC_HSC2HS_OPTS="-D_POSIX_PTHREAD_SEMANTICS"
-    AC_SUBST(unix_SRC_HSC2HS_OPTS)
-  ;;
-esac
 
 AC_MSG_CHECKING([for _SC_GETGR_R_SIZE_MAX])
 AC_EGREP_CPP(we_have_that_sysconf_thing,

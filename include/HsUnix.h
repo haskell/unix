@@ -20,6 +20,10 @@
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
 
+#ifdef solaris2_TARGET_OS
+#define _POSIX_PTHREAD_SEMANTICS
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 
