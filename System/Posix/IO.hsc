@@ -51,14 +51,17 @@ module System.Posix.IO (
     -- ** Duplicating file descriptors
     dup, dupTo,
 
+#ifdef __GLASGOW_HASKELL__
     -- ** Converting file descriptors to\/from Handles
     handleToFd, fdToHandle,  
+#endif
 
   ) where
 
 import System.IO
 import System.IO.Error
 import System.Posix.Types
+import System.Posix.Internals
 
 import Foreign
 import Foreign.C
@@ -68,6 +71,10 @@ import Data.Bits
 import GHC.IOBase
 import GHC.Handle hiding (fdToHandle, openFd)
 import qualified GHC.Handle
+#endif
+
+#ifdef __HUGS__
+import Hugs.Prelude (IOException(..), IOErrorType(..))
 #endif
 
 #include "HsUnix.h"
@@ -85,25 +92,18 @@ createPipe =
     throwErrnoIfMinus1_ "createPipe" (c_pipe p_fd)
     rfd <- peekElemOff p_fd 0
     wfd <- peekElemOff p_fd 1
-    return (rfd, wfd)
-
-foreign import ccall unsafe "pipe"
-  c_pipe :: Ptr Fd -> IO CInt
+    return (Fd rfd, Fd wfd)
 
 -- -----------------------------------------------------------------------------
 -- Duplicating file descriptors
 
 dup :: Fd -> IO Fd
-dup fd = do r <- throwErrnoIfMinus1 "dup" (c_dup fd); return (Fd r)
-
-foreign import ccall unsafe "dup"
-  c_dup :: Fd -> IO CInt
+dup (Fd fd) = do r <- throwErrnoIfMinus1 "dup" (c_dup fd); return (Fd r)
 
 dupTo :: Fd -> Fd -> IO Fd
-dupTo fd1 fd2 = throwErrnoIfMinus1 "dupTp" (c_dup2 fd1 fd2)
-
-foreign import ccall unsafe "dup2"
-  c_dup2 :: Fd -> Fd -> IO Fd
+dupTo (Fd fd1) (Fd fd2) = do
+  r <- throwErrnoIfMinus1 "dupTp" (c_dup2 fd1 fd2)
+  return (Fd r)
 
 -- -----------------------------------------------------------------------------
 -- Opening and closing files
@@ -163,18 +163,12 @@ openFd name how maybe_mode (OpenFileFlags append exclusive noctty
 		   WriteOnly -> (#const O_WRONLY)
 		   ReadWrite -> (#const O_RDWR)
 
-foreign import ccall unsafe "open"
-   c_open :: CString -> CInt -> CMode -> IO CInt
-
 createFile :: FilePath -> FileMode -> IO Fd
 createFile name mode
   = openFd name WriteOnly (Just mode) defaultFileFlags{ trunc=True } 
 
 closeFd :: Fd -> IO ()
 closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
-
-foreign import ccall unsafe "close"
-   c_close :: CInt -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- Converting file descriptors to/from Handles
@@ -206,7 +200,7 @@ data FdOption = AppendOnWrite
 	      | SynchronousWrites
 
 queryFdOption :: Fd -> FdOption -> IO Bool
-queryFdOption fd opt = do
+queryFdOption (Fd fd) opt = do
   r <- throwErrnoIfMinus1 "queryFdOption" (c_fcntl_read fd flag)
   return ((r .&. opt_val) /= 0)
  where
@@ -220,11 +214,8 @@ queryFdOption fd opt = do
               NonBlockingRead   -> (#const O_NONBLOCK)
 	      SynchronousWrites -> (#const O_SYNC)
 
-foreign import ccall unsafe "fcntl"
-   c_fcntl_read  :: Fd -> CInt -> IO CInt
-
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
-setFdOption fd opt val = do
+setFdOption (Fd fd) opt val = do
   r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd getflag)
   let r' | val       = r .|. opt_val
 	 | otherwise = r .&. (complement opt_val) 
@@ -239,9 +230,6 @@ setFdOption fd opt val = do
               NonBlockingRead   -> (#const O_NONBLOCK)
 	      SynchronousWrites -> (#const O_SYNC)
 
-foreign import ccall unsafe "fcntl"
-   c_fcntl_write :: Fd -> CInt -> CInt -> IO CInt
-
 -- -----------------------------------------------------------------------------
 -- Seeking 
 
@@ -251,11 +239,8 @@ mode2Int RelativeSeek = (#const SEEK_CUR)
 mode2Int SeekFromEnd  = (#const SEEK_END)
 
 fdSeek :: Fd -> SeekMode -> FileOffset -> IO FileOffset
-fdSeek fd mode off =
+fdSeek (Fd fd) mode off =
   throwErrnoIfMinus1 "fdSeek" (c_lseek fd off (mode2Int mode))
-
-foreign import ccall unsafe "lseek"
-  c_lseek :: Fd -> COff -> CInt -> IO COff
 
 -- -----------------------------------------------------------------------------
 -- Locking
@@ -266,20 +251,15 @@ data LockRequest = ReadLock
 
 type FileLock = (LockRequest, SeekMode, FileOffset, FileOffset)
 
-type CFLock = ()
-
 getLock :: Fd -> FileLock -> IO (Maybe (ProcessID, FileLock))
-getLock fd lock =
+getLock (Fd fd) lock =
   allocaLock lock $ \p_flock -> do
-    throwErrnoIfMinus1_ "getLock" (c_fcntl_flock fd (#const F_GETLK) p_flock)
+    throwErrnoIfMinus1_ "getLock" (c_fcntl_lock fd (#const F_GETLK) p_flock)
     result <- bytes2ProcessIDAndLock p_flock
     return (maybeResult result)
   where
     maybeResult (_, (Unlock, _, _, _)) = Nothing
     maybeResult x = Just x
-
-foreign import ccall unsafe "fcntl"
-  c_fcntl_flock :: Fd -> CInt -> Ptr CFLock -> IO CInt
 
 allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
 allocaLock (lockreq, mode, start, len) io = 
@@ -317,26 +297,26 @@ bytes2ProcessIDAndLock p = do
   int2mode _ = error $ "int2mode: bad argument"
 
 setLock :: Fd -> FileLock -> IO ()
-setLock fd lock = do
+setLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
-    throwErrnoIfMinus1_ "setLock" (c_fcntl_flock fd (#const F_SETLK) p_flock)
+    throwErrnoIfMinus1_ "setLock" (c_fcntl_lock fd (#const F_SETLK) p_flock)
 
 waitToSetLock :: Fd -> FileLock -> IO ()
-waitToSetLock fd lock = do
+waitToSetLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
     throwErrnoIfMinus1_ "waitToSetLock" 
-	(c_fcntl_flock fd (#const F_SETLKW) p_flock)
+	(c_fcntl_lock fd (#const F_SETLKW) p_flock)
 
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}
 
 fdRead :: Fd -> ByteCount -> IO (String, ByteCount)
 fdRead _fd 0 = return ("", 0)
-fdRead fd  nbytes = do
+fdRead (Fd fd) nbytes = do
     allocaBytes (fromIntegral nbytes) $ \ bytes -> do
     rc    <-  throwErrnoIfMinus1Retry "fdRead" (c_read fd bytes nbytes)
-    case rc of
-      0  -> ioException (IOError Nothing EOF "fdRead" "EOF" Nothing)
+    case fromIntegral rc of
+      0  -> ioError (IOError Nothing EOF "fdRead" "EOF" Nothing)
       n | n == nbytes -> do
             s <- peekCStringLen (bytes, fromIntegral n)
 	    return (s, n)
@@ -349,14 +329,9 @@ fdRead fd  nbytes = do
 	    return (s, n)
 
 fdWrite :: Fd -> String -> IO ByteCount
-fdWrite fd str = withCStringLen str $ \ (strPtr,len) -> do
-    throwErrnoIfMinus1Retry "fdWrite" (c_write fd strPtr (fromIntegral len))
-
-foreign import ccall unsafe "read"
-  c_read :: Fd -> CString -> CSize -> IO CSize
-
-foreign import ccall unsafe "write"
-  c_write :: Fd -> CString -> CSize -> IO CSize
+fdWrite (Fd fd) str = withCStringLen str $ \ (strPtr,len) -> do
+    rc <- throwErrnoIfMinus1Retry "fdWrite" (c_write fd strPtr (fromIntegral len))
+    return (fromIntegral rc)
 
 foreign import ccall unsafe "memcpy"
   c_memcpy :: Ptr dst -> Ptr src -> CSize -> IO (Ptr dst)
