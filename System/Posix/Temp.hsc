@@ -34,7 +34,7 @@ import System.Posix.Types
 import Foreign.C
 
 -- |'mkstemp' - make a unique filename and open it for
--- reading/writing (only safe on GHC & Hugs)
+-- reading\/writing (only safe on GHC & Hugs)
 
 mkstemp :: String -> IO (String, Handle)
 mkstemp template = do
