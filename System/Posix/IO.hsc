@@ -58,7 +58,6 @@ module System.Posix.IO (
 import System.IO
 import System.IO.Error
 import System.Posix.Types
-import Control.Exception	( throw )
 
 import Foreign
 import Foreign.C
@@ -306,15 +305,13 @@ bytes2ProcessIDAndLock p = do
   int2req (#const F_RDLCK) = ReadLock
   int2req (#const F_WRLCK) = WriteLock
   int2req (#const F_UNLCK) = Unlock
-  int2req _ = throw (mkIOError illegalOperationErrorType "int2req"
-			     Nothing Nothing)
+  int2req _ = error $ "int2req: bad argument"
 
   int2mode :: CShort -> SeekMode
   int2mode (#const SEEK_SET) = AbsoluteSeek
   int2mode (#const SEEK_CUR) = RelativeSeek
   int2mode (#const SEEK_END) = SeekFromEnd
-  int2mode _ = throw (mkIOError illegalOperationErrorType "int2mode"
-			     Nothing Nothing)
+  int2mode _ = error $ "int2mode: bad argument"
 
 setLock :: Fd -> FileLock -> IO ()
 setLock fd lock = do
