@@ -228,7 +228,7 @@ withBits termios bits = unsafePerformIO $ do
     (#poke struct termios, c_cflag) p
        ((cflag .&. complement (#const CSIZE)) .|. mask bits)
   where
-    mask :: Int -> Word
+    mask :: Int -> CTcflag
     mask 5 = (#const CS5)
     mask 6 = (#const CS6)
     mask 7 = (#const CS7)
