@@ -60,9 +60,7 @@ module System.Posix.Terminal (
   -- ** Testing a file descriptor
   queryTerminal,
   getTerminalName,
-#if !defined(cygwin32_TARGET_OS)
-  getControllingTerminalName,
-#endif
+  getControllingTerminalName
 
   ) where
 
@@ -478,8 +476,6 @@ getTerminalName fd = do
 foreign import ccall unsafe "ttyname"
   c_ttyname :: Fd -> IO CString
 
--- ToDo: should be #ifdef HAVE_CTERMID
-#if !defined(cygwin32_TARGET_OS)
 getControllingTerminalName :: IO FilePath
 getControllingTerminalName = do
   s <- throwErrnoIfNull "getControllingTerminalName" (c_ctermid nullPtr)
@@ -487,7 +483,6 @@ getControllingTerminalName = do
 
 foreign import ccall unsafe "ctermid"
   c_ctermid :: CString -> IO CString
-#endif
 
 -- -----------------------------------------------------------------------------
 -- Local utility functions
