@@ -352,10 +352,10 @@ foreign import ccall unsafe "symlink"
 readSymbolicLink :: FilePath -> IO FilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
-    withCString file $ \s ->
-      throwErrnoIfMinus1_ "readSymbolicLink" $
+    withCString file $ \s -> do
+      len <- throwErrnoIfMinus1 "readSymbolicLink" $ 
 	c_readlink s buf (#const PATH_MAX)
-    peekCString buf
+      peekCStringLen (buf,fromIntegral len)
 
 foreign import ccall unsafe "readlink"
   c_readlink :: CString -> CString -> CInt -> IO CInt
