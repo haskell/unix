@@ -196,7 +196,15 @@ fileAccess name read write exec = access name flags
    exec_f  = if exec  then (#const X_OK) else 0
 
 fileExist :: FilePath -> IO Bool
-fileExist name = access name (#const F_OK)
+fileExist name = 
+  withCString name $ \s -> do
+    r <- c_access s (#const F_OK)
+    if (r == 0)
+	then return True
+	else do err <- getErrno
+	        if (err == eNOENT)
+		   then return False
+		   else throwErrno "fileExist"
 
 access :: FilePath -> CMode -> IO Bool
 access name flags = 
