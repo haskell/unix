@@ -15,8 +15,7 @@
 
 module System.Posix.Temp (
 
-	mktemp
-	, mkstemp
+	mkstemp
 
 {- Not ported (yet?):
 	tmpfile: can we handle FILE*?
@@ -48,7 +47,6 @@ mkstemp template = do
   name <- mktemp template
   h <- openFile name ReadWriteMode
   return (name, h)
-#endif
 
 -- |'mktemp' - make a unique file name
 -- This function should be considered deprecated
@@ -59,8 +57,10 @@ mktemp template = do
     ptr <- throwErrnoIfNull "mktemp" (c_mktemp ptr)
     peekCString ptr
 
+foreign import ccall unsafe "mktemp"
+  c_mktemp :: CString -> IO CString
+#endif
+
 foreign import ccall unsafe "mkstemp"
   c_mkstemp :: CString -> IO Fd
 
-foreign import ccall unsafe "mktemp"
-  c_mktemp :: CString -> IO CString
