@@ -17,7 +17,7 @@ module System.Posix.Process (
     -- * Processes
 
     -- ** Forking and executing
-    forkProcess, forkProcessAll,
+    forkProcess,
     executeFile,
     
     -- ** Exiting
@@ -59,7 +59,6 @@ module System.Posix.Process (
 
 #include "HsUnix.h"
 
-import GHC.Conc	( forkProcessPrim )
 import Foreign.C.Error
 import Foreign.C.String ( CString, withCString )
 import Foreign.C.Types ( CInt, CClock )
@@ -67,6 +66,7 @@ import Foreign.Marshal.Alloc ( alloca, allocaBytes )
 import Foreign.Marshal.Array ( withArray0 )
 import Foreign.Marshal.Utils ( withMany )
 import Foreign.Ptr ( Ptr, nullPtr )
+import Foreign.StablePtr ( StablePtr, newStablePtr, freeStablePtr )
 import Foreign.Storable ( Storable(..) )
 import System.IO
 import System.IO.Error
@@ -209,39 +209,21 @@ foreign import ccall unsafe "setpriority"
 -- -----------------------------------------------------------------------------
 -- Forking, execution
 
-{- | 'forkProcess' is a wrapper around 'GHC.Conc.forkProcessPrim' similar to
-'forkProcessAll' which returns a Maybe-type. The child receives @Nothing@,
-the parent @Just (pid::ProcessID)@. In case of an error, an exception is thrown.
-
-NOTE: currently, main threads are not stopped in the child process.
-To work around this problem, call 'forkProcess' from the main thread.
-
-If you really want to copy all threads into the new process, use
-'forkProcessAll' instead.
+{- | 'forkProcess' corresponds to the POSIX @fork@ system call.
+The 'IO' action passed as an argument is executed in the child process; no other
+threads will be copied to the child process.
+On success, 'forkProcess' returns the child's 'ProcessID' to the parent process;
+in case of an error, an exception is thrown.
 -}
 
-forkProcess :: IO (Maybe ProcessID)
-forkProcess = do
-  pid <- throwErrnoIfMinus1 "forkProcess" forkProcessPrim
-  case pid of
-    0  -> return Nothing
-    _  -> return (Just (fromIntegral pid))
+forkProcess :: IO () -> IO ProcessID
+forkProcess action = do
+  stable <- newStablePtr action
+  pid <- throwErrnoIfMinus1 "forkProcess" (forkProcessPrim stable)
+  freeStablePtr stable
+  return $ fromIntegral pid
 
-{- | 'forkProcessAll' is the low-level wrapper for the @fork@ system-call.
-Standard disclaimer for lazy I\/O, shared file handles etc. apply. Notice that
-all Concurrent Haskell threads will be copied into the new process. See
-'forkProcess' on how to start a new process with only one active thread.
--}
-
-forkProcessAll :: IO (Maybe ProcessID)
-forkProcessAll = do
-  r <- throwErrnoIfMinus1 "forkProcess" c_fork
-  case r of
-     0   -> return Nothing
-     pid -> return (Just (fromIntegral pid))
-
-foreign import ccall unsafe "fork"
-  c_fork :: IO CInt
+foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CPid
 
 executeFile :: FilePath			    -- Command
             -> Bool			    -- Search PATH?
