@@ -14,8 +14,8 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Env (
-	getEnvVar,
-	getEnvVarDefault,
+	getEnv,
+	getEnvDefault,
 	getEnvironmentPrim,
 	getEnvironment,
 	putEnv,
@@ -33,21 +33,21 @@ import Foreign.Ptr
 import Monad		( liftM )
 import Maybe		( fromMaybe )
 
--- |'getEnvVar' looks up a variable in the environment.
+-- |'getEnv' looks up a variable in the environment.
 
-getEnvVar :: String -> IO (Maybe String)
-getEnvVar name = do
+getEnv :: String -> IO (Maybe String)
+getEnv name = do
   litstring <- withCString name c_getenv
   if litstring /= nullPtr
      then liftM Just $ peekCString litstring
      else return Nothing
 
--- |'getEnvVarDefault' is a wrapper around 'getEnvVar' where the
+-- |'getEnvDefault' is a wrapper around 'getEnvVar' where the
 -- programmer can specify a fallback if the variable is not found
 -- in the environment.
 
-getEnvVarDefault :: String -> String -> IO String
-getEnvVarDefault name fallback = liftM (fromMaybe fallback) (getEnvVar name)
+getEnvDefault :: String -> String -> IO String
+getEnvDefault name fallback = liftM (fromMaybe fallback) (getEnv name)
 
 foreign import ccall unsafe "getenv"
    c_getenv :: CString -> IO CString
