@@ -20,9 +20,7 @@ module System.Posix.User (
     getRealGroupID,
     getEffectiveUserID,
     getEffectiveGroupID,
-#if !defined(cygwin32_TARGET_OS)
     getGroups,
-#endif
     getLoginName,
     getEffectiveUserName,
 
@@ -81,9 +79,6 @@ getEffectiveGroupID = c_getegid
 foreign import ccall unsafe "getegid"
   c_getegid :: IO CGid
 
--- getgroups() is not supported in beta18 of
--- cygwin32
-#if !defined(cygwin32_TARGET_OS)
 getGroups :: IO [GroupID]
 getGroups = do
     ngroups <- c_getgroups 0 nullPtr
@@ -94,7 +89,6 @@ getGroups = do
 
 foreign import ccall unsafe "getgroups"
   c_getgroups :: CInt -> Ptr CGid -> IO CInt
-#endif
 
 -- ToDo: use getlogin_r
 getLoginName :: IO String
@@ -142,11 +136,10 @@ getGroupEntryForID gid = do
   allocaBytes (#const sizeof(struct group)) $ \pgr ->
     allocaBytes grBufSize $ \pbuf ->
       alloca $ \ ppgr -> do
-        err <- c_getgrgid_r gid pgr pbuf (fromIntegral grBufSize) ppgr
-	if (err == 0) 
-	   then unpackGroupEntry pgr
-	   else ioError (errnoToIOError "getGroupEntryForID" 
-				(Errno (fromIntegral err)) Nothing Nothing)
+        throwErrorIfNonZero_ "getGroupEntryForID" $
+	     c_getgrgid_r gid pgr pbuf (fromIntegral grBufSize) ppgr
+	unpackGroupEntry pgr
+
 
 foreign import ccall unsafe "getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
@@ -163,11 +156,9 @@ getGroupEntryForName name = do
     allocaBytes grBufSize $ \pbuf ->
       alloca $ \ ppgr -> 
 	withCString name $ \ pstr -> do
-          err <- c_getgrnam_r pstr pgr pbuf (fromIntegral grBufSize) ppgr
-	  if (err == 0) 
-	    then unpackGroupEntry pgr
-	    else ioError (errnoToIOError "getGroupEntryForName" 
-			(Errno (fromIntegral err)) Nothing Nothing)
+          throwErrorIfNonZero_ "getGroupEntryForName" $
+	     c_getgrnam_r pstr pgr pbuf (fromIntegral grBufSize) ppgr
+	  unpackGroupEntry pgr
 
 foreign import ccall unsafe "getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
@@ -212,11 +203,9 @@ getUserEntryForID uid = do
   allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
     allocaBytes pwBufSize $ \pbuf ->
       alloca $ \ pppw -> do
-        err <- c_getpwuid_r uid ppw pbuf (fromIntegral pwBufSize) pppw
-	if (err == 0) 
-	   then unpackUserEntry ppw
-	   else ioError (errnoToIOError "getUserEntryForID" 
-				(Errno (fromIntegral err)) Nothing Nothing)
+        throwErrorIfNonZero_ "getUserEntryForID" $
+	     c_getpwuid_r uid ppw pbuf (fromIntegral pwBufSize) pppw
+	unpackUserEntry ppw
 
 foreign import ccall unsafe "getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd -> 
@@ -232,11 +221,9 @@ getUserEntryForName name = do
     allocaBytes pwBufSize $ \pbuf ->
       alloca $ \ pppw -> 
 	withCString name $ \ pstr -> do
-          err <- c_getpwnam_r pstr ppw pbuf (fromIntegral pwBufSize) pppw
-	  if (err == 0) 
-	    then unpackUserEntry ppw
-	    else ioError (errnoToIOError "getUserEntryForID"
-				(Errno (fromIntegral err)) Nothing Nothing)
+          throwErrorIfNonZero_ "getUserEntryForName" $
+	       c_getpwnam_r pstr ppw pbuf (fromIntegral pwBufSize) pppw
+	  unpackUserEntry ppw
 
 foreign import ccall unsafe "getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd -> 
@@ -268,4 +255,13 @@ unpackUserEntry ptr = do
    dir    <- (#peek struct passwd, pw_dir)   ptr >>= peekCString
    shell  <- (#peek struct passwd, pw_shell) ptr >>= peekCString
    return (UserEntry name uid gid dir shell)
+
+-- Used when calling re-entrant system calls that signal their 'errno' 
+-- directly through the return value.
+throwErrorIfNonZero_ :: String -> IO CInt -> IO ()
+throwErrorIfNonZero_ loc act = do
+    rc <- act
+    if (rc == 0) 
+     then return ()
+     else ioError (errnoToIOError loc (Errno (fromIntegral rc)) Nothing Nothing)
 
