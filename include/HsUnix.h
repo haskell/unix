@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.9 2003/05/08 16:00:20 ross Exp $
+ * $Id: HsUnix.h,v 1.10 2003/05/28 12:36:29 stolz Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -67,7 +67,9 @@
 #include <sys/uio.h>
 #endif
 #ifdef HAVE_LINUX_SENDFILE
+#if !defined(__USE_FILE_OFFSET64)
 #include <sys/sendfile.h>
+#endif
 #endif
 
 #ifdef HAVE_FRAMEWORK_HASKELLSUPPORT

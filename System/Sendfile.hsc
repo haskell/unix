@@ -52,7 +52,7 @@ sendfile :: Fd		-- ^ Input
 sendfile _inFd _outFd _startpos 0 = return ()
 sendfile inFd outFd startpos count =
 
-#ifdef HAVE_LINUX_SENDFILE
+#if defined(HAVE_LINUX_SENDFILE) && !defined(__USE_FILE_OFFSET64)
  do
   offsetptr <- malloc
   poke offsetptr (fromIntegral startpos)
