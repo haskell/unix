@@ -1,37 +1,62 @@
 #include "ghcconfig.h"
 
-Package {
-	name		= "unix",
-	auto		= True,
-#ifdef INSTALLING
-	import_dirs	= [ "$libdir/imports" ],
-#else
-	import_dirs	= [ "$libdir/libraries/unix" ],
-#endif
-	source_dirs	= [],
-#ifdef INSTALLING
-	library_dirs	= [ "$libdir" ],
-#else
-	library_dirs	= [ "$libdir/libraries/unix",
-			    "$libdir/libraries/unix/cbits" ],
-#endif
-	hs_libraries	= [ "HSunix" ],
-	extra_libraries	= [ "HSunix_cbits"
-#ifndef HAVE_FRAMEWORK_HASKELLSUPPORT
-#ifdef HAVE_LIBDL
-			  , "dl"
-#endif
-#endif
-			  ],
+name:		PACKAGE
+version:	VERSION
+license:	BSD3
+maintainer:	libraries@haskell.org
+exposed:	True
+
+exposed-modules:
+	System.Posix,
+	System.Posix.DynamicLinker.Module,
+	System.Posix.DynamicLinker.Prim,
+	System.Posix.Directory,
+	System.Posix.DynamicLinker,
+	System.Posix.Env,
+	System.Posix.Error,
+	System.Posix.Files,
+	System.Posix.IO,
+	System.Posix.Process,
+	System.Posix.Resource,
+	System.Posix.Temp,
+	System.Posix.Terminal,
+	System.Posix.Time,
+	System.Posix.Unistd,
+	System.Posix.User,
+	System.Posix.Signals.Exts
+
+hidden-modules:
+
+import-dirs:	IMPORT_DIR
 
 #ifdef INSTALLING
-        include_dirs	= [],
+library-dirs:	"$libdir"
 #else
-        include_dirs	= [ "$libdir/libraries/unix/include" ],
+library-dirs:	"$libdir/libraries/unix",
+		"$libdir/libraries/unix/cbits"
 #endif
-        c_includes	= [ "HsUnix.h" ],
-        package_deps	= [ "base" ],
-        extra_ghc_opts	= [],
-        extra_cc_opts	= [],
-        extra_ld_opts	= []
-}
+
+hs-libraries:   "HSunix"
+
+#if !(defined HAVE_FRAMEWORK_HASKELLSUPPORT) && defined(HAVE_LIBDL)
+extra-libs:	"HSunix_cbits", "dl"
+#else
+extra-libs:	"HSunix_cbits"
+#endif
+
+#ifdef INSTALLING
+include-dirs:
+#else
+include-dirs: "$libdir/libraries/unix/include"
+#endif
+
+includes:	HsUnix.h
+depends:	base
+extra-hugs-opts:
+extra-cc-opts:
+extra-ld-opts:
+framework-dirs:
+extra-frameworks:
+haddock-interfaces:
+haddock-html:
+

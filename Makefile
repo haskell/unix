@@ -5,6 +5,7 @@ SUBDIRS = cbits include
 
 ALL_DIRS     = System System/Posix System/Posix/DynamicLinker System/Posix/Signals
 PACKAGE      = unix
+VERSION	     = 1.0
 PACKAGE_DEPS = base
 
 SRC_HADDOCK_OPTS += -t "Haskell Hierarchical Libraries ($(PACKAGE) package)"
