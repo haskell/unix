@@ -17,7 +17,9 @@ module System.Posix.Process (
     -- * Processes
 
     -- ** Forking and executing
+#ifdef __GLASGOW_HASKELL__
     forkProcess,
+#endif
     executeFile,
     
     -- ** Exiting
@@ -74,6 +76,10 @@ import System.Exit
 import System.Posix.Types
 import System.Posix.Signals
 import Control.Monad
+
+#ifdef __HUGS__
+{-# CBITS HsUnix.c execvpe.c #-}
+#endif
 
 -- -----------------------------------------------------------------------------
 -- Process environment
@@ -209,6 +215,7 @@ foreign import ccall unsafe "setpriority"
 -- -----------------------------------------------------------------------------
 -- Forking, execution
 
+#ifdef __GLASGOW_HASKELL__
 {- | 'forkProcess' corresponds to the POSIX @fork@ system call.
 The 'IO' action passed as an argument is executed in the child process; no other
 threads will be copied to the child process.
@@ -224,6 +231,7 @@ forkProcess action = do
   return $ fromIntegral pid
 
 foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CPid
+#endif /* __GLASGOW_HASKELL__ */
 
 executeFile :: FilePath			    -- Command
             -> Bool			    -- Search PATH?
