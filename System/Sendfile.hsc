@@ -7,7 +7,7 @@
 -- 
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
--- Portability :  fallback NYI
+-- Portability :  provides fallback
 --
 -- "System.Sendfile.sendfile" is a low-level method for efficently passing
 -- data from one file descriptor to another.
@@ -16,35 +16,47 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Sendfile (sendfile) where
+module System.Sendfile (
+  -- * Low-level API
+  c_sendfile,
+  -- * Haskell wrappers
+  sendfile,
+  sendfileByName,
+  -- * Fallback implementation
+  squirt
+
+) where
 
 #include "config.h"
 #include "HsUnix.h"
 
 import Foreign
 import Foreign.C
-import System.IO		(Handle)
-import System.Posix.IO		(handleToFd)
-import System.Posix.Types	(Fd, COff)
+import System.IO
+import System.Posix.IO
+import System.Posix.Types	( Fd, COff )
+import Control.Exception	( bracket )
+import Control.Monad		( unless)
+import Data.Array.MArray
+import Data.Array.IO
 
 -- |'sendfile' transmits the contents of an open file to a stream socket
--- opened for writing with as little overhead as possible. This function
--- is not defined by any standard!
--- Notice that passing 0 as 'count' may result in undefined behaviour and
--- should be avoided. On Linux, nothing is transmitted while on FreeBSD
--- the entire file will be sent.
+-- opened for writing with as little overhead as possible.
+-- This function is not defined by any standard! Passing '0' will indeed
+-- transmit nothing at all.
+-- Caveats for converting a 'Handle' to 'Fd' apply.
 
-sendfile :: Handle	-- ^ Input
-         -> Handle	-- ^ Output
-         -> Integer	-- ^ Offset
-         -> Integer	-- ^ Nr. of bytes to transmit
+sendfile :: Fd		-- ^ Input
+         -> Fd		-- ^ Output
+         -> Int		-- ^ Offset
+         -> Int		-- ^ Nr. of bytes to transmit
          -> IO ()
-sendfile inH outH startpos count = do
+
+sendfile _inFd _outFd _startpos 0 = return ()
+sendfile inFd outFd startpos count =
 
 #ifdef HAVE_LINUX_SENDFILE
-
-  inFd  <- handleToFd inH
-  outFd <- handleToFd outH
+ do
   offsetptr <- malloc
   poke offsetptr (fromIntegral startpos)
   throwErrnoIfMinus1_ "sendfile" $ c_sendfile outFd inFd offsetptr (fromIntegral count)
@@ -56,9 +68,7 @@ foreign import ccall unsafe "sendfile"
 
 #else /* Linux */
 # ifdef HAVE_BSD_SENDFILE
-
-  inFd  <- handleToFd inH
-  outFd <- handleToFd outH
+ do
   offsetptr <- malloc
   rc <- sendfileLoop inFd outFd (fromIntegral startpos) (fromIntegral count) offsetptr
   free offsetptr
@@ -81,18 +91,46 @@ foreign import ccall unsafe "sendfile"
   c_sendfile :: Fd -> Fd -> COff -> CSize -> Ptr a -> Ptr COff -> CInt -> IO CInt
 
 # else /* BSD */
--- squirt data from 'rd' into 'wr' as fast as possible.  We use a 4k
--- single buffer. Stolen from Simon M.'s Haskell Web Server fptools/hws
-  hSeek inH RelativeSeek startpos
-  arr <- stToIO (newCharArray (0, bufsize-1))
-  let loop remaining = do r <- hGetBufBA rd arr (min bufsize remaining)
-		if (r == 0) 
-		   then return ()
-		   else if (r < bufsize) 
-     			    then hPutBufBA wr arr r
-     			    else hPutBufBA wr arr bufsize >> loop (remaining-bufsize)
-  loop count
-
-bufsize = 4 * 1024 :: Int
+  squirt
 # endif /* no native */
 #endif
+
+-- |'sendfileByName' sends a file to an already open descriptor
+-- using 'sendfile'. You can only use this function on regular
+-- files.
+sendfileByName :: String -> Fd -> IO ()
+sendfileByName filename outFd = do
+  bracket 
+    (openFile filename ReadMode)
+    (\handle -> hClose handle)
+    (\handle -> do
+        size <- hFileSize handle
+	inFd <- handleToFd handle
+	sendfile inFd outFd 0 (fromIntegral size))
+  
+-- squirt data from 'rd' into 'wr' as fast as possible.  We use a 4k
+-- single buffer. Stolen from Simon M.'s Haskell Web Server fptools/hws
+-- We have to revert the handleToFd.
+
+-- |Fallback API. Exported in case somebody needs it.
+
+squirt  :: Fd		-- ^ Input
+         -> Fd		-- ^ Output
+         -> Int		-- ^ Offset
+         -> Int		-- ^ Nr. of bytes to transmit
+         -> IO ()
+squirt inFd outFd startpos count = do
+  inH <- fdToHandle inFd
+  outH <- fdToHandle outFd
+  hSeek inH RelativeSeek (fromIntegral startpos)
+  arr <- Data.Array.MArray.newArray_ (0, bufsize-1)
+  let loop remaining = do
+        r <- hGetArray inH arr (min bufsize remaining)
+	unless (r == 0) $
+	  do if (r < bufsize) 
+     		then hPutArray outH arr r
+     		else hPutArray outH arr bufsize >> loop (remaining-bufsize)
+  loop count
+  hFlush outH
+
+bufsize = 4 * 1024 :: Int
