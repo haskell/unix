@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.12 2003/12/15 16:57:30 ross Exp $
+ * $Id: HsUnix.h,v 1.13 2004/02/05 11:46:00 ross Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -75,7 +75,11 @@ extern void pPrPr_disableITimers (void);
 extern char **environ;
 
 #ifndef INLINE
+#ifdef __HUGS__
+#define INLINE INLINE_ONLY
+#else
 #define INLINE extern inline
+#endif
 #endif
 
 INLINE int __hsunix_wifexited   (int stat) { return WIFEXITED(stat); }
