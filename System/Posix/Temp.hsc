@@ -40,7 +40,7 @@ mkstemp template = do
   withCString template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
     name <- peekCString ptr
-#ifdef __GLASGOW_HASKELL__
+#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
     h <- fdToHandle fd
 #else
     closeFd fd
