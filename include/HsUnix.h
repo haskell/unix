@@ -20,7 +20,7 @@
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
 
-#ifdef solaris2_TARGET_OS
+#ifdef solaris2_HOST_OS
 #define _POSIX_PTHREAD_SEMANTICS
 #endif
 
