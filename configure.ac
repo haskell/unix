@@ -5,7 +5,7 @@ AC_CONFIG_SRCDIR([include/HsUnix.h])
 
 AC_CONFIG_HEADERS([include/HsUnixConfig.h])
 
-AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
+AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid lchown setenv unsetenv])
 
 AC_MSG_CHECKING([for _SC_GETGR_R_SIZE_MAX])
 AC_EGREP_CPP(we_have_that_sysconf_thing,
