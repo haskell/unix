@@ -294,7 +294,8 @@ getProcessStatus block stopped pid =
       _  -> do ps <- decipherWaitStatus wstatp
 	       return (Just ps)
 
-foreign import ccall unsafe "waitpid"
+-- safe, because this call might block
+foreign import ccall safe "waitpid"
   c_waitpid :: CPid -> Ptr CInt -> CInt -> IO CPid
 
 getGroupProcessStatus :: Bool
