@@ -89,8 +89,6 @@
 #include <signal.h>
 #endif
 
-extern int execvpe(char *name, char **argv, char **envp);
-extern void pPrPr_disableITimers (void);
 extern char **environ;
 
 #ifndef INLINE
