@@ -102,7 +102,7 @@ dup (Fd fd) = do r <- throwErrnoIfMinus1 "dup" (c_dup fd); return (Fd r)
 
 dupTo :: Fd -> Fd -> IO Fd
 dupTo (Fd fd1) (Fd fd2) = do
-  r <- throwErrnoIfMinus1 "dupTp" (c_dup2 fd1 fd2)
+  r <- throwErrnoIfMinus1 "dupTo" (c_dup2 fd1 fd2)
   return (Fd r)
 
 -- -----------------------------------------------------------------------------
@@ -211,36 +211,32 @@ data FdOption = AppendOnWrite
 	      | NonBlockingRead
 	      | SynchronousWrites
 
+fdOption2Int :: FdOption -> CInt
+fdOption2Int CloseOnExec       = (#const FD_CLOEXEC)
+fdOption2Int AppendOnWrite     = (#const O_APPEND)
+fdOption2Int NonBlockingRead   = (#const O_NONBLOCK)
+fdOption2Int SynchronousWrites = (#const O_SYNC)
+
 queryFdOption :: Fd -> FdOption -> IO Bool
 queryFdOption (Fd fd) opt = do
   r <- throwErrnoIfMinus1 "queryFdOption" (c_fcntl_read fd flag)
-  return ((r .&. opt_val) /= 0)
+  return (testBit r (fromIntegral (fdOption2Int opt)))
  where
   flag    = case opt of
 	      CloseOnExec       -> (#const F_GETFD)
 	      other		-> (#const F_GETFL)
 
-  opt_val = case opt of
-	      CloseOnExec       -> (#const FD_CLOEXEC)
-	      AppendOnWrite     -> (#const O_APPEND)
-              NonBlockingRead   -> (#const O_NONBLOCK)
-	      SynchronousWrites -> (#const O_SYNC)
-
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
 setFdOption (Fd fd) opt val = do
   r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd getflag)
   let r' | val       = r .|. opt_val
-	 | otherwise = r .&. (complement opt_val) 
+	 | otherwise = r .&. (complement opt_val)
   throwErrnoIfMinus1_ "setFdOption" (c_fcntl_write fd setflag r')
  where
   (getflag,setflag)= case opt of
 	      CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD)) 
 	      other		-> ((#const F_GETFL),(#const F_SETFL))
-  opt_val = case opt of
-	      CloseOnExec       -> (#const FD_CLOEXEC)
-	      AppendOnWrite     -> (#const O_APPEND)
-              NonBlockingRead   -> (#const O_NONBLOCK)
-	      SynchronousWrites -> (#const O_SYNC)
+  opt_val = fdOption2Int opt
 
 -- -----------------------------------------------------------------------------
 -- Seeking 
@@ -276,16 +272,16 @@ getLock (Fd fd) lock =
 allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
 allocaLock (lockreq, mode, start, len) io = 
   allocaBytes (#const sizeof(struct flock)) $ \p -> do
-    (#poke struct flock, l_type)   p (lockReqToInt lockreq :: CShort)
+    (#poke struct flock, l_type)   p (lockReq2Int lockreq :: CShort)
     (#poke struct flock, l_whence) p (fromIntegral (mode2Int mode) :: CShort)
     (#poke struct flock, l_start)  p start
     (#poke struct flock, l_len)    p len
     io p
 
-lockReqToInt :: LockRequest -> CShort
-lockReqToInt ReadLock  = (#const F_RDLCK)
-lockReqToInt WriteLock = (#const F_WRLCK)
-lockReqToInt Unlock    = (#const F_UNLCK)
+lockReq2Int :: LockRequest -> CShort
+lockReq2Int ReadLock  = (#const F_RDLCK)
+lockReq2Int WriteLock = (#const F_WRLCK)
+lockReq2Int Unlock    = (#const F_UNLCK)
 
 bytes2ProcessIDAndLock :: Ptr CFLock -> IO (ProcessID, FileLock)
 bytes2ProcessIDAndLock p = do
