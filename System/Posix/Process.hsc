@@ -79,6 +79,10 @@ import System.Posix.Signals
 import System.Process.Internals ( pPrPr_disableITimers, c_execvpe )
 import Control.Monad
 
+#ifdef __GLASGOW_HASKELL__
+import GHC.TopHandler	( runIO )
+#endif
+
 #ifdef __HUGS__
 {-# CBITS HsUnix.c  #-}
 #endif
@@ -227,7 +231,7 @@ in case of an error, an exception is thrown.
 
 forkProcess :: IO () -> IO ProcessID
 forkProcess action = do
-  stable <- newStablePtr action
+  stable <- newStablePtr (runIO action)
   pid <- throwErrnoIfMinus1 "forkProcess" (forkProcessPrim stable)
   freeStablePtr stable
   return $ fromIntegral pid
