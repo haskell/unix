@@ -30,7 +30,7 @@ Package {
         include_dirs	= [ "$libdir/libraries/unix/include" ],
 #endif
         c_includes	= [ "HsUnix.h" ],
-        package_deps	= [ "base", "network" ],
+        package_deps	= [ "base" ],
         extra_ghc_opts	= [],
         extra_cc_opts	= [],
         extra_ld_opts	= []
