@@ -30,6 +30,7 @@ import Foreign.C.Types	( CInt )
 import Foreign.C.String
 import Foreign.Marshal.Array
 import Foreign.Ptr
+import Foreign.Storable
 import Control.Monad	( liftM )
 import Data.Maybe	( fromMaybe )
 
@@ -54,11 +55,12 @@ foreign import ccall unsafe "getenv"
 
 getEnvironmentPrim :: IO [String]
 getEnvironmentPrim = do
+  c_environ <- peek c_environ_p
   arr <- peekArray0 nullPtr c_environ
   mapM peekCString arr
 
-foreign import ccall unsafe "__hsunix_environ"
-   c_environ :: Ptr CString
+foreign import ccall unsafe "&environ"
+   c_environ_p :: Ptr (Ptr CString)
 
 -- |'getEnvironment' retrieves the entire environment as a
 -- list of @(key,value)@ pairs.

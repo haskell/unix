@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.7 2003/04/11 09:43:38 ross Exp $
+ * $Id: HsUnix.h,v 1.8 2003/04/11 10:00:07 ross Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -84,7 +84,6 @@ INLINE int __hsunix_wifsignaled (int stat) { return WIFSIGNALED(stat); }
 INLINE int __hsunix_wtermsig    (int stat) { return WTERMSIG(stat); }
 INLINE int __hsunix_wifstopped  (int stat) { return WIFSTOPPED(stat); }
 INLINE int __hsunix_wstopsig    (int stat) { return WSTOPSIG(stat); }
-INLINE char ** __hsunix_environ () { return environ; }
 
 #ifdef HAVE_RTLDNEXT
 INLINE void *__hsunix_rtldNext (void) {return RTLD_NEXT;} 
