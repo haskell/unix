@@ -17,7 +17,8 @@ module System.Posix.Process (
     -- * Processes
 
     -- ** Forking and executing
-    forkProcess, executeFile,
+    forkProcess, forkProcessAll,
+    executeFile,
     
     -- ** Exiting
     exitImmediately,
@@ -62,6 +63,7 @@ module System.Posix.Process (
 
 #include "HsUnix.h"
 
+import GHC.Conc	( forkProcessPrim )
 import Foreign
 import Foreign.C
 import System.IO
@@ -199,8 +201,32 @@ foreign import ccall unsafe "setpriority"
 -- -----------------------------------------------------------------------------
 -- Forking, execution
 
+{- | 'forkProcess' is a wrapper around "GHC.Conc.forkProcessPrim" similar to
+'forkProcessAll' which returns a Maybe-type. The child receives @Nothing@,
+the parent @Just (pid::ProcessID)@. In case of an error, an exception is thrown.
+
+NOTE: currently, main threads are not stopped in the child process.
+To work around this problem, call 'forkProcess' from the main thread.
+
+If you really want to copy all threads into the new process, use
+'forkProcessAll' instead.
+-}
+
 forkProcess :: IO (Maybe ProcessID)
 forkProcess = do
+  pid <- throwErrnoIfMinus1 "forkProcess" forkProcessPrim
+  case pid of
+    0  -> return Nothing
+    _  -> return (Just (fromIntegral pid))
+
+{- | 'forkProcessAll' is the low-level wrapper for the @fork@ system-call.
+Standard disclaimer for lazy I\/O, shared file handles etc. apply. Notice that
+all Concurrent Haskell threads will be copied into the new process. See
+'forkProcess' on how to start a new process with only one active thread.
+-}
+
+forkProcessAll :: IO (Maybe ProcessID)
+forkProcessAll = do
   r <- throwErrnoIfMinus1 "forkProcess" c_fork
   case r of
      0   -> return Nothing
@@ -208,7 +234,6 @@ forkProcess = do
 
 foreign import ccall unsafe "fork"
   c_fork :: IO CInt
-
 
 executeFile :: FilePath			    -- Command
             -> Bool			    -- Search PATH?
