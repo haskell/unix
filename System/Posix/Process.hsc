@@ -84,7 +84,7 @@ import GHC.TopHandler	( runIO )
 #endif
 
 #ifdef __HUGS__
-{-# CBITS HsUnix.c  #-}
+{-# CFILES cbits/HsUnix.c  #-}
 #endif
 
 -- -----------------------------------------------------------------------------
