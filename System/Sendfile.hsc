@@ -36,8 +36,8 @@ import System.Posix.Types	(Fd, COff)
 
 sendfile :: Handle	-- Input
          -> Handle	-- Output
-         -> Int		-- Offset
-         -> Int		-- Nr. of bytes to transmit
+         -> Integer	-- Offset
+         -> Integer	-- Nr. of bytes to transmit
          -> IO ()
 sendfile inH outH startpos count = do
 
@@ -82,6 +82,18 @@ foreign import ccall unsafe "sendfile"
   c_sendfile :: Fd -> Fd -> COff -> CSize -> Ptr a -> Ptr COff -> CInt -> IO CInt
 
 # else /* BSD */
-  error "Sorry, sendfile(2) is not supported on your platform and currently no fallback is available"
-# endif /* ERROR */
+-- squirt data from 'rd' into 'wr' as fast as possible.  We use a 4k
+-- single buffer. Stolen from Simon M.'s Haskell Web Server fptools/hws
+  hSeek inH RelativeSeek startpos
+  arr <- stToIO (newCharArray (0, bufsize-1))
+  let loop remaining = do r <- hGetBufBA rd arr (min bufsize remaining)
+		if (r == 0) 
+		   then return ()
+		   else if (r < bufsize) 
+     			    then hPutBufBA wr arr r
+     			    else hPutBufBA wr arr bufsize >> loop (remaining-bufsize)
+  loop count
+
+bufsize = 4 * 1024 :: Int
+# endif /* no native */
 #endif
