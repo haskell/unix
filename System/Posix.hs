@@ -72,6 +72,7 @@ signal.h	System.Posix.Signals
 unix package:
 
 dirent.h 	System.Posix.Directory
+dlfcn.h 	System.Posix.DynamicLinker
 errno.h 	Foreign.C.Error
 fcntl.h 	System.Posix.IO
 sys/stat.h	System.Posix.Files
@@ -106,7 +107,6 @@ sys/select.h
 sys/statvfs.h	 (?)
 sys/time.h	(but maybe not the itimer?)
 time.h		(System.Posix.Time)
-dlfcn.h 	(System.Posix.DynamicLoader)
 stdio.h		(popen only: System.Posix.IO)
 
 Unsupported interfaces
