@@ -79,7 +79,7 @@ import System.Posix.Signals
 import Control.Monad
 
 #ifdef __HUGS__
-{-# CBITS HsUnix.c #-}
+{-# CBITS HsUnix.c ../../base/cbits/execvpe.c  #-}
 #endif
 
 -- -----------------------------------------------------------------------------
