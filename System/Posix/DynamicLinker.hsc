@@ -59,7 +59,7 @@ dlopen path flags = do
     liftM DLHandle $ throwDLErrorIf "dlopen" (== nullPtr) $ c_dlopen p (packRTLDFlags flags)
 
 dlclose :: DL -> IO ()
-dlclose (DLHandle h) = throwDLErrorIf_ "dlclose" (== 0) $ c_dlclose h
+dlclose (DLHandle h) = throwDLErrorIf_ "dlclose" (/= 0) $ c_dlclose h
 dlclose h = error $ "dlclose: invalid argument" ++ (show h)
 
 dlerror :: IO String
