@@ -9,7 +9,7 @@
 -- Stability   :  provisional
 -- Portability :  provides fallback
 --
--- "System.Sendfile.sendfile" is a low-level method for efficently passing
+-- 'System.Sendfile.sendfile' is a low-level method for efficently passing
 -- data from one file descriptor to another.
 -- The intended audience includes for example web server authors. Please
 -- note that this function is highly platform dependent.

@@ -204,7 +204,7 @@ foreign import ccall unsafe "setpriority"
 -- -----------------------------------------------------------------------------
 -- Forking, execution
 
-{- | 'forkProcess' is a wrapper around "GHC.Conc.forkProcessPrim" similar to
+{- | 'forkProcess' is a wrapper around 'GHC.Conc.forkProcessPrim' similar to
 'forkProcessAll' which returns a Maybe-type. The child receives @Nothing@,
 the parent @Just (pid::ProcessID)@. In case of an error, an exception is thrown.
 
