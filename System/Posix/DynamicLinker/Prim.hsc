@@ -1,11 +1,11 @@
 {-# OPTIONS -fffi #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.DL.DLPrim
+-- Module      :  System.Posix.DynamicLinker.Prim
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
--- Maintainer  :  libraries@haskell.org
+-- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
@@ -15,7 +15,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.DL.DLPrim (
+module System.Posix.DynamicLinker.Prim (
   -- * low level API
   c_dlopen,
   c_dlsym,

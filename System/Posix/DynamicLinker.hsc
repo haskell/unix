@@ -1,19 +1,19 @@
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.DL
+-- Module      :  System.Posix.DynamicLinker
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
--- Maintainer  :  libraries@haskell.org
+-- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
--- Portability :  non-portable
+-- Portability :  non-portable (requires POSIX)
 --
--- dlopen support
+-- Dynamic linker support through dlopen()
 -----------------------------------------------------------------------------
 
-module System.DL (
+module System.Posix.DynamicLinker (
 
-    module System.DL.DLPrim,
+    module System.Posix.DynamicLinker.Prim,
     dlopen,
     dlsym,
     dlerror,
@@ -45,7 +45,10 @@ module System.DL (
 
 where
 
-import System.DL.DLPrim
+#include "HsUnix.h"
+
+import System.Posix.DynamicLinker.Prim
+import IO		( bracket )
 import Control.Monad	( liftM )
 import Foreign.Ptr	( Ptr, nullPtr, FunPtr, nullFunPtr )
 import Foreign.C.String	( withCString, peekCString )
@@ -60,8 +63,7 @@ dlclose (DLHandle h) = throwDLErrorIf_ "dlclose" (== 0) $ c_dlclose h
 dlclose h = error $ "dlclose: invalid argument" ++ (show h)
 
 dlerror :: IO String
-dlerror = do
-  c_dlerror >>= peekCString 
+dlerror = c_dlerror >>= peekCString 
 
 -- |'dlsym' returns the address binding of the symbol described in @symbol@,
 -- as it occurs in the shared object identified by @source@.
@@ -72,11 +74,7 @@ dlsym source symbol = do
     throwDLErrorIf "dlsym" (== nullFunPtr) $ c_dlsym (packDL source) s
 
 withDL :: String -> [RTLDFlags] -> (DL -> IO a) -> IO a
-withDL mod flags f = do
-  dl <- dlopen mod flags
-  r <- f dl
-  dlclose dl
-  return r
+withDL mod flags f = bracket (dlopen mod flags) (dlclose) f
 
 withDL_ :: String -> [RTLDFlags] -> (DL -> IO a) -> IO ()
 withDL_ mod flags f = withDL mod flags f >> return ()
@@ -87,7 +85,7 @@ withDL_ mod flags f = withDL mod flags f >> return ()
 undl :: DL -> Ptr ()
 undl = packDL
 
--- throwDLErrorIf :: String -> IO (Ptr a) -> IO (Ptr a)
+throwDLErrorIf :: String -> (a -> Bool) -> IO a -> IO a
 throwDLErrorIf s p f = do
   r <- f
   if (p r)

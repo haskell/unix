@@ -1,10 +1,11 @@
+{-# OPTIONS -fffi #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.DL.Module
+-- Module      :  System.Posix.DynamicLinker.Module
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
--- Maintainer  :  libraries@haskell.org
+-- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
@@ -14,7 +15,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.DL.Module (
+module System.Posix.DynamicLinker.Module (
 
 --  Usage:
 --  ******
@@ -53,7 +54,9 @@ module System.DL.Module (
     )
 where
 
-import System.DL
+#include "HsUnix.h"
+
+import System.Posix.DynamicLinker
 import Foreign.Ptr	( Ptr, nullPtr, FunPtr )
 import Foreign.C.String	( withCString )
 
