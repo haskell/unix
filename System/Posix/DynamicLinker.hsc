@@ -48,7 +48,7 @@ where
 #include "HsUnix.h"
 
 import System.Posix.DynamicLinker.Prim
-import IO		( bracket )
+import Control.Exception	( bracket )
 import Control.Monad	( liftM )
 import Foreign.Ptr	( Ptr, nullPtr, FunPtr, nullFunPtr )
 import Foreign.C.String	( withCString, peekCString )
