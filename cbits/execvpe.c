@@ -58,7 +58,7 @@ execvpe(char *name, char **argv, char **envp)
     register int lp, ln;
     register char *p;
     int eacces=0, etxtbsy=0;
-    char *bp, *cur, *path, *buf;
+    char *bp, *cur, *path, *buf = 0;
 
     /* If it's an absolute or relative path name, it's easy. */
     if (strchr(name, '/')) {
