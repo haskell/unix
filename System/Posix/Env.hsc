@@ -30,8 +30,8 @@ import Foreign.C.Types	( CInt )
 import Foreign.C.String
 import Foreign.Marshal.Array
 import Foreign.Ptr
-import Monad		( liftM )
-import Maybe		( fromMaybe )
+import Control.Monad	( liftM )
+import Data.Maybe	( fromMaybe )
 
 -- |'getEnv' looks up a variable in the environment.
 
