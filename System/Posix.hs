@@ -101,6 +101,8 @@ sys/select.h
 sys/statvfs.h	 (?)
 sys/time.h	(but maybe not the itimer?)
 time.h		(System.Posix.Time)
+dlfcn.h 	(System.Posix.DynamicLoader)
+stdio.h		(popen only: System.Posix.IO)
 
 Unsupported interfaces
 ----------------------
@@ -110,7 +112,6 @@ assert.h
 complex.h
 cpio.h 
 ctype.h 
-dlfcn.h 
 fenv.h
 float.h
 fmtmsg.h
@@ -139,7 +140,7 @@ stdarg.h
 stdbool.h
 stddef.h
 stdint.h
-stdio.h
+stdio.h		except: popen()
 stdlib.h	except: exit(): System.Posix.Process
 			free()/malloc(): Foreign.Marshal.Alloc
 			getenv()/setenv(): ?? System.Environment
