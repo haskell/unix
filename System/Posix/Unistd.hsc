@@ -72,6 +72,8 @@ module System.Posix.Unistd (
 -}
   ) where
 
+#include "config.h"
+
 import Foreign
 import Foreign.C
 import System.Posix.Types
@@ -182,10 +184,19 @@ foreign import ccall unsafe "sleep"
 
 usleep :: Int -> IO ()
 usleep 0 = return ()
+#ifdef USLEEP_RETURNS_VOID
+usleep usecs = c_usleep (fromIntegral usecs)
+#else
 usleep usecs = throwErrnoIfMinus1_ "usleep" (c_usleep (fromIntegral usecs))
+#endif
 
+#ifdef USLEEP_RETURNS_VOID
+foreign import ccall unsafe "usleep"
+  c_usleep :: CUInt -> IO ()
+#else
 foreign import ccall unsafe "usleep"
   c_usleep :: CUInt -> IO CInt
+#endif
 
 -- -----------------------------------------------------------------------------
 -- System variables
