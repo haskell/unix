@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.4 2003/01/17 17:01:14 stolz Exp $
+ * $Id: HsUnix.h,v 1.5 2003/02/28 16:09:16 stolz Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -63,6 +63,7 @@
 
 extern int execvpe(char *name, char **argv, char **envp);
 extern void pPrPr_disableITimers (void);
+extern char **environ;
 
 #ifndef INLINE
 #define INLINE extern inline
@@ -74,6 +75,7 @@ INLINE int __hsunix_wifsignaled (int stat) { return WIFSIGNALED(stat); }
 INLINE int __hsunix_wtermsig    (int stat) { return WTERMSIG(stat); }
 INLINE int __hsunix_wifstopped  (int stat) { return WIFSTOPPED(stat); }
 INLINE int __hsunix_wstopsig    (int stat) { return WSTOPSIG(stat); }
+INLINE char ** __hsunix_environ () { return environ; }
 
 /* O_SYNC doesn't exist on Mac OS X and (at least some versions of) FreeBSD,
 fall back to O_FSYNC, which should be the same */

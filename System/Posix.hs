@@ -19,6 +19,7 @@ module System.Posix (
   module System.Posix.Files,
   module System.Posix.Unistd,
   module System.Posix.IO,
+  module System.Posix.Env,
   module System.Posix.Process,
   module System.Posix.Terminal,
   module System.Posix.Time,
@@ -32,6 +33,7 @@ import System.Posix.Files
 import System.Posix.Unistd
 import System.Posix.Process
 import System.Posix.IO
+import System.Posix.Env
 import System.Posix.Terminal
 import System.Posix.Time
 import System.Posix.User
