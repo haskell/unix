@@ -2,7 +2,7 @@ name:		unix
 version:	1.0
 license:	BSD3
 maintainer:	libraries@haskell.org
-description:	POSIX functionality.
+synopsis:	POSIX functionality
 build-depends:	base
 exposed-modules:
 	System.Posix,
