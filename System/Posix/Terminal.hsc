@@ -84,7 +84,14 @@ import System.Posix.Types
 -- Terminal attributes
 
 type CTermios = ()
-type TerminalAttributes = ForeignPtr CTermios
+newtype TerminalAttributes = TerminalAttributes (ForeignPtr CTermios)
+
+makeTerminalAttributes :: ForeignPtr CTermios -> TerminalAttributes
+makeTerminalAttributes = TerminalAttributes
+
+withTerminalAttributes :: TerminalAttributes -> (Ptr CTermios -> IO a) -> IO a
+withTerminalAttributes (TerminalAttributes termios) = withForeignPtr termios
+
 
 data TerminalMode
 	-- input flags
@@ -215,7 +222,7 @@ terminalMode BackgroundWriteInterrupt = testLocalFlag (#const TOSTOP)
 
 bitsPerByte :: TerminalAttributes -> Int
 bitsPerByte termios = unsafePerformIO $ do
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     cflag <- (#peek struct termios, c_cflag) p
     return $! (word2Bits (cflag .&. (#const CSIZE)))
   where
@@ -254,7 +261,7 @@ data ControlCharacter
 
 controlChar :: TerminalAttributes -> ControlCharacter -> Maybe Char
 controlChar termios cc = unsafePerformIO $ do
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     let c_cc = (#ptr struct termios, c_cc) p
     val <- peekElemOff c_cc (cc2Word cc)
     if val == ((#const _POSIX_VDISABLE)::CCc)
@@ -279,7 +286,7 @@ withoutCC termios cc = unsafePerformIO $ do
 
 inputTime :: TerminalAttributes -> Int
 inputTime termios = unsafePerformIO $ do
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     c <- peekElemOff ((#ptr struct termios, c_cc) p) (#const VTIME)
     return (fromEnum (c :: CCc))
 
@@ -291,7 +298,7 @@ withTime termios time = unsafePerformIO $ do
 
 minInput :: TerminalAttributes -> Int
 minInput termios = unsafePerformIO $ do
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     c <- peekElemOff ((#ptr struct termios, c_cc) p) (#const VMIN)
     return (fromEnum (c :: CCc))
 
@@ -321,7 +328,7 @@ data BaudRate
 
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     w <- c_cfgetispeed p
     return (word2Baud w)
 
@@ -338,7 +345,7 @@ foreign import ccall unsafe "cfsetispeed"
 
 outputSpeed :: TerminalAttributes -> BaudRate
 outputSpeed termios = unsafePerformIO $ do
-  withForeignPtr termios $ \p ->  do
+  withTerminalAttributes termios $ \p ->  do
     w <- c_cfgetospeed p
     return (word2Baud w)
 
@@ -358,7 +365,7 @@ getTerminalAttributes fd = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p ->
       throwErrnoIfMinus1_ "getTerminalAttributes" (c_tcgetattr fd p)
-  return fp
+  return $ makeTerminalAttributes fp
 
 foreign import ccall unsafe "tcgetattr"
   c_tcgetattr :: Fd -> Ptr CTermios -> IO CInt
@@ -373,7 +380,7 @@ setTerminalAttributes :: Fd
                       -> TerminalState
                       -> IO ()
 setTerminalAttributes fd termios state = do
-  withForeignPtr termios $ \p ->
+  withTerminalAttributes termios $ \p ->
     throwErrnoIfMinus1_ "setTerminalAttributes"
       (c_tcsetattr fd (state2Int state) p)
   where
@@ -547,11 +554,11 @@ clearInputFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 clearInputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       iflag <- (#peek struct termios, c_iflag) p2
       (#poke struct termios, c_iflag) p1 (iflag .&. complement flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Set termios i_flag
 
@@ -559,17 +566,17 @@ setInputFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 setInputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       iflag <- (#peek struct termios, c_iflag) p2
       (#poke struct termios, c_iflag) p1 (iflag .|. flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Examine termios i_flag
 
 testInputFlag :: CTcflag -> TerminalAttributes -> Bool
 testInputFlag flag termios = unsafePerformIO $
-  withForeignPtr termios $ \p ->  do
+  withTerminalAttributes termios $ \p ->  do
     iflag <- (#peek struct termios, c_iflag) p
     return $! ((iflag .&. flag) /= 0)
 
@@ -579,11 +586,11 @@ clearControlFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 clearControlFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       cflag <- (#peek struct termios, c_cflag) p2
       (#poke struct termios, c_cflag) p1 (cflag .&. complement flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Set termios c_flag
 
@@ -591,17 +598,17 @@ setControlFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 setControlFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       cflag <- (#peek struct termios, c_cflag) p2
       (#poke struct termios, c_cflag) p1 (cflag .|. flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Examine termios c_flag
 
 testControlFlag :: CTcflag -> TerminalAttributes -> Bool
 testControlFlag flag termios = unsafePerformIO $
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     cflag <- (#peek struct termios, c_cflag) p
     return $! ((cflag .&. flag) /= 0)
 
@@ -611,11 +618,11 @@ clearLocalFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 clearLocalFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       lflag <- (#peek struct termios, c_lflag) p2
       (#poke struct termios, c_lflag) p1 (lflag .&. complement flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Set termios l_flag
 
@@ -623,17 +630,17 @@ setLocalFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 setLocalFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       lflag <- (#peek struct termios, c_lflag) p2
       (#poke struct termios, c_lflag) p1 (lflag .|. flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Examine termios l_flag
 
 testLocalFlag :: CTcflag -> TerminalAttributes -> Bool
 testLocalFlag flag termios = unsafePerformIO $
-  withForeignPtr termios $ \p ->  do
+  withTerminalAttributes termios $ \p ->  do
     lflag <- (#peek struct termios, c_lflag) p
     return $! ((lflag .&. flag) /= 0)
 
@@ -643,11 +650,11 @@ clearOutputFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 clearOutputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       oflag <- (#peek struct termios, c_oflag) p2
       (#poke struct termios, c_oflag) p1 (oflag .&. complement flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Set termios o_flag
 
@@ -655,17 +662,17 @@ setOutputFlag :: CTcflag -> TerminalAttributes -> TerminalAttributes
 setOutputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
-    withForeignPtr termios $ \p2 -> do
+    withTerminalAttributes termios $ \p2 -> do
       copyBytes p1 p2 (#const sizeof(struct termios)) 
       oflag <- (#peek struct termios, c_oflag) p2
       (#poke struct termios, c_oflag) p1 (oflag .|. flag)
-  return fp
+  return $ makeTerminalAttributes fp
 
 -- Examine termios o_flag
 
 testOutputFlag :: CTcflag -> TerminalAttributes -> Bool
 testOutputFlag flag termios = unsafePerformIO $
-  withForeignPtr termios $ \p -> do
+  withTerminalAttributes termios $ \p -> do
     oflag <- (#peek struct termios, c_oflag) p
     return $! ((oflag .&. flag) /= 0)
 
@@ -674,7 +681,7 @@ withNewTermios :: TerminalAttributes -> (Ptr CTermios -> IO a)
 withNewTermios termios action = do
   fp1 <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp1 $ \p1 -> do
-   withForeignPtr termios $ \p2 -> do
+   withTerminalAttributes termios $ \p2 -> do
     copyBytes p1 p2 (#const sizeof(struct termios))
     action p1
-  return fp1
+  return $ makeTerminalAttributes fp1
