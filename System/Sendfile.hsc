@@ -41,7 +41,7 @@ import Data.Array.IO
 -- opened for writing with as little overhead as possible.
 -- This function is not defined by any standard! Passing '0' will indeed
 -- transmit nothing at all.
--- Caveats for converting a 'Handle' to 'Fd' apply.
+-- Caveats for 'handleToFd' apply.
 
 sendfile :: Fd		-- ^ Input
          -> Fd		-- ^ Output
