@@ -71,6 +71,7 @@ import System.IO.Error
 import System.Exit
 import System.Posix.Types
 import System.Posix.Signals
+import Monad
 
 -- -----------------------------------------------------------------------------
 -- Process environment
@@ -152,7 +153,12 @@ foreign import ccall unsafe "times"
 -- Process scheduling priority
 
 nice :: Int -> IO ()
-nice prio = throwErrnoIfMinus1_ "nice" (c_nice (fromIntegral prio))
+nice prio = do
+  resetErrno
+  res <- c_nice (fromIntegral prio)
+  when (res == -1) $ do
+    err <- getErrno
+    when (err /= eOK) (throwErrno "nice")
 
 foreign import ccall unsafe "nice"
   c_nice :: CInt -> IO CInt
