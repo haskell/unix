@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.14 2004/08/13 13:29:11 simonmar Exp $
+ * $Id: HsUnix.h,v 1.15 2004/09/02 15:18:10 ross Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -11,6 +11,7 @@
 #define HSUNIX_H
 
 #include "ghcconfig.h"
+#include "HsUnixConfig.h"
 
 #include <stdlib.h>
 #include <stdio.h>
