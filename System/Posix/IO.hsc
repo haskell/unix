@@ -25,7 +25,10 @@ module System.Posix.IO (
     openFd, createFile,
     closeFd,
 
-    -- ** Reading/writing data
+    -- ** Reading\/writing data
+    -- |Programmers using the 'fdRead' and 'fdWrite' API should be aware that
+    -- EAGAIN exceptions may occur for non-blocking IO!
+
     fdRead, fdWrite,
 
     -- ** Seeking
@@ -71,6 +74,10 @@ import qualified GHC.Handle
 
 -- -----------------------------------------------------------------------------
 -- Pipes
+-- |The 'createPipe' function creates a pair of connected file descriptors. The first
+-- component is the fd to read from, the second is the write end.
+-- Although pipes may be bidirectional, this behaviour is not portable and
+-- programmers should use two separate pipes for this purpose.
 
 createPipe :: IO (Fd, Fd)
 createPipe =
@@ -218,14 +225,14 @@ foreign import ccall unsafe "fcntl"
 
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
 setFdOption fd opt val = do
-  r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd flag)
+  r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd getflag)
   let r' | val       = r .|. opt_val
 	 | otherwise = r .&. (complement opt_val) 
-  throwErrnoIfMinus1_ "setFdOption" (c_fcntl_write fd flag r')
+  throwErrnoIfMinus1_ "setFdOption" (c_fcntl_write fd setflag r')
  where
-  flag    = case opt of
-	      CloseOnExec       -> (#const F_GETFD)
-	      other		-> (#const F_GETFL)
+  (getflag,setflag)= case opt of
+	      CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD)) 
+	      other		-> ((#const F_GETFL),(#const F_SETFL))
   opt_val = case opt of
 	      CloseOnExec       -> (#const FD_CLOEXEC)
 	      AppendOnWrite     -> (#const O_APPEND)
