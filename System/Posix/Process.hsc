@@ -68,7 +68,7 @@ import System.IO.Error
 import System.Exit
 import System.Posix.Types
 import System.Posix.Signals
-import Monad
+import Control.Monad
 
 -- -----------------------------------------------------------------------------
 -- Process environment
