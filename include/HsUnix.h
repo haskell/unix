@@ -11,14 +11,14 @@
 
 #include "ghcconfig.h"
 
-#include "HsUnixConfig.h"
-
 /* ultra-evil... */
 #undef PACKAGE_BUGREPORT
 #undef PACKAGE_NAME
 #undef PACKAGE_STRING
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
+
+#include "HsUnixConfig.h"
 
 #include <stdlib.h>
 #include <stdio.h>
