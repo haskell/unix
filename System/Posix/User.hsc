@@ -9,7 +9,7 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- POSIX user/group support
+-- POSIX user\/group support
 --
 -----------------------------------------------------------------------------
 
