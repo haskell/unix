@@ -47,6 +47,10 @@ import Foreign
 import Foreign.C
 import System.Posix.Internals	( CGroup, CPasswd )
 
+#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R)
+import Control.Concurrent.MVar  ( newMVar, withMVar )
+#endif
+
 -- -----------------------------------------------------------------------------
 -- user environemnt
 
@@ -168,7 +172,7 @@ grBufSize :: Int
 grBufSize = fromIntegral $ unsafePerformIO $
 		c_sysconf (#const _SC_GETGR_R_SIZE_MAX)
 #else
-grBufSize = 1024	-- just assume some value
+grBufSize = 2048	-- just assume some value (1024 is too small on OpenBSD)
 #endif
 #endif
 
@@ -192,6 +196,16 @@ data UserEntry =
    userShell     :: String
  }
 
+--
+-- getpwuid and getpwnam leave results in a static object. Subsequent
+-- calls modify the same object, which isn't threadsafe. We attempt to
+-- mitigate this issue, on platforms that don't provide the safe _r versions
+--
+#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R)
+lock = unsafePerformIO $ newMVar ()
+{-# NOINLINE lock #-}
+#endif
+
 getUserEntryForID :: UserID -> IO UserEntry
 #ifdef HAVE_GETPWUID_R
 getUserEntryForID uid = do
@@ -205,6 +219,14 @@ getUserEntryForID uid = do
 foreign import ccall unsafe "getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd -> 
 			CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
+#elif HAVE_GETPWUID
+getUserEntryForID uid = do
+  withMVar lock $ \_ -> do
+    ppw <- throwErrnoIfNull "getUserEntryForID" $ c_getpwuid uid
+    unpackUserEntry ppw
+
+foreign import ccall unsafe "getpwuid" 
+  c_getpwuid :: CUid -> IO (Ptr CPasswd)
 #else
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 #endif
@@ -223,6 +245,15 @@ getUserEntryForName name = do
 foreign import ccall unsafe "getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd -> 
 			CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
+#elif HAVE_GETPWNAM
+getUserEntryForName name = do
+  withCString name $ \ pstr -> do
+    withMVar lock $ \_ -> do
+      ppw <- throwErrnoIfNull "getUserEntryForName" $ c_getpwnam pstr
+      unpackUserEntry ppw
+
+foreign import ccall unsafe "getpwnam" 
+  c_getpwnam :: CString -> IO (Ptr CPasswd)
 #else
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
 #endif
