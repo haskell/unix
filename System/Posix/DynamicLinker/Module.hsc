@@ -36,8 +36,8 @@ module System.Posix.DynamicLinker.Module (
 --       strstr <- peekCString strptr
 --       ...
 
-
-    moduleOpen             -- :: String -> ModuleFlags -> IO Module
+      Module
+    , moduleOpen             -- :: String -> ModuleFlags -> IO Module
     , moduleSymbol           -- :: Source -> String -> IO (FunPtr a)
     , moduleClose            -- :: Module -> IO Bool
     , moduleError            -- :: IO String
