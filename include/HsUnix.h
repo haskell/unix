@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.15 2004/09/02 15:18:10 ross Exp $
+ * $Id: HsUnix.h,v 1.16 2004/09/15 15:55:46 stolz Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -71,6 +71,10 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
+
 extern int execvpe(char *name, char **argv, char **envp);
 extern void pPrPr_disableITimers (void);
 extern char **environ;
@@ -98,6 +102,13 @@ INLINE void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 fall back to O_FSYNC, which should be the same */
 #ifndef O_SYNC
 #define O_SYNC O_FSYNC
+#endif
+
+#ifdef SIGINFO
+INLINE int __hsunix_SIGINFO()	{ return SIGINFO; }
+#endif
+#ifdef SIGWINCH
+INLINE int __hsunix_SIGWINCH()	{ return SIGWINCH; }
 #endif
 
 #endif

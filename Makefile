@@ -3,7 +3,7 @@ include $(TOP)/mk/boilerplate.mk
 
 SUBDIRS = cbits include
 
-ALL_DIRS     = System System/Posix System/Posix/DynamicLinker
+ALL_DIRS     = System System/Posix System/Posix/DynamicLinker System/Posix/Signals
 PACKAGE      = unix
 PACKAGE_DEPS = base
 
