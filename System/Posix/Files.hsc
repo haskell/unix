@@ -426,11 +426,8 @@ foreign import ccall unsafe "truncate"
   c_truncate :: CString -> COff -> IO CInt
 
 setFdSize :: Fd -> FileOffset -> IO ()
-setFdSize fd off =
+setFdSize (Fd fd) off =
   throwErrnoIfMinus1_ "setFdSize" (c_ftruncate fd off)
-
-foreign import ccall unsafe "ftruncate"
-  c_ftruncate :: Fd -> COff -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- pathconf()/fpathconf() support
