@@ -174,8 +174,20 @@ closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
 -- -----------------------------------------------------------------------------
 -- Converting file descriptors to/from Handles
 
-#ifdef __GLASGOW_HASKELL__
+-- | Extracts the 'Fd' from a 'Handle'.  This function has the side effect
+-- of closing the 'Handle' and flushing its write buffer, if necessary.
 handleToFd :: Handle -> IO Fd
+
+-- | Converts an 'Fd' into a 'Handle' that can be used with the
+-- standard Haskell IO library (see "System.IO").  
+--
+-- GHC only: this function has the side effect of putting the 'Fd'
+-- into non-blocking mode (@O_NONBLOCK@) due to the way the standard
+-- IO library implements multithreaded I\/O.
+--
+fdToHandle :: Fd -> IO Handle
+
+#ifdef __GLASGOW_HASKELL__
 handleToFd h = withHandle "handleToFd" h $ \ h_ -> do
   -- converting a Handle into an Fd effectively means
   -- letting go of the Handle; it is put into a closed
@@ -188,17 +200,14 @@ handleToFd h = withHandle "handleToFd" h $ \ h_ -> do
     -- eventually is run on the Handle.
   return (h_{haFD= (-1),haType=ClosedHandle}, Fd (fromIntegral fd))
 
-fdToHandle :: Fd -> IO Handle
 fdToHandle fd = GHC.Handle.fdToHandle (fromIntegral fd)
 #endif
 
 #ifdef __HUGS__
-handleToFd :: Handle -> IO Fd
 handleToFd h = do
   fd <- Hugs.IO.handleToFd h
   return (fromIntegral fd)
 
-fdToHandle :: Fd -> IO Handle
 fdToHandle fd = do
   mode <- fdGetMode (fromIntegral fd)
   Hugs.IO.openFd (fromIntegral fd) False mode True
