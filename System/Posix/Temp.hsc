@@ -15,10 +15,10 @@
 
 module System.Posix.Temp (
 
-	mkstemp
+	mktemp
+	, mkstemp
 
 {- Not ported (yet?):
-	mktemp: unsafe
 	tmpfile: can we handle FILE*?
 	tmpnam: ISO C, should go in base?
 	tempname: dito
@@ -33,20 +33,34 @@ import System.Posix.IO
 import System.Posix.Types
 import Foreign.C
 
--- |'mkstemp' - make a unique filename.
+-- |'mkstemp' - make a unique filename and open it for
+-- reading/writing (only safe on GHC & Hugs)
 
 mkstemp :: String -> IO (String, Handle)
 mkstemp template = do
+#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
   withCString template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
     name <- peekCString ptr
-#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
     h <- fdToHandle fd
-#else
-    closeFd fd
-    h <- openFile name ReadWriteMode
-#endif
     return (name, h)
+#else
+  name <- mktemp template
+  h <- openFile name ReadWriteMode
+  return (name, h)
+#endif
+
+-- |'mktemp' - make a unique file name
+-- This function should be considered deprecated
+
+mktemp :: String -> IO String
+mktemp template = do
+  withCString template $ \ ptr -> do
+    ptr <- throwErrnoIfNull "mktemp" (c_mktemp ptr)
+    peekCString ptr
 
 foreign import ccall unsafe "mkstemp"
   c_mkstemp :: CString -> IO Fd
+
+foreign import ccall unsafe "mktemp"
+  c_mktemp :: CString -> IO CString
