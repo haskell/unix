@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.6 2003/03/03 01:52:00 stolz Exp $
+ * $Id: HsUnix.h,v 1.7 2003/04/11 09:43:38 ross Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -11,6 +11,9 @@
 #define HSUNIX_H
 
 #include "config.h"
+
+#include <stdlib.h>
+#include <stdio.h>
 
 #ifdef HAVE_SYS_TIMES_H
 #include <sys/times.h>
