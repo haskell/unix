@@ -109,7 +109,8 @@ setEnv :: String -> String -> Bool {-overwrite-} -> IO ()
 setEnv key value ovrwrt = do
   withCString key $ \ keyP ->
     withCString value $ \ valueP ->
-      throwErrnoIfMinus1_ "putenv" $ c_setenv keyP valueP (fromEnum ovrwrt)
+      throwErrnoIfMinus1_ "putenv" $
+	c_setenv keyP valueP (fromIntegral (fromEnum ovrwrt))
 
 foreign import ccall unsafe "setenv"
    c_setenv :: CString -> CString -> CInt -> IO CInt
