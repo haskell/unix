@@ -48,8 +48,11 @@ module System.Posix.Unistd (
 
 #include "HsUnix.h"
 
-import Foreign
-import Foreign.C
+import Foreign.C.Error ( throwErrnoIfMinus1, throwErrnoIfMinus1_ )
+import Foreign.C.String ( peekCString )
+import Foreign.C.Types ( CInt, CUInt, CLong )
+import Foreign.Marshal.Alloc ( allocaBytes )
+import Foreign.Ptr ( Ptr, plusPtr )
 import System.Posix.Types
 import System.Posix.Internals
 

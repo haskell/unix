@@ -37,8 +37,7 @@ module System.Posix.Process (
     createSession,
 
     -- ** Process times
-    ProcessTimes(elapsedTime, systemTime, userTime,
-		 childSystemTime, childUserTime),
+    ProcessTimes(..),
     getProcessTimes,
 
     -- ** Scheduling priority
@@ -61,8 +60,14 @@ module System.Posix.Process (
 #include "HsUnix.h"
 
 import GHC.Conc	( forkProcessPrim )
-import Foreign
-import Foreign.C
+import Foreign.C.Error
+import Foreign.C.String ( CString, withCString )
+import Foreign.C.Types ( CInt, CClock )
+import Foreign.Marshal.Alloc ( alloca, allocaBytes )
+import Foreign.Marshal.Array ( withArray0 )
+import Foreign.Marshal.Utils ( withMany )
+import Foreign.Ptr ( Ptr, nullPtr )
+import Foreign.Storable ( Storable(..) )
 import System.IO
 import System.IO.Error
 import System.Exit

@@ -70,8 +70,14 @@ module System.Posix.Terminal (
 
 import Data.Bits
 import Data.Char
-import Foreign
-import Foreign.C
+import Foreign.C.Error ( throwErrnoIfMinus1, throwErrnoIfMinus1_, throwErrnoIfNull )
+import Foreign.C.String ( CString, peekCString )
+import Foreign.C.Types ( CInt )
+import Foreign.ForeignPtr ( ForeignPtr, withForeignPtr, mallocForeignPtrBytes )
+import Foreign.Marshal.Utils ( copyBytes )
+import Foreign.Ptr ( Ptr, nullPtr, plusPtr )
+import Foreign.Storable ( Storable(..) )
+import System.IO.Unsafe ( unsafePerformIO )
 import System.Posix.Types
 
 -- -----------------------------------------------------------------------------
