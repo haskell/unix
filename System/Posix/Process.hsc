@@ -292,7 +292,7 @@ data ProcessStatus = Exited ExitCode
 getProcessStatus :: Bool -> Bool -> ProcessID -> IO (Maybe ProcessStatus)
 getProcessStatus block stopped pid =
   alloca $ \wstatp -> do
-    pid <- throwErrnoIfMinus1 "getProcessStatus"
+    pid <- throwErrnoIfMinus1Retry "getProcessStatus"
 		(c_waitpid pid wstatp (waitOptions block stopped))
     case pid of
       0  -> return Nothing
@@ -308,7 +308,7 @@ getGroupProcessStatus :: Bool
                       -> IO (Maybe (ProcessID, ProcessStatus))
 getGroupProcessStatus block stopped pgid =
   alloca $ \wstatp -> do
-    pid <- throwErrnoIfMinus1 "getGroupProcessStatus"
+    pid <- throwErrnoIfMinus1Retry "getGroupProcessStatus"
 		(c_waitpid (-pgid) wstatp (waitOptions block stopped))
     case pid of
       0  -> return Nothing
