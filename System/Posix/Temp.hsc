@@ -35,17 +35,18 @@ import Foreign.C
 
 -- |'mkstemp' - make a unique filename.
 
-mkstemp :: String -> IO Handle
+mkstemp :: String -> IO (String, Handle)
 mkstemp template = do
   withCString template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
+    name <- peekCString ptr
 #ifdef __GLASGOW_HASKELL__
-    fdToHandle fd
+    h <- fdToHandle fd
 #else
     closeFd fd
-    name <- peekCString ptr
-    openFile name ReadWriteMode
+    h <- openFile name ReadWriteMode
 #endif
+    return (name, h)
 
 foreign import ccall unsafe "mkstemp"
   c_mkstemp :: CString -> IO Fd
