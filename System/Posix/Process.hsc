@@ -14,32 +14,34 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Process (
-    -- * Forking and executing
+    -- * Processes
+
+    -- ** Forking and executing
     forkProcess, forkProcessAll,
     executeFile,
     
-    -- * Exiting
+    -- ** Exiting
     exitImmediately,
 
-    -- * Process environment
+    -- ** Process environment
     getProcessID,
     getParentProcessID,
     getProcessGroupID,
 
-    -- * Process groups
+    -- ** Process groups
     createProcessGroup,
     joinProcessGroup,
     setProcessGroupID,
 
-    -- * Sessions
+    -- ** Sessions
     createSession,
 
-    -- * Process times
+    -- ** Process times
     ProcessTimes(elapsedTime, systemTime, userTime,
 		 childSystemTime, childUserTime),
     getProcessTimes,
 
-    -- * Scheduling priority
+    -- ** Scheduling priority
     nice,
     getProcessPriority,
     getProcessGroupPriority,
@@ -48,7 +50,7 @@ module System.Posix.Process (
     setProcessGroupPriority,
     setUserPriority,
 
-    -- * Process status
+    -- ** Process status
     ProcessStatus(..),
     getProcessStatus,
     getAnyProcessStatus,
