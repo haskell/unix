@@ -91,7 +91,7 @@ foreign import ccall unsafe "sendfile"
   c_sendfile :: Fd -> Fd -> COff -> CSize -> Ptr a -> Ptr COff -> CInt -> IO CInt
 
 # else /* BSD */
-  squirt
+  squirt inFd outFd startpos count
 # endif /* no native */
 #endif
 
