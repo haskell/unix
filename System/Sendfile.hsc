@@ -34,10 +34,10 @@ import System.Posix.Types	(Fd, COff)
 -- should be avoided. On Linux, nothing is transmitted while on FreeBSD
 -- the entire file will be sent.
 
-sendfile :: Handle	-- Input
-         -> Handle	-- Output
-         -> Integer	-- Offset
-         -> Integer	-- Nr. of bytes to transmit
+sendfile :: Handle	-- ^ Input
+         -> Handle	-- ^ Output
+         -> Integer	-- ^ Offset
+         -> Integer	-- ^ Nr. of bytes to transmit
          -> IO ()
 sendfile inH outH startpos count = do
 
@@ -70,11 +70,10 @@ foreign import ccall unsafe "sendfile"
     if rc == -1
      then do
        err <- getErrno
-       case err of
-         eAGAIN -> do
-           offset <- peek offsetptr -- now contains # of bytes written
-           sendfileLoop inFd outFd (start+offset)  (c-(fromIntegral offset)) offsetptr
-         otherwise -> throwErrno "sendfile"
+       if err == eAGAIN 
+          then do offset <- peek offsetptr -- now contains # of bytes written
+                  sendfileLoop inFd outFd (start+offset)  (c-(fromIntegral offset)) offsetptr
+          else throwErrno "sendfile"
      else 
        return rc
 
