@@ -76,11 +76,7 @@
 #include <dirent.h>
 #endif
 
-#ifdef HAVE_FRAMEWORK_HASKELLSUPPORT
-#include <HaskellSupport/dlfcn.h>
-#else
 #include <dlfcn.h>
-#endif
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
