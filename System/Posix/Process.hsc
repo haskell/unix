@@ -73,6 +73,7 @@ import Foreign.Storable ( Storable(..) )
 import System.IO
 import System.IO.Error
 import System.Exit
+import System.Posix.Error
 import System.Posix.Types
 import System.Posix.Signals
 import Control.Monad
@@ -244,8 +245,8 @@ executeFile path search args Nothing = do
       withArray0 nullPtr cstrs $ \arr -> do
 	pPrPr_disableITimers
 	if search 
-	   then throwErrnoIfMinus1_ "executeFile" (c_execvp s arr)
-	   else throwErrnoIfMinus1_ "executeFile" (c_execv s arr)
+	   then throwErrnoPathIfMinus1_ "executeFile" path (c_execvp s arr)
+	   else throwErrnoPathIfMinus1_ "executeFile" path (c_execv s arr)
 
 executeFile path search args (Just env) = do
   withCString path $ \s ->
@@ -256,8 +257,10 @@ executeFile path search args (Just env) = do
       withArray0 nullPtr cenv $ \env_arr -> do
 	pPrPr_disableITimers
 	if search 
-	   then throwErrnoIfMinus1_ "executeFile" (c_execvpe s arg_arr env_arr)
-	   else throwErrnoIfMinus1_ "executeFile" (c_execve s arg_arr env_arr)
+	   then throwErrnoPathIfMinus1_ "executeFile" path
+		   (c_execvpe s arg_arr env_arr)
+	   else throwErrnoPathIfMinus1_ "executeFile" path
+		   (c_execve s arg_arr env_arr)
 
 -- this function disables the itimer, which would otherwise cause confusing
 -- signals to be sent to the new process.

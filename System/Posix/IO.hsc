@@ -60,6 +60,7 @@ module System.Posix.IO (
 import System.IO
 import System.IO.Error
 import System.Posix.Types
+import System.Posix.Error
 import System.Posix.Internals
 
 import Foreign
@@ -142,7 +143,7 @@ openFd :: FilePath
 openFd name how maybe_mode (OpenFileFlags append exclusive noctty
 				nonBlock truncate) = do
    withCString name $ \s -> do
-    fd <- throwErrnoIfMinus1 "openFd" (c_open s all_flags mode_w)
+    fd <- throwErrnoPathIfMinus1 "openFd" name (c_open s all_flags mode_w)
     return (Fd fd)
   where
     all_flags  = creat .|. flags .|. open_mode

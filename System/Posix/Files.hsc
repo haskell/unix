@@ -72,6 +72,7 @@ module System.Posix.Files (
 
 #include "HsUnix.h"
 
+import System.Posix.Error
 import System.Posix.Types
 import System.IO.Unsafe
 import Data.Bits
@@ -172,7 +173,7 @@ socketMode = (#const S_IFSOCK)
 setFileMode :: FilePath -> FileMode -> IO ()
 setFileMode name m =
   withCString name $ \s -> do
-    throwErrnoIfMinus1_ "setFileMode" (c_chmod s m)
+    throwErrnoPathIfMinus1_ "setFileMode" name (c_chmod s m)
 
 setFdMode :: Fd -> FileMode -> IO ()
 setFdMode fd m =
@@ -204,7 +205,7 @@ fileExist name =
 	else do err <- getErrno
 	        if (err == eNOENT)
 		   then return False
-		   else throwErrno "fileExist"
+		   else throwErrnoPath "fileExist" name
 
 access :: FilePath -> CMode -> IO Bool
 access name flags = 
@@ -215,7 +216,7 @@ access name flags =
 	else do err <- getErrno
 	        if (err == eACCES)
 		   then return False
-		   else throwErrno "fileAccess"
+		   else throwErrnoPath "fileAccess" name
 
 -- -----------------------------------------------------------------------------
 -- stat() support
@@ -285,7 +286,7 @@ getFileStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
   withForeignPtr fp $ \p ->
     withCString path $ \s -> 
-      throwErrnoIfMinus1_ "getFileStatus" (c_stat s p)
+      throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
 getFdStatus :: Fd -> IO FileStatus
@@ -300,7 +301,7 @@ getSymbolicLinkStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
   withForeignPtr fp $ \p ->
     withCString path $ \s -> 
-      throwErrnoIfMinus1_ "getSymbolicLinkStatus" (c_lstat s p)
+      throwErrnoPathIfMinus1_ "getSymbolicLinkStatus" path (c_lstat s p)
   return (FileStatus fp)
 
 foreign import ccall unsafe "lstat" 
@@ -309,12 +310,12 @@ foreign import ccall unsafe "lstat"
 createNamedPipe :: FilePath -> FileMode -> IO ()
 createNamedPipe name mode = do
   withCString name $ \s -> 
-    throwErrnoIfMinus1_ "createNamedPipe" (c_mkfifo s mode)
+    throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
 
 createDevice :: FilePath -> FileMode -> DeviceID -> IO ()
 createDevice path mode dev =
   withCString path $ \s ->
-    throwErrnoIfMinus1_ "createDevice" (c_mknod s mode dev)
+    throwErrnoPathIfMinus1_ "createDevice" path (c_mknod s mode dev)
 
 foreign import ccall unsafe "mknod" 
   c_mknod :: CString -> CMode -> CDev -> IO CInt
@@ -326,12 +327,12 @@ createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
   withCString name1 $ \s1 ->
   withCString name2 $ \s2 ->
-  throwErrnoIfMinus1_ "createLink" (c_link s1 s2)
+  throwErrnoPathIfMinus1_ "createLink" name1 (c_link s1 s2)
 
 removeLink :: FilePath -> IO ()
 removeLink name =
   withCString name $ \s ->
-  throwErrnoIfMinus1_ "removeLink" (c_unlink s)
+  throwErrnoPathIfMinus1_ "removeLink" name (c_unlink s)
 
 -- -----------------------------------------------------------------------------
 -- Symbolic Links
@@ -340,7 +341,7 @@ createSymbolicLink :: FilePath -> FilePath -> IO ()
 createSymbolicLink file1 file2 =
   withCString file1 $ \s1 ->
   withCString file2 $ \s2 ->
-  throwErrnoIfMinus1_ "createSymbolicLink" (c_symlink s1 s2)
+  throwErrnoPathIfMinus1_ "createSymbolicLink" file1 (c_symlink s1 s2)
 
 foreign import ccall unsafe "symlink"
   c_symlink :: CString -> CString -> IO CInt
@@ -352,7 +353,7 @@ readSymbolicLink :: FilePath -> IO FilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
     withCString file $ \s -> do
-      len <- throwErrnoIfMinus1 "readSymbolicLink" $ 
+      len <- throwErrnoPathIfMinus1 "readSymbolicLink" file $ 
 	c_readlink s buf (#const PATH_MAX)
       peekCStringLen (buf,fromIntegral len)
 
@@ -366,7 +367,7 @@ rename :: FilePath -> FilePath -> IO ()
 rename name1 name2 =
   withCString name1 $ \s1 ->
   withCString name2 $ \s2 ->
-  throwErrnoIfMinus1_ "rename" (c_rename s1 s2)
+  throwErrnoPathIfMinus1_ "rename" name1 (c_rename s1 s2)
 
 -- -----------------------------------------------------------------------------
 -- chmod()
@@ -374,7 +375,7 @@ rename name1 name2 =
 setOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setOwnerAndGroup name uid gid = do
   withCString name $ \s ->
-    throwErrnoIfMinus1_ "setOwnerAndGroup" (c_chown s uid gid)
+    throwErrnoPathIfMinus1_ "setOwnerAndGroup" name (c_chown s uid gid)
 
 foreign import ccall unsafe "chown"
   c_chown :: CString -> CUid -> CGid -> IO CInt
@@ -390,7 +391,8 @@ foreign import ccall unsafe "fchown"
 setSymbolicLinkOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
   withCString name $ \s ->
-    throwErrnoIfMinus1_ "setSymbolicLinkOwnerAndGroup" (c_lchown s uid gid)
+    throwErrnoPathIfMinus1_ "setSymbolicLinkOwnerAndGroup" name
+	(c_lchown s uid gid)
 
 foreign import ccall unsafe "lchown"
   c_lchown :: CString -> CUid -> CGid -> IO CInt
@@ -405,12 +407,12 @@ setFileTimes name atime mtime = do
    allocaBytes (#const sizeof(struct utimbuf)) $ \p -> do
      (#poke struct utimbuf, actime)  p atime
      (#poke struct utimbuf, modtime) p mtime
-     throwErrnoIfMinus1_ "setFileTimes" (c_utime s p)
+     throwErrnoPathIfMinus1_ "setFileTimes" name (c_utime s p)
 
 touchFile :: FilePath -> IO ()
 touchFile name = do
   withCString name $ \s ->
-   throwErrnoIfMinus1_ "touchFile" (c_utime s nullPtr)
+   throwErrnoPathIfMinus1_ "touchFile" name (c_utime s nullPtr)
 
 -- -----------------------------------------------------------------------------
 -- Setting file sizes
@@ -418,7 +420,7 @@ touchFile name = do
 setFileSize :: FilePath -> FileOffset -> IO ()
 setFileSize file off = 
   withCString file $ \s ->
-    throwErrnoIfMinus1_ "setFileSize" (c_truncate s off)
+    throwErrnoPathIfMinus1_ "setFileSize" file (c_truncate s off)
 
 foreign import ccall unsafe "truncate"
   c_truncate :: CString -> COff -> IO CInt
@@ -500,7 +502,7 @@ pathVarConst v = case v of
 getPathVar :: FilePath -> PathVar -> IO Limit
 getPathVar name v = do
   withCString name $ \ nameP -> 
-    throwErrnoIfMinus1 "getPathVar" $ 
+    throwErrnoPathIfMinus1 "getPathVar" name $ 
       c_pathconf nameP (pathVarConst v)
 
 foreign import ccall unsafe "pathconf" 

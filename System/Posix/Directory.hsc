@@ -33,6 +33,7 @@ module System.Posix.Directory (
    changeWorkingDirectoryFd,
   ) where
 
+import System.Posix.Error
 import System.Posix.Types
 import System.Posix.Internals
 import System.Directory hiding (createDirectory)
@@ -42,7 +43,7 @@ import Foreign.C
 createDirectory :: FilePath -> FileMode -> IO ()
 createDirectory name mode =
   withCString name $ \s -> 
-    throwErrnoIfMinus1_ "createDirectory" (c_mkdir s mode)  
+    throwErrnoPathIfMinus1_ "createDirectory" name (c_mkdir s mode)  
 
 foreign import ccall unsafe "mkdir"
   c_mkdir :: CString -> CMode -> IO CInt
@@ -52,7 +53,7 @@ newtype DirStream = DirStream (Ptr CDir)
 openDirStream :: FilePath -> IO DirStream
 openDirStream name =
   withCString name $ \s -> do
-    dirp <- throwErrnoIfNull "openDirStream" $ c_opendir s
+    dirp <- throwErrnoPathIfNull "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
 readDirStream :: DirStream -> IO FilePath
