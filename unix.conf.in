@@ -16,7 +16,14 @@ Package {
 			    "$libdir/libraries/unix/cbits" ],
 #endif
 	hs_libraries	= [ "HSunix" ],
-	extra_libraries	= [ "HSunix_cbits" ],
+	extra_libraries	= [ "HSunix_cbits"
+#ifndef HAVE_FRAMEWORK_HASKELLSUPPORT
+#ifdef HAVE_LIBDL
+			  , "dl"
+#endif
+#endif
+			  ],
+
 #ifdef INSTALLING
         include_dirs	= [],
 #else
