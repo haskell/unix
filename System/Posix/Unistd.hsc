@@ -48,7 +48,7 @@ module System.Posix.Unistd (
 
 #include "HsUnix.h"
 
-import Foreign.C.Error ( throwErrnoIfMinus1, throwErrnoIfMinus1_ )
+import Foreign.C.Error
 import Foreign.C.String ( peekCString )
 import Foreign.C.Types ( CInt, CUInt, CLong )
 import Foreign.Marshal.Alloc ( allocaBytes )
@@ -89,26 +89,39 @@ foreign import ccall unsafe "uname"
 -- -----------------------------------------------------------------------------
 -- sleeping
 
+-- | Sleep for the specified duration (in seconds).  Returns the time remaining
+-- (if the sleep was interrupted by a signal, for example).
+--
+-- GHC Note: the comment for 'usleep' also applies here.
+--
 sleep :: Int -> IO Int
 sleep 0 = return 0
 sleep secs = do r <- c_sleep (fromIntegral secs); return (fromIntegral r)
 
-foreign import ccall unsafe "sleep"
+foreign import ccall safe "sleep"
   c_sleep :: CUInt -> IO CUInt
 
+-- | Sleep for the specified duration (in microseconds).
+--
+-- GHC Note: 'Control.Concurrent.threadDelay' is a better choice.
+-- Without the @-threaded@ option, 'usleep' will block all other user
+-- threads.  Even with the @-threaded@ option, 'usleep' requires a
+-- full OS thread to itself.  'Control.Concurrent.threadDelay' has
+-- neither of these shortcomings.
+--
 usleep :: Int -> IO ()
 usleep 0 = return ()
 #ifdef USLEEP_RETURNS_VOID
 usleep usecs = c_usleep (fromIntegral usecs)
 #else
-usleep usecs = throwErrnoIfMinus1_ "usleep" (c_usleep (fromIntegral usecs))
+usleep usecs = throwErrnoIfMinus1Retry_ "usleep" (c_usleep (fromIntegral usecs))
 #endif
 
 #ifdef USLEEP_RETURNS_VOID
-foreign import ccall unsafe "usleep"
+foreign import ccall safe "usleep"
   c_usleep :: CUInt -> IO ()
 #else
-foreign import ccall unsafe "usleep"
+foreign import ccall safe "usleep"
   c_usleep :: CUInt -> IO CInt
 #endif
 
