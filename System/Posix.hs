@@ -24,6 +24,7 @@ module System.Posix (
   module System.Posix.Terminal,
   module System.Posix.Time,
   module System.Posix.User,
+  module System.Posix.Resource
  ) where
 
 import System.Posix.Types
@@ -37,6 +38,7 @@ import System.Posix.Env
 import System.Posix.Terminal
 import System.Posix.Time
 import System.Posix.User
+import System.Posix.Resource
 
 {- TODO
 
@@ -83,6 +85,7 @@ utime.h		System.Posix.Files
 pwd.h		System.Posix.User
 grp.h		System.Posix.User
 stdlib.h: 	System.Posix.Env (getenv()/setenv()/unsetenv())
+sys/resource.h: System.Posix.Resource (get/setrlimit() only)
 
 network package:
 
@@ -98,7 +101,7 @@ To be supported
 
 limits.h
 poll.h
-sys/resource.h
+sys/resource.h  (getrusage(): use instead of times() for getProcessTimes?)
 sys/select.h
 sys/statvfs.h	 (?)
 sys/time.h	(but maybe not the itimer?)
