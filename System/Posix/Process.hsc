@@ -60,8 +60,16 @@ module System.Posix.Process (
 --    getEnvironment,
  ) where
 
+#include "config.h"
 #include "HsUnix.h"
+
+#ifdef HAVE_SYS_TIMES_H
 #include <sys/times.h>
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
 
 import Foreign
 import Foreign.C
