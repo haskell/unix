@@ -29,52 +29,45 @@ module System.Posix.Unistd (
     setUserID,
     setGroupID,
 
-    -- * Process environment
-    -- ** Querying the process environment
-    getProcessID,
-    getParentProcessID,
-    getProcessGroupID,
-
-    -- ** Process groups
-    createProcessGroup,
-    joinProcessGroup,
-    setProcessGroupID,
-
-    -- ** Sessions
-    createSession,
-
-    -- ** Process times
-    ProcessTimes(elapsedTime, systemTime, userTime,
-		 childSystemTime, childUserTime),
-    getProcessTimes,
-	
     -- * System environment
     SystemID(..),
     getSystemID,
 
-  {-
-    ToDo from unistd.h:
-      confstr
-      dup, dup2, exec*, exit,  fork, fpathconf, fsync, ftruncate,
-      gethostid, gethostname, getlogin, getopt, isatty, lockf,
-      lseek, nice, pathconf, pipe, pread, pwrite, read, readlink,
-      sleep, symlink, sysconf, tcgetpgrp, tcsetpgrp, truncate,
-      ttyname(_r), ualarm, usleep, vfork, write
-
     SysVar(..),
     getSysVar,
 
+    -- * Sleeping
+    sleep, usleep,
+
+  {-
+    ToDo from unistd.h:
+      confstr, 
+      lots of sysconf variables
+
+    -- use Network.BSD
+    gethostid, gethostname
+
     -- should be in System.Posix.Files?
+    pathconf, fpathconf,
     queryTerminal,
     getTerminalName,
 #if !defined(cygwin32_TARGET_OS)
     getControllingTerminalName,
 #endif
 
+    -- System.Posix.Signals
+    ualarm,
+
+    -- System.Posix.Terminal
+    isatty, tcgetpgrp, tcsetpgrp, ttyname(_r),
+
+    -- System.Posix.IO
+    read, write,
+
     -- should be in System.Posix.Time?
     epochTime,
 
-    -- should be in System.Posix.Pwd?
+    -- should be in System.Posix.User?
     getEffectiveUserName,
 -}
   ) where
@@ -85,7 +78,6 @@ import System.Posix.Types
 import GHC.Posix
 
 #include <unistd.h>
-#include <sys/times.h>
 #include <sys/utsname.h>
 
 -- -----------------------------------------------------------------------------
@@ -152,77 +144,6 @@ foreign import ccall unsafe "setgid"
   c_setgid :: CGid -> IO CInt
 
 -- -----------------------------------------------------------------------------
--- Process environment
-
-getProcessID :: IO ProcessID
-getProcessID = c_getpid
-
-getParentProcessID :: IO ProcessID
-getParentProcessID = c_getppid
-
-foreign import ccall unsafe "getppid"
-  c_getppid :: IO CPid
-
-getProcessGroupID :: IO ProcessGroupID
-getProcessGroupID = c_getpgrp
-
-foreign import ccall unsafe "getpgrp"
-  c_getpgrp :: IO CPid
-
-createProcessGroup :: ProcessID -> IO ProcessGroupID
-createProcessGroup pid = do
-  throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid pid 0)
-  return pid
-
-joinProcessGroup :: ProcessGroupID -> IO ()
-joinProcessGroup pgid =
-  throwErrnoIfMinus1_ "joinProcessGroup" (c_setpgid 0 pgid)
-
-setProcessGroupID :: ProcessID -> ProcessGroupID -> IO ()
-setProcessGroupID pid pgid =
-  throwErrnoIfMinus1_ "setProcessGroupID" (c_setpgid pid pgid)
-
-foreign import ccall unsafe "setpgid"
-  c_setpgid :: CPid -> CPid -> IO CInt
-
-createSession :: IO ProcessGroupID
-createSession = throwErrnoIfMinus1 "createSession" c_setsid
-
-foreign import ccall unsafe "setsid"
-  c_setsid :: IO CPid
-
--- -----------------------------------------------------------------------------
--- Process times
-
--- All times in clock ticks (see getClockTick)
-
-data ProcessTimes
-  = ProcessTimes { elapsedTime     :: ClockTick
-  		 , userTime        :: ClockTick
-		 , systemTime      :: ClockTick
-		 , childUserTime   :: ClockTick
-		 , childSystemTime :: ClockTick
-		 }
-
-getProcessTimes :: IO ProcessTimes
-getProcessTimes = do
-   allocaBytes (#const sizeof(struct tms)) $ \p_tms -> do
-     elapsed <- throwErrnoIfMinus1 "getProcessTimes" (c_times p_tms)
-     ut  <- (#peek struct tms, tms_utime)  p_tms
-     st  <- (#peek struct tms, tms_stime)  p_tms
-     cut <- (#peek struct tms, tms_cutime) p_tms
-     cst <- (#peek struct tms, tms_cstime) p_tms
-     return (ProcessTimes{ elapsedTime     = elapsed,
-	 		   userTime        = ut,
-	 		   systemTime      = st,
-	 		   childUserTime   = cut,
-	 		   childSystemTime = cst
-			  })
-
-foreign import ccall unsafe "times"
-  c_times :: Ptr CTms -> IO CClock
-
--- -----------------------------------------------------------------------------
 -- System environment (uname())
 
 data SystemID =
@@ -249,7 +170,26 @@ getSystemID = do
 		       machine    = mach
 		     })
 
-{-	
+-- -----------------------------------------------------------------------------
+-- sleeping
+
+sleep :: Int -> IO Int
+sleep 0 = return 0
+sleep secs = do r <- c_sleep (fromIntegral secs); return (fromIntegral r)
+
+foreign import ccall unsafe "sleep"
+  c_sleep :: CUInt -> IO CUInt
+
+usleep :: Int -> IO ()
+usleep 0 = return ()
+usleep usecs = throwErrnoIfMinus1_ "usleep" (c_usleep (fromIntegral usecs))
+
+foreign import ccall unsafe "usleep"
+  c_usleep :: CUInt -> IO CInt
+
+-- -----------------------------------------------------------------------------
+-- System variables
+
 data SysVar = ArgumentLimit
             | ChildLimit
             | ClockTick
@@ -258,27 +198,24 @@ data SysVar = ArgumentLimit
             | PosixVersion
             | HasSavedIDs
             | HasJobControl
+	-- ToDo: lots more
 
-getSysVar :: SysVar -> IO Limit
+getSysVar :: SysVar -> IO Integer
 getSysVar v =
     case v of
-      ArgumentLimit -> sysconf ``_SC_ARG_MAX''
-      ChildLimit    -> sysconf ``_SC_CHILD_MAX''
-      ClockTick	    -> sysconf ``_SC_CLK_TCK''
-      GroupLimit    -> sysconf ``_SC_NGROUPS_MAX''
-      OpenFileLimit -> sysconf ``_SC_OPEN_MAX''
-      PosixVersion  -> sysconf ``_SC_VERSION''
-      HasSavedIDs   -> sysconf ``_SC_SAVED_IDS''
-      HasJobControl -> sysconf ``_SC_JOB_CONTROL''
---  where
+      ArgumentLimit -> sysconf (#const _SC_ARG_MAX)
+      ChildLimit    -> sysconf (#const _SC_CHILD_MAX)
+      ClockTick	    -> sysconf (#const _SC_CLK_TCK)
+      GroupLimit    -> sysconf (#const _SC_NGROUPS_MAX)
+      OpenFileLimit -> sysconf (#const _SC_OPEN_MAX)
+      PosixVersion  -> sysconf (#const _SC_VERSION)
+      HasSavedIDs   -> sysconf (#const _SC_SAVED_IDS)
+      HasJobControl -> sysconf (#const _SC_JOB_CONTROL)
 
-sysconf :: Int -> IO Limit
-sysconf n = do
- rc <- _ccall_ sysconf n
- if rc /= (-1::Int)
-    then return rc
-    else ioException (IOError Nothing NoSuchThing
-		          "getSysVar" 
-		          "no such system limit or option"
-			  Nothing)
--}
+sysconf :: CInt -> IO Integer
+sysconf n = do 
+  r <- throwErrnoIfMinus1 "getSysVar" (c_sysconf n)
+  return (fromIntegral r)
+
+foreign import ccall unsafe "sysconf"
+  c_sysconf :: CInt -> IO CLong

@@ -18,9 +18,9 @@ module System.Posix (
   module System.Posix.Directory,
   module System.Posix.Files,
   module System.Posix.Unistd,
-  -- module System.Posix.IO,
+  module System.Posix.IO,
+  module System.Posix.Process,
   -- module System.Posix.Time,
-  -- module System.Posix.Proc,
  ) where
 
 import System.Posix.Types
@@ -28,3 +28,6 @@ import System.Posix.Signals
 import System.Posix.Directory
 import System.Posix.Files
 import System.Posix.Unistd
+import System.Posix.Process
+import System.Posix.IO
+

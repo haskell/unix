@@ -48,6 +48,9 @@ module System.Posix.Files (
     -- * Hard links
     createLink, removeLink,
 
+    -- * Symbolic links
+    createSymbolicLink, readSymbolicLink,
+
     -- * Renaming files
     rename,
 
@@ -57,14 +60,8 @@ module System.Posix.Files (
     -- * Changing file timestamps
     setFileTimes, touchFile,
 
-    -- * Standard file descriptors
-    stdInput, stdOutput, stdError,
-
-    -- * Opening and closing files
-    OpenMode(..),
-    OpenFileFlags(..), defaultFileFlags,
-    openFd, createFile,
-    closeFd,
+    -- * Setting file sizes
+    setFileSize, setFdSize,
 
 {-
     -- run-time limit & POSIX feature testing
@@ -86,6 +83,7 @@ import Foreign.C
 #include <unistd.h>
 #include <utime.h>
 #include <fcntl.h>
+#include <limits.h>
 
 -- -----------------------------------------------------------------------------
 -- POSIX file modes
@@ -334,6 +332,32 @@ removeLink name =
   throwErrnoIfMinus1_ "removeLink" (c_unlink s)
 
 -- -----------------------------------------------------------------------------
+-- Symbolic Links
+
+createSymbolicLink :: FilePath -> FilePath -> IO ()
+createSymbolicLink file1 file2 =
+  withCString file1 $ \s1 ->
+  withCString file2 $ \s2 ->
+  throwErrnoIfMinus1_ "createSymbolicLink" (c_symlink s1 s2)
+
+foreign import ccall unsafe "symlink"
+  c_symlink :: CString -> CString -> IO CInt
+
+-- ToDo: should really use SYMLINK_MAX, but not everyone supports it yet,
+-- and it seems that the intention is that SYMLINK_MAX is no larger than
+-- PATH_MAX.
+readSymbolicLink :: FilePath -> IO FilePath
+readSymbolicLink file =
+  allocaArray0 (#const PATH_MAX) $ \buf -> do
+    withCString file $ \s ->
+      throwErrnoIfMinus1_ "readSymbolicLink" $
+	c_readlink s buf (#const PATH_MAX)
+    peekCString buf
+
+foreign import ccall unsafe "readlink"
+  c_readlink :: CString -> CString -> CInt -> IO CInt
+
+-- -----------------------------------------------------------------------------
 -- Renaming files
 
 rename :: FilePath -> FilePath -> IO ()
@@ -385,67 +409,20 @@ touchFile name = do
    throwErrnoIfMinus1_ "touchFile" (c_utime s nullPtr)
 
 -- -----------------------------------------------------------------------------
--- opening files
+-- Setting file sizes
 
-stdInput, stdOutput, stdError :: Fd
-stdInput   = Fd (#const STDIN_FILENO)
-stdOutput  = Fd (#const STDOUT_FILENO)
-stdError   = Fd (#const STDERR_FILENO)
+setFileSize :: FilePath -> FileOffset -> IO ()
+setFileSize file off = 
+  withCString file $ \s ->
+    throwErrnoIfMinus1_ "setFileSize" (c_truncate s off)
 
-data OpenMode = ReadOnly | WriteOnly | ReadWrite
+foreign import ccall unsafe "truncate"
+  c_truncate :: CString -> COff -> IO CInt
 
-data OpenFileFlags =
- OpenFileFlags {
-    append    :: Bool,
-    exclusive :: Bool,
-    noctty    :: Bool,
-    nonBlock  :: Bool,
-    trunc     :: Bool
- }
+setFdSize :: Fd -> FileOffset -> IO ()
+setFdSize fd off =
+  throwErrnoIfMinus1_ "setFdSize" (c_ftruncate fd off)
 
-defaultFileFlags :: OpenFileFlags
-defaultFileFlags =
- OpenFileFlags {
-    append    = False,
-    exclusive = False,
-    noctty    = False,
-    nonBlock  = False,
-    trunc     = False
-  }
+foreign import ccall unsafe "ftruncate"
+  c_ftruncate :: Fd -> COff -> IO CInt
 
-openFd :: FilePath
-       -> OpenMode
-       -> Maybe FileMode -- Just x => O_CREAT, Nothing => must exist
-       -> OpenFileFlags
-       -> IO Fd
-openFd name how maybe_mode (OpenFileFlags append exclusive noctty
-				nonBlock truncate) = do
-   withCString name $ \s -> do
-    fd <- throwErrnoIfMinus1 "openFd" (c_open s all_flags mode_w)
-    return (Fd fd)
-  where
-    all_flags  = creat .|. flags .|. open_mode
-
-    flags =
-       (if append    then (#const O_APPEND)   else 0) .|.
-       (if exclusive then (#const O_EXCL)     else 0) .|.
-       (if noctty    then (#const O_NOCTTY)   else 0) .|.
-       (if nonBlock  then (#const O_NONBLOCK) else 0) .|.
-       (if truncate  then (#const O_TRUNC)    else 0)
-
-    (creat, mode_w) = case maybe_mode of 
-			Nothing -> (0,0)
-			Just x  -> ((#const O_CREAT), x)
-
-    open_mode = case how of
-		   ReadOnly  -> (#const O_RDONLY)
-		   WriteOnly -> (#const O_WRONLY)
-		   ReadWrite -> (#const O_RDWR)
-
-
-createFile :: FilePath -> FileMode -> IO Fd
-createFile name mode
-  = openFd name WriteOnly (Just mode) defaultFileFlags{ trunc=True } 
-
-closeFd :: Fd -> IO ()
-closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
