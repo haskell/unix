@@ -1,5 +1,4 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.16 2004/09/15 15:55:46 stolz Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -11,7 +10,22 @@
 #define HSUNIX_H
 
 #include "ghcconfig.h"
+
+/* ultra-evil... */
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+
 #include "HsUnixConfig.h"
+
+/* ultra-evil... */
+#undef PACKAGE_BUGREPORT
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
 
 #include <stdlib.h>
 #include <stdio.h>
