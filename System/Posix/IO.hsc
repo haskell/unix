@@ -328,22 +328,12 @@ fdRead (Fd fd) nbytes = do
     allocaBytes (fromIntegral nbytes) $ \ bytes -> do
     rc    <-  throwErrnoIfMinus1Retry "fdRead" (c_read fd bytes nbytes)
     case fromIntegral rc of
-      0  -> ioError (IOError Nothing EOF "fdRead" "EOF" Nothing)
-      n | n == nbytes -> do
-            s <- peekCStringLen (bytes, fromIntegral n)
-	    return (s, n)
-        | otherwise -> do
-	    -- Let go of the excessively long ByteArray# by copying to a
-	    -- shorter one.  Maybe we need a new primitive, shrinkCharArray#?
-            allocaBytes (fromIntegral n) $ \ bytes' -> do
-            c_memcpy bytes' bytes n
-            s <- peekCStringLen (bytes', fromIntegral n)
-	    return (s, n)
+      0 -> ioError (IOError Nothing EOF "fdRead" "EOF" Nothing)
+      n -> do
+       s <- peekCStringLen (bytes, fromIntegral n)
+       return (s, n)
 
 fdWrite :: Fd -> String -> IO ByteCount
 fdWrite (Fd fd) str = withCStringLen str $ \ (strPtr,len) -> do
     rc <- throwErrnoIfMinus1Retry "fdWrite" (c_write fd strPtr (fromIntegral len))
     return (fromIntegral rc)
-
-foreign import ccall unsafe "memcpy"
-  c_memcpy :: Ptr dst -> Ptr src -> CSize -> IO (Ptr dst)
