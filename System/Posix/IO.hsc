@@ -53,8 +53,9 @@ module System.Posix.IO (
 
 #ifdef __GLASGOW_HASKELL__
     -- ** Converting file descriptors to\/from Handles
-    handleToFd, fdToHandle,  
+    handleToFd,
 #endif
+    fdToHandle,  
 
   ) where
 
@@ -75,6 +76,7 @@ import qualified GHC.Handle
 
 #ifdef __HUGS__
 import Hugs.Prelude (IOException(..), IOErrorType(..))
+import qualified Hugs.IO (openFd)
 #endif
 
 #include "HsUnix.h"
@@ -189,6 +191,13 @@ handleToFd h = withHandle "handleToFd" h $ \ h_ -> do
 
 fdToHandle :: Fd -> IO Handle
 fdToHandle fd = GHC.Handle.fdToHandle (fromIntegral fd)
+#endif
+
+#ifdef __HUGS__
+fdToHandle :: Fd -> IO Handle
+fdToHandle fd = do
+  mode <- fdGetMode (fromIntegral fd)
+  Hugs.IO.openFd (fromIntegral fd) False mode True
 #endif
 
 -- -----------------------------------------------------------------------------
