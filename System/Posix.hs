@@ -21,6 +21,7 @@ module System.Posix (
   module System.Posix.IO,
   module System.Posix.Env,
   module System.Posix.Process,
+  module System.Posix.Temp,
   module System.Posix.Terminal,
   module System.Posix.Time,
   module System.Posix.User,
@@ -35,6 +36,7 @@ import System.Posix.Unistd
 import System.Posix.Process
 import System.Posix.IO
 import System.Posix.Env
+import System.Posix.Temp
 import System.Posix.Terminal
 import System.Posix.Time
 import System.Posix.User
@@ -86,6 +88,7 @@ utime.h		System.Posix.Files
 pwd.h		System.Posix.User
 grp.h		System.Posix.User
 stdlib.h: 	System.Posix.Env (getenv()/setenv()/unsetenv())
+		System.Posix.Temp (mkstemp())
 sys/resource.h: System.Posix.Resource (get/setrlimit() only)
 
 network package:
