@@ -76,10 +76,11 @@ import System.Exit
 import System.Posix.Error
 import System.Posix.Types
 import System.Posix.Signals
+import System.Process.Internals ( pPrPr_disableITimers, c_execvpe )
 import Control.Monad
 
 #ifdef __HUGS__
-{-# CBITS HsUnix.c ../../base/cbits/execvpe.c  #-}
+{-# CBITS HsUnix.c  #-}
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -262,19 +263,11 @@ executeFile path search args (Just env) = do
 	   else throwErrnoPathIfMinus1_ "executeFile" path
 		   (c_execve s arg_arr env_arr)
 
--- this function disables the itimer, which would otherwise cause confusing
--- signals to be sent to the new process.
-foreign import ccall unsafe "pPrPr_disableITimers"
-  pPrPr_disableITimers :: IO ()
-
 foreign import ccall unsafe "execvp"
   c_execvp :: CString -> Ptr CString -> IO CInt
 
 foreign import ccall unsafe "execv"
   c_execv :: CString -> Ptr CString -> IO CInt
-
-foreign import ccall unsafe "execvpe"
-  c_execvpe :: CString -> Ptr CString -> Ptr CString -> IO CInt
 
 foreign import ccall unsafe "execve"
   c_execve :: CString -> Ptr CString -> Ptr CString -> IO CInt
