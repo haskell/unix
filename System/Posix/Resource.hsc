@@ -36,7 +36,9 @@ data Resource
   | ResourceFileSize
   | ResourceOpenFiles
   | ResourceStackSize
+#ifdef RLIMIT_AS
   | ResourceTotalMemory
+#endif
   deriving Eq
 
 data ResourceLimits
@@ -85,18 +87,24 @@ packResource ResourceDataSize      = (#const RLIMIT_DATA)
 packResource ResourceFileSize      = (#const RLIMIT_FSIZE)
 packResource ResourceOpenFiles     = (#const RLIMIT_NOFILE)
 packResource ResourceStackSize     = (#const RLIMIT_STACK)
+#ifdef RLIMIT_AS
 packResource ResourceTotalMemory   = (#const RLIMIT_AS)
+#endif
 
 unpackRLimit :: CRLim -> ResourceLimit
 unpackRLimit (#const RLIM_INFINITY)  = ResourceLimitInfinity
+#ifdef RLIM_SAVED_MAX
 unpackRLimit (#const RLIM_SAVED_MAX) = ResourceLimitUnknown
 unpackRLimit (#const RLIM_SAVED_CUR) = ResourceLimitUnknown
+#endif
 unpackRLimit other = ResourceLimit (fromIntegral other)
 
 packRLimit :: ResourceLimit -> Bool -> CRLim
 packRLimit ResourceLimitInfinity _     = (#const RLIM_INFINITY)
+#ifdef RLIM_SAVED_MAX
 packRLimit ResourceLimitUnknown  True  = (#const RLIM_SAVED_CUR)
 packRLimit ResourceLimitUnknown  False = (#const RLIM_SAVED_MAX)
+#endif
 packRLimit (ResourceLimit other) _     = fromIntegral other
 
 
@@ -125,8 +133,11 @@ showAll =
 
 allResources =
     [ResourceCoreFileSize, ResourceCPUTime, ResourceDataSize,
-	ResourceFileSize, ResourceOpenFiles, ResourceStackSize,
-	ResourceTotalMemory ]
+	ResourceFileSize, ResourceOpenFiles, ResourceStackSize
+#ifdef RLIMIT_AS
+	, ResourceTotalMemory 
+#endif
+	]
 
 showRLims ResourceLimits{hardLimit=h,softLimit=s}
   = "hard: " ++ showRLim h ++ ", soft: " ++ showRLim s
