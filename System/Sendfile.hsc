@@ -2,10 +2,10 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Sendfile
--- Copyright   :  (c) Volker Stolz 2003
+-- Copyright   :  (c) Volker Stolz 2003 <vs@foldr.org>
 -- License     :  BSD-style (see the file libraries/core/LICENSE)
 -- 
--- Maintainer  :  libraries@haskell.org
+-- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  provides fallback
 --
@@ -25,7 +25,6 @@ module System.Sendfile (
 
 ) where
 
-#include "config.h"
 #include "HsUnix.h"
 
 import Foreign
