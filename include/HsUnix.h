@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.8 2003/04/11 10:00:07 ross Exp $
+ * $Id: HsUnix.h,v 1.9 2003/05/08 16:00:20 ross Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -15,6 +15,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 #ifdef HAVE_SYS_TIMES_H
 #include <sys/times.h>
 #endif
@@ -29,6 +32,9 @@
 #endif
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
+#endif
+#ifdef HAVE_TIME_H
+#include <time.h>
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
