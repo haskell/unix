@@ -55,7 +55,10 @@ module System.Posix.Files (
     rename,
 
     -- * Changing file ownership
-    setOwnerAndGroup,  setFdOwnerAndGroup, setSymbolicLinkOwnerAndGroup,
+    setOwnerAndGroup,  setFdOwnerAndGroup,
+#if HAVE_LCHOWN
+    setSymbolicLinkOwnerAndGroup,
+#endif
 
     -- * Changing file timestamps
     setFileTimes, touchFile,
@@ -384,6 +387,7 @@ setFdOwnerAndGroup (Fd fd) uid gid =
 foreign import ccall unsafe "fchown"
   c_fchown :: CInt -> CUid -> CGid -> IO CInt
 
+#if HAVE_LCHOWN
 setSymbolicLinkOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
   withCString name $ \s ->
@@ -391,6 +395,7 @@ setSymbolicLinkOwnerAndGroup name uid gid = do
 
 foreign import ccall unsafe "lchown"
   c_lchown :: CString -> CUid -> CGid -> IO CInt
+#endif
 
 -- -----------------------------------------------------------------------------
 -- utime()

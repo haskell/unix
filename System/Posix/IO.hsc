@@ -72,6 +72,7 @@ import qualified GHC.Handle
 
 #include <unistd.h>
 #include <fcntl.h>
+#include "HsUnix.h"
 
 -- -----------------------------------------------------------------------------
 -- Pipes
