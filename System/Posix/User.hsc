@@ -171,11 +171,14 @@ foreign import ccall unsafe "getgrnam_r"
 getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not supported"
 #endif
 
-#if (defined(HAVE_GETGRGID_R) || defined(HAVE_GETGRNAM_R)) \
-	 && defined(HAVE_SYSCONF)
+#if defined(HAVE_GETGRGID_R) || defined(HAVE_GETGRNAM_R)
 grBufSize :: Int
+#if defined(HAVE_SYSCONF) && defined(HAVE_SC_GETGR_R_SIZE_MAX)
 grBufSize = fromIntegral $ unsafePerformIO $
 		c_sysconf (#const _SC_GETGR_R_SIZE_MAX)
+#else
+grBufSize = 1024	-- just assume some value
+#endif
 #endif
 
 unpackGroupEntry :: Ptr CGroup -> IO GroupEntry
@@ -237,11 +240,14 @@ foreign import ccall unsafe "getpwnam_r"
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
 #endif
 
-#if (defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWNAM_R)) \
-	 && defined(HAVE_SYSCONF)
+#if defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWNAM_R)
 pwBufSize :: Int
+#if  defined(HAVE_SYSCONF) && defined(HAVE_SC_GETPW_R_SIZE_MAX)
 pwBufSize = fromIntegral $ unsafePerformIO $
 		c_sysconf (#const _SC_GETPW_R_SIZE_MAX)
+#else
+pwBufSize = 1024
+#endif
 #endif
 
 #ifdef HAVE_SYSCONF
