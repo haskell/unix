@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.3 2002/12/19 13:52:55 simonmar Exp $
+ * $Id: HsUnix.h,v 1.4 2003/01/17 17:01:14 stolz Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -50,6 +50,15 @@
 #endif
 #ifdef HAVE_GRP_H
 #include <grp.h>
+#endif
+
+#ifdef HAVE_BSD_SENDFILE
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/uio.h>
+#endif
+#ifdef HAVE_LINUX_SENDFILE
+#include <sys/sendfile.h>
 #endif
 
 extern int execvpe(char *name, char **argv, char **envp);
