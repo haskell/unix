@@ -137,6 +137,8 @@ getGroupEntryForID gid = do
       alloca $ \ ppgr -> do
         throwErrorIfNonZero_ "getGroupEntryForID" $
 	     c_getgrgid_r gid pgr pbuf (fromIntegral grBufSize) ppgr
+	throwErrnoIfNull "getGroupEntryForID" $
+	     peekElemOff ppgr 0
 	unpackGroupEntry pgr
 
 
@@ -157,6 +159,8 @@ getGroupEntryForName name = do
 	withCString name $ \ pstr -> do
           throwErrorIfNonZero_ "getGroupEntryForName" $
 	     c_getgrnam_r pstr pgr pbuf (fromIntegral grBufSize) ppgr
+	  throwErrnoIfNull "getGroupEntryForName" $
+	     peekElemOff ppgr 0
 	  unpackGroupEntry pgr
 
 foreign import ccall unsafe "getgrnam_r"
@@ -214,6 +218,8 @@ getUserEntryForID uid = do
       alloca $ \ pppw -> do
         throwErrorIfNonZero_ "getUserEntryForID" $
 	     c_getpwuid_r uid ppw pbuf (fromIntegral pwBufSize) pppw
+	throwErrnoIfNull "getUserEntryForID" $
+	     peekElemOff pppw 0
 	unpackUserEntry ppw
 
 foreign import ccall unsafe "getpwuid_r"
