@@ -111,6 +111,7 @@ sys/statvfs.h	 (?)
 sys/time.h	(but maybe not the itimer?)
 time.h		(System.Posix.Time)
 stdio.h		(popen only: System.Posix.IO)
+sys/mman.h
 
 Unsupported interfaces
 ----------------------
@@ -157,7 +158,6 @@ string.h
 strings.h
 stropts.h
 sys/ipc.h
-sys/mman.h
 sys/msg.h
 sys/sem.h
 sys/shm.h
