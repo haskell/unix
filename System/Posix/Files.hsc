@@ -79,7 +79,7 @@ module System.Posix.Files (
 import System.Posix.Types
 import System.IO.Unsafe
 import Data.Bits
-import GHC.Posix
+import System.Posix.Internals
 import Foreign
 import Foreign.C
 
@@ -425,4 +425,3 @@ setFdSize fd off =
 
 foreign import ccall unsafe "ftruncate"
   c_ftruncate :: Fd -> COff -> IO CInt
-

@@ -47,7 +47,7 @@ module System.Posix.User (
 import System.Posix.Types
 import Foreign
 import Foreign.C
-import GHC.Posix	( CGroup, CPasswd )
+import System.Posix.Internals	( CGroup, CPasswd )
 
 -- -----------------------------------------------------------------------------
 -- user environemnt

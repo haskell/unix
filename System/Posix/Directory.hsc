@@ -34,8 +34,7 @@ module System.Posix.Directory (
   ) where
 
 import System.Posix.Types
-
-import GHC.Posix
+import System.Posix.Internals
 import System.Directory hiding (createDirectory)
 import Foreign
 import Foreign.C

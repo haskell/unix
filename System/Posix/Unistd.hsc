@@ -51,7 +51,7 @@ module System.Posix.Unistd (
 import Foreign
 import Foreign.C
 import System.Posix.Types
-import GHC.Posix
+import System.Posix.Internals
 
 -- -----------------------------------------------------------------------------
 -- System environment (uname())
