@@ -1,6 +1,5 @@
 # List of the modules in this package that aren't to be used with Hugs.
 # Only the first word on each line counts; the rest can be explanation.
 #
-System.Posix.Directory
-System.Posix.Process
+System.Posix.Process	imports System.Posix.Signals
 System.Posix		imports everything else

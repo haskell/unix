@@ -77,18 +77,6 @@ readDirStream (DirStream dirp) =
 		    then return []
 		    else throwErrno "readDirStream"
 
-foreign import ccall unsafe "__hscore_readdir"
-  readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
-
-foreign import ccall unsafe "__hscore_free_dirent"
-  freeDirEnt  :: Ptr CDirent -> IO ()
-
-foreign import ccall unsafe "__hscore_end_of_dir"
-  end_of_dir :: CInt
-
-foreign import ccall unsafe "__hscore_d_name"
-  d_name :: Ptr CDirent -> IO CString
-
 rewindDirStream :: DirStream -> IO ()
 rewindDirStream (DirStream dirp) = c_rewinddir dirp
 
