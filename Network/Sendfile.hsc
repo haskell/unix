@@ -28,17 +28,15 @@ module Network.Sendfile (
 #include "HsUnix.h"
 
 import Foreign
-import Foreign.C
 import Network.Socket
 import System.IO
-import System.Posix.Types	( Fd, Fd(..), COff )
+import System.Posix.Types	( Fd, Fd(..) )
 import Control.Exception	( bracket )
 import Control.Monad		( unless)
-import System.Posix.IO		( handleToFd )
+import System.Posix.IO		( handleToFd, fdToHandle )
 import Data.Array.MArray
 import Data.Array.IO
 #ifdef __GLASGOW_HASKELL__
-import GHC.Handle
 import GHC.IOBase
 #endif
 
@@ -93,7 +91,7 @@ foreign import ccall unsafe "sendfile"
   c_sendfile :: Fd -> Fd -> COff -> CSize -> Ptr a -> Ptr COff -> CInt -> IO CInt
 
 # else /* BSD */
-  inH <- fdToHandle (fromIntegral inFd)
+  inH <- fdToHandle inFd
   squirt inH outH startpos count
 # endif /* no native */
 #endif
@@ -134,4 +132,5 @@ squirt inH outH startpos count = do
   loop count
   hFlush outH
 
-bufsize = 4 * 1024 :: Int
+bufsize :: Int
+bufsize = 4 * 1024
