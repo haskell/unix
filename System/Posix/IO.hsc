@@ -25,10 +25,8 @@ module System.Posix.IO (
     openFd, createFile,
     closeFd,
 
-{-
     -- ** Reading/writing data
     fdRead, fdWrite,
--}
 
     -- ** Seeking
     fdSeek,
@@ -321,3 +319,37 @@ waitToSetLock fd lock = do
   allocaLock lock $ \p_flock ->
     throwErrnoIfMinus1_ "waitToSetLock" 
 	(c_fcntl_flock fd (#const F_SETLKW) p_flock)
+
+-- -----------------------------------------------------------------------------
+-- fd{Read,Write}
+
+fdRead :: Fd -> ByteCount -> IO (String, ByteCount)
+fdRead _fd 0 = return ("", 0)
+fdRead fd  nbytes = do
+    allocaBytes (fromIntegral nbytes) $ \ bytes -> do
+    rc    <-  throwErrnoIfMinus1Retry "fdRead" (c_read fd bytes nbytes)
+    case rc of
+      0  -> ioException (IOError Nothing EOF "fdRead" "EOF" Nothing)
+      n | n == nbytes -> do
+            s <- peekCStringLen (bytes, fromIntegral n)
+	    return (s, n)
+        | otherwise -> do
+	    -- Let go of the excessively long ByteArray# by copying to a
+	    -- shorter one.  Maybe we need a new primitive, shrinkCharArray#?
+            allocaBytes (fromIntegral n) $ \ bytes' -> do
+            c_memcpy bytes' bytes n
+            s <- peekCStringLen (bytes', fromIntegral n)
+	    return (s, n)
+
+fdWrite :: Fd -> String -> IO ByteCount
+fdWrite fd str = withCStringLen str $ \ (strPtr,len) -> do
+    throwErrnoIfMinus1Retry "fdWrite" (c_write fd strPtr (fromIntegral len))
+
+foreign import ccall unsafe "read"
+  c_read :: Fd -> CString -> CSize -> IO CSize
+
+foreign import ccall unsafe "write"
+  c_write :: Fd -> CString -> CSize -> IO CSize
+
+foreign import ccall unsafe "memcpy"
+  c_memcpy :: Ptr dst -> Ptr src -> CSize -> IO (Ptr dst)
