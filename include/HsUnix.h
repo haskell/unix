@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.11 2003/06/06 12:49:00 stolz Exp $
+ * $Id: HsUnix.h,v 1.12 2003/12/15 16:57:30 ross Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -59,6 +59,9 @@
 #endif
 #ifdef HAVE_GRP_H
 #include <grp.h>
+#endif
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
 #endif
 
 #ifdef HAVE_FRAMEWORK_HASKELLSUPPORT
