@@ -4,4 +4,3 @@
 System.Posix.Directory
 System.Posix.Process
 System.Posix		imports everything else
-System.Sendfile		uses gGetArray, hPutArray
