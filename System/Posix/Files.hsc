@@ -449,20 +449,45 @@ data PathVar
 
 pathVarConst :: PathVar -> CInt
 pathVarConst v = case v of
-	FileSizeBits			-> (#const _PC_FILESIZEBITS)
 	LinkLimit     			-> (#const _PC_LINK_MAX)
 	InputLineLimit			-> (#const _PC_MAX_CANON)
 	InputQueueLimit			-> (#const _PC_MAX_INPUT)
 	FileNameLimit			-> (#const _PC_NAME_MAX)
 	PathNameLimit			-> (#const _PC_PATH_MAX)
 	PipeBufferLimit			-> (#const _PC_PIPE_BUF)
-	SymbolicLinkLimit		-> (#const _PC_SYMLINK_MAX)
 	SetOwnerAndGroupIsRestricted	-> (#const _PC_CHOWN_RESTRICTED)
 	FileNamesAreNotTruncated	-> (#const _PC_NO_TRUNC)
 	VDisableChar			-> (#const _PC_VDISABLE)
-	AsyncIOAvailable		-> (#const _PC_ASYNC_IO)
-	PrioIOAvailable			-> (#const _PC_PRIO_IO)
-	SyncIOAvailable			-> (#const _PC_SYNC_IO)
+
+#ifdef _PC_SYNC_IO
+	SyncIOAvailable		-> (#const _PC_SYNC_IO)
+#else
+	SyncIOAvailable		-> error "_PC_SYNC_IO not available"
+#endif
+
+#ifdef _PC_ASYNC_IO
+	AsyncIOAvailable	-> (#const _PC_ASYNC_IO)
+#else
+	AsyncIOAvailable	-> error "_PC_ASYNC_IO not available"
+#endif
+
+#ifdef _PC_PRIO_IO
+	PrioIOAvailable		-> (#const _PC_PRIO_IO)
+#else
+	PrioIOAvailable		-> error "_PC_PRIO_IO not available"
+#endif
+
+#if _PC_FILESIZEBITS
+	FileSizeBits		-> (#const _PC_FILESIZEBITS)
+#else
+	FileSizeBits		-> error "_PC_FILESIZEBITS not available"
+#endif
+
+#if _PC_SYMLINK_MAX
+	SymbolicLinkLimit	-> (#const _PC_SYMLINK_MAX)
+#else
+	SymbolicLinkLimit	-> error "_PC_SYMLINK_MAX not available"
+#endif
 
 getPathVar :: FilePath -> PathVar -> IO Limit
 getPathVar name v = do
