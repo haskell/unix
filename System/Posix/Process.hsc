@@ -56,9 +56,6 @@ module System.Posix.Process (
     getAnyProcessStatus,
     getGroupProcessStatus,
 
--- ToDo:
---    getEnvVar,
---    getEnvironment,
  ) where
 
 #include "HsUnix.h"

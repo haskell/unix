@@ -82,6 +82,7 @@ unistd.h	System.Posix.*
 utime.h		System.Posix.Files
 pwd.h		System.Posix.User
 grp.h		System.Posix.User
+stdlib.h: 	System.Posix.Env (getenv()/setenv()/unsetenv())
 
 network package:
 
@@ -97,7 +98,6 @@ To be supported
 
 limits.h
 poll.h
-stdlib.h: 	getenv()/setenv()/unsetenv()
 sys/resource.h
 sys/select.h
 sys/statvfs.h	 (?)
