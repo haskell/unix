@@ -240,6 +240,8 @@ getUserEntryForName name = do
 	withCString name $ \ pstr -> do
           throwErrorIfNonZero_ "getUserEntryForName" $
 	       c_getpwnam_r pstr ppw pbuf (fromIntegral pwBufSize) pppw
+	  throwErrnoIfNull "getUserEntryForName" $
+		peekElemOff pppw 0
 	  unpackUserEntry ppw
 
 foreign import ccall unsafe "getpwnam_r"
