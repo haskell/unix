@@ -51,10 +51,8 @@ module System.Posix.IO (
     -- ** Duplicating file descriptors
     dup, dupTo,
 
-#ifdef __GLASGOW_HASKELL__
     -- ** Converting file descriptors to\/from Handles
     handleToFd,
-#endif
     fdToHandle,  
 
   ) where
@@ -76,7 +74,7 @@ import qualified GHC.Handle
 
 #ifdef __HUGS__
 import Hugs.Prelude (IOException(..), IOErrorType(..))
-import qualified Hugs.IO (openFd)
+import qualified Hugs.IO (handleToFd, openFd)
 #endif
 
 #include "HsUnix.h"
@@ -194,6 +192,11 @@ fdToHandle fd = GHC.Handle.fdToHandle (fromIntegral fd)
 #endif
 
 #ifdef __HUGS__
+handleToFd :: Handle -> IO Fd
+handleToFd h = do
+  fd <- Hugs.IO.handleToFd h
+  return (fromIntegral fd)
+
 fdToHandle :: Fd -> IO Handle
 fdToHandle fd = do
   mode <- fdGetMode (fromIntegral fd)
