@@ -14,13 +14,13 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Env (
-	getEnv,
-	getEnvDefault,
-	getEnvironmentPrim,
-	getEnvironment,
-	putEnv,
-	setEnv,
-	unsetEnv
+	getEnv
+	, getEnvDefault
+	, getEnvironmentPrim
+	, getEnvironment
+	, putEnv
+	, setEnv
+	, unsetEnv
 ) where
 
 #include "HsUnix.h"
@@ -77,10 +77,15 @@ getEnvironment = do
 -- from the environment.
 
 unsetEnv :: String -> IO ()
+#ifdef HAVE_UNSETENV
+
 unsetEnv name = withCString name c_unsetenv
 
 foreign import ccall unsafe "unsetenv"
    c_unsetenv :: CString -> IO ()
+#else
+unsetEnv name = putEnv (name ++ "=")
+#endif
 
 -- |'putEnv' function takes an argument of the form @name=value@
 -- and is equivalent to @setEnv(key,value,True{-overwrite-})@.
@@ -100,14 +105,19 @@ foreign import ccall unsafe "putenv"
 -}
 
 setEnv :: String -> String -> Bool {-overwrite-} -> IO ()
+#ifdef HAVE_SETENV
 setEnv key value ovrwrt = do
   withCString key $ \ keyP ->
     withCString value $ \ valueP ->
-      throwErrnoIfMinus1_ "putenv" $ c_setenv keyP valueP (toInt ovrwrt)
- where
-   toInt :: Bool -> CInt
-   toInt True  = 1
-   toInt False = 0
+      throwErrnoIfMinus1_ "putenv" $ c_setenv keyP valueP (fromEnum ovrwrt)
 
 foreign import ccall unsafe "setenv"
    c_setenv :: CString -> CString -> CInt -> IO CInt
+#else
+setEnv key value True = putEnv (key++"="++value)
+setEnv key value False = do
+  res <- getEnv key
+  case res of
+    Just _  -> return ()
+    Nothing -> putEnv (key++"="++value)
+#endif
