@@ -17,8 +17,6 @@
 -----------------------------------------------------------------------------
 
 module System.Sendfile (
-  -- * Low-level API
-  c_sendfile,
   -- * Haskell wrappers
   sendfile,
   sendfileByName,
