@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.10 2003/05/28 12:36:29 stolz Exp $
+ * $Id: HsUnix.h,v 1.11 2003/06/06 12:49:00 stolz Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -59,17 +59,6 @@
 #endif
 #ifdef HAVE_GRP_H
 #include <grp.h>
-#endif
-
-#ifdef HAVE_BSD_SENDFILE
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/uio.h>
-#endif
-#ifdef HAVE_LINUX_SENDFILE
-#if !defined(__USE_FILE_OFFSET64)
-#include <sys/sendfile.h>
-#endif
 #endif
 
 #ifdef HAVE_FRAMEWORK_HASKELLSUPPORT
