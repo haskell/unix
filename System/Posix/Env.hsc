@@ -43,7 +43,7 @@ getEnv name = do
      then liftM Just $ peekCString litstring
      else return Nothing
 
--- |'getEnvDefault' is a wrapper around 'getEnvVar' where the
+-- |'getEnvDefault' is a wrapper around 'getEnv' where the
 -- programmer can specify a fallback if the variable is not found
 -- in the environment.
 
@@ -72,7 +72,7 @@ getEnvironment = do
    dropEq (x,'=':ys) = (x,ys)
    dropEq (x,_)      = error $ "getEnvironment: insane variable " ++ x
 
--- |The 'unsetenv' function deletes all instances of the variable name
+-- |The 'unsetEnv' function deletes all instances of the variable name
 -- from the environment.
 
 unsetEnv :: String -> IO ()
@@ -96,7 +96,7 @@ putEnv keyvalue = withCString keyvalue $ \s ->
 foreign import ccall unsafe "putenv"
    c_putenv :: CString -> IO CInt
 
-{- |The 'setenv' function inserts or resets the environment variable name in
+{- |The 'setEnv' function inserts or resets the environment variable name in
      the current environment list.  If the variable @name@ does not exist in the
      list, it is inserted with the given value.  If the variable does exist,
      the argument @overwrite@ is tested; if @overwrite@ is @False@, the variable is

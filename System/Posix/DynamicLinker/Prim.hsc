@@ -106,8 +106,8 @@ packRTLDFlag RTLD_LOCAL = #const RTLD_LOCAL
 packRTLDFlag RTLD_LOCAL = error "RTLD_LOCAL not available"
 #endif /* HAVE_RTLDLOCAL */
 
--- |Flags for 'dlsym'. Notice that @Next@ might not be available on
--- your particular platform!
+-- |Flags for 'System.Posix.DynamicLinker.dlsym'. Notice that 'Next'
+-- might not be available on your particular platform!
 
 data DL = Null | Next | Default | DLHandle (Ptr ()) deriving (Show)
 
