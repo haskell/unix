@@ -44,6 +44,11 @@ module System.Posix.User (
 
 #include "HsUnix.h"
 
+#ifdef solaris_TARGET_OS
+-- Solaris needs this in order to get the POSIX versions of getgrnam_r etc.
+#define _POSIX_PTHREAD_SEMANTICS
+#endif
+
 import System.Posix.Types
 import Foreign
 import Foreign.C
