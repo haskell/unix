@@ -48,4 +48,10 @@ case "$cv_func_usleep_return_type" in
   ;;
 esac
 
+# TODO: avoid adding dl if absent or unneeded
+EXTRA_LIBS=dl
+AC_SUBST([EXTRA_LIBS])
+
+AC_CONFIG_FILES([unix.buildinfo])
+
 AC_OUTPUT

@@ -1,0 +1,27 @@
+name:		unix
+version:	1.0
+license:	BSD3
+maintainer:	libraries@haskell.org
+description:	POSIX functionality.
+build-depends:	base
+exposed-modules:
+	System.Posix,
+	System.Posix.DynamicLinker.Module,
+	System.Posix.DynamicLinker.Prim,
+	System.Posix.Directory,
+	System.Posix.DynamicLinker,
+	System.Posix.Env,
+	System.Posix.Error,
+	System.Posix.Files,
+	System.Posix.IO,
+	System.Posix.Process,
+	System.Posix.Resource,
+	System.Posix.Temp,
+	System.Posix.Terminal,
+	System.Posix.Time,
+	System.Posix.Unistd,
+	System.Posix.User,
+	System.Posix.Signals.Exts
+include-dirs: 	include, ../../ghc/includes
+includes:	HsUnix.h
+extensions:	CPP
