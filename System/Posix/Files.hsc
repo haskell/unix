@@ -15,7 +15,7 @@
 
 module System.Posix.Files (
     -- * File modes
-    FileMode,
+    -- FileMode exported by System.Posix.Types
     unionFileModes, intersectFileModes,
     nullFileMode,
     ownerReadMode, ownerWriteMode, ownerExecuteMode, ownerModes,
@@ -74,6 +74,7 @@ module System.Posix.Files (
 -}
   ) where
 
+#include "HsUnix.h"
 
 import System.Posix.Types
 import System.IO.Unsafe
@@ -81,12 +82,6 @@ import Data.Bits
 import GHC.Posix
 import Foreign
 import Foreign.C
-
-#include <sys/stat.h>
-#include <unistd.h>
-#include <utime.h>
-#include <fcntl.h>
-#include <limits.h>
 
 -- -----------------------------------------------------------------------------
 -- POSIX file modes

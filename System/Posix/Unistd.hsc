@@ -14,21 +14,6 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Unistd (
-    -- * User environment
-    -- * Querying user environment
-    getRealUserID,
-    getRealGroupID,
-    getEffectiveUserID,
-    getEffectiveGroupID,
-#if !defined(cygwin32_TARGET_OS)
-    getGroups,
-#endif
-    getLoginName,
-
-    -- * Modifying the user environment
-    setUserID,
-    setGroupID,
-
     -- * System environment
     SystemID(..),
     getSystemID,
@@ -49,101 +34,24 @@ module System.Posix.Unistd (
 
     -- should be in System.Posix.Files?
     pathconf, fpathconf,
-    queryTerminal,
-    getTerminalName,
-#if !defined(cygwin32_TARGET_OS)
-    getControllingTerminalName,
-#endif
 
     -- System.Posix.Signals
     ualarm,
 
-    -- System.Posix.Terminal
-    isatty, tcgetpgrp, tcsetpgrp, ttyname(_r),
-
     -- System.Posix.IO
     read, write,
-
-    -- should be in System.Posix.Time?
-    epochTime,
 
     -- should be in System.Posix.User?
     getEffectiveUserName,
 -}
   ) where
 
-#include "config.h"
+#include "HsUnix.h"
 
 import Foreign
 import Foreign.C
 import System.Posix.Types
 import GHC.Posix
-
-#include <unistd.h>
-#include <sys/utsname.h>
-
--- -----------------------------------------------------------------------------
--- user environemnt
-
-getRealUserID :: IO UserID
-getRealUserID = c_getuid
-
-foreign import ccall unsafe "getuid"
-  c_getuid :: IO CUid
-
-getRealGroupID :: IO GroupID
-getRealGroupID = c_getgid
-
-foreign import ccall unsafe "getgid"
-  c_getgid :: IO CGid
-
-getEffectiveUserID :: IO UserID
-getEffectiveUserID = c_geteuid
-
-foreign import ccall unsafe "geteuid"
-  c_geteuid :: IO CUid
-
-getEffectiveGroupID :: IO GroupID
-getEffectiveGroupID = c_getegid
-
-foreign import ccall unsafe "getegid"
-  c_getegid :: IO CGid
-
--- getgroups() is not supported in beta18 of
--- cygwin32
-#if !defined(cygwin32_TARGET_OS)
-getGroups :: IO [GroupID]
-getGroups = do
-    ngroups <- c_getgroups 0 nullPtr
-    allocaArray (fromIntegral ngroups) $ \arr -> do
-       throwErrnoIfMinus1_ "getGroups" (c_getgroups ngroups arr)
-       groups <- peekArray (fromIntegral ngroups) arr
-       return groups
-
-foreign import ccall unsafe "getgroups"
-  c_getgroups :: CInt -> Ptr CGid -> IO CInt
-#endif
-
--- ToDo: use getlogin_r
-getLoginName :: IO String
-getLoginName =  do
-    str <- throwErrnoIfNull "getLoginName" c_getlogin
-    peekCString str
-
-foreign import ccall unsafe "getlogin"
-  c_getlogin :: IO CString
-
-setUserID :: UserID -> IO ()
-setUserID uid = throwErrnoIfMinus1_ "setUserID" (c_setuid uid)
-
-foreign import ccall unsafe "setuid"
-  c_setuid :: CUid -> IO CInt
-
-setGroupID :: GroupID -> IO ()
-setGroupID gid = throwErrnoIfMinus1_ "setGroupID" (c_setgid gid)
-
-foreign import ccall unsafe "setgid"
-  c_setgid :: CGid -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- System environment (uname())
@@ -171,6 +79,9 @@ getSystemID = do
 		       version    = ver,
 		       machine    = mach
 		     })
+
+foreign import ccall unsafe "uname"
+   c_uname :: Ptr CUtsname -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- sleeping

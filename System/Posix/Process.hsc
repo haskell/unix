@@ -60,20 +60,7 @@ module System.Posix.Process (
 --    getEnvironment,
  ) where
 
-#include "config.h"
 #include "HsUnix.h"
-
-#ifdef HAVE_SYS_TIMES_H
-#include <sys/times.h>
-#endif
-
-#ifdef HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-
-#ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
-#endif
 
 import Foreign
 import Foreign.C
@@ -230,24 +217,29 @@ executeFile :: FilePath			    -- Command
             -> IO ()
 executeFile path search args Nothing = do
   withCString path $ \s ->
-    withMany withCString args $ \cstrs ->
-      withArray0 nullPtr cstrs $ \arr ->
-	if search then
-	  throwErrnoIfMinus1_ "executeFile" (c_execvp s arr)
-	else
-	  throwErrnoIfMinus1_ "executeFile" (c_execv s arr)
+    withMany withCString (path:args) $ \cstrs ->
+      withArray0 nullPtr cstrs $ \arr -> do
+	pPrPr_disableITimers
+	if search 
+	   then throwErrnoIfMinus1_ "executeFile" (c_execvp s arr)
+	   else throwErrnoIfMinus1_ "executeFile" (c_execv s arr)
 
 executeFile path search args (Just env) = do
   withCString path $ \s ->
-    withMany withCString args $ \cstrs ->
+    withMany withCString (path:args) $ \cstrs ->
       withArray0 nullPtr cstrs $ \arg_arr ->
     let env' = map (\ (name, val) -> name ++ ('=' : val)) env in
     withMany withCString env' $ \cenv ->
-      withArray0 nullPtr cenv $ \env_arr ->
-	if search then
-	  throwErrnoIfMinus1_ "executeFile" (c_execvpe s arg_arr env_arr)
-	else
-	  throwErrnoIfMinus1_ "executeFile" (c_execve s arg_arr env_arr)
+      withArray0 nullPtr cenv $ \env_arr -> do
+	pPrPr_disableITimers
+	if search 
+	   then throwErrnoIfMinus1_ "executeFile" (c_execvpe s arg_arr env_arr)
+	   else throwErrnoIfMinus1_ "executeFile" (c_execve s arg_arr env_arr)
+
+-- this function disables the itimer, which would otherwise cause confusing
+-- signals to be sent to the new process.
+foreign import ccall unsafe "pPrPr_disableITimers"
+  pPrPr_disableITimers :: IO ()
 
 foreign import ccall unsafe "execvp"
   c_execvp :: CString -> Ptr CString -> IO CInt

@@ -20,7 +20,9 @@ module System.Posix (
   module System.Posix.Unistd,
   module System.Posix.IO,
   module System.Posix.Process,
-  -- module System.Posix.Time,
+  module System.Posix.Terminal,
+  module System.Posix.Time,
+  module System.Posix.User,
  ) where
 
 import System.Posix.Types
@@ -30,4 +32,137 @@ import System.Posix.Files
 import System.Posix.Unistd
 import System.Posix.Process
 import System.Posix.IO
+import System.Posix.Terminal
+import System.Posix.Time
+import System.Posix.User
 
+{- TODO
+
+Here we detail our support for the IEEE Std 1003.1-2001 standard.  For
+each header file defined by the standard, we categorise its
+functionality as
+
+ - "supported" 
+
+   Full equivalent functionality is provided by the specified Haskell
+   module.
+
+ - "unsupported" (functionality not provided by a Haskell module)
+
+   The functionality is not currently provided.
+
+ - "to be supported" 
+
+   Currently unsupported, but support is planned for the future.
+
+Exceptions are listed where appropriate.
+
+Interfaces supported
+--------------------
+
+base package:
+
+regex.h		Text.Regex.Posix
+signal.h	System.Posix.Signals
+
+unix package:
+
+dirent.h 	System.Posix.Directory
+errno.h 	Foreign.C.Error
+fcntl.h 	System.Posix.IO
+sys/stat.h	System.Posix.Files
+sys/times.h	System.Posix.Process
+sys/types.h	System.Posix.Types (with exceptions...)
+sys/utsname.h	System.Posix.Unistd
+sys/wait.h	System.Posix.Process
+termios.h	System.Posix.Terminal (check exceptions)
+unistd.h	System.Posix.*
+utime.h		System.Posix.Files
+pwd.h		System.Posix.User
+grp.h		System.Posix.User
+
+network package:
+
+arpa/inet.h
+net/if.h
+netinet/in.h
+netinet/tcp.h
+sys/socket.h
+sys/un.h
+
+To be supported
+---------------
+
+limits.h
+poll.h
+stdlib.h: 	getenv()/setenv()/unsetenv()
+sys/resource.h
+sys/select.h
+sys/statvfs.h	 (?)
+sys/time.h	(but maybe not the itimer?)
+time.h		(System.Posix.Time)
+
+Unsupported interfaces
+----------------------
+
+aio.h
+assert.h
+complex.h
+cpio.h 
+ctype.h 
+dlfcn.h 
+fenv.h
+float.h
+fmtmsg.h
+fnmatch.h
+ftw.h
+glob.h
+iconv.h 
+inttypes.h 
+iso646.h 
+langinfo.h
+libgen.h
+locale.h	(see System.Locale)
+math.h
+monetary.h
+mqueue.h
+ndbm.h
+netdb.h
+nl_types.h
+pthread.h
+sched.h
+search.h
+semaphore.h
+setjmp.h
+spawn.h
+stdarg.h
+stdbool.h
+stddef.h
+stdint.h
+stdio.h
+stdlib.h	except: exit(): System.Posix.Process
+			free()/malloc(): Foreign.Marshal.Alloc
+			getenv()/setenv(): ?? System.Environment
+			rand() etc.: System.Random
+string.h
+strings.h
+stropts.h
+sys/ipc.h
+sys/mman.h
+sys/msg.h
+sys/sem.h
+sys/shm.h
+sys/timeb.h
+sys/uio.h
+syslog.h
+tar.h
+tgmath.h
+trace.h
+ucontext.h
+ulimit.h
+utmpx.h
+wchar.h
+wctype.h
+wordexp.h
+
+-}

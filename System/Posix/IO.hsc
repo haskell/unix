@@ -69,8 +69,6 @@ import GHC.Handle hiding (fdToHandle, openFd)
 import qualified GHC.Handle
 #endif
 
-#include <unistd.h>
-#include <fcntl.h>
 #include "HsUnix.h"
 
 -- -----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------------
- * $Id: HsUnix.h,v 1.2 2002/10/08 08:03:02 wolfgang Exp $
+ * $Id: HsUnix.h,v 1.3 2002/12/19 13:52:55 simonmar Exp $
  *
  * (c) The University of Glasgow 2002
  *
@@ -12,13 +12,48 @@
 
 #include "config.h"
 
+#ifdef HAVE_SYS_TIMES_H
+#include <sys/times.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_UTIME_H
+#include <utime.h>
+#endif
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif
+#ifdef HAVE_SYS_UTSNAME_H
+#include <sys/utsname.h>
+#endif
+#ifdef HAVE_PWD_H
+#include <pwd.h>
+#endif
+#ifdef HAVE_GRP_H
+#include <grp.h>
+#endif
 
 extern int execvpe(char *name, char **argv, char **envp);
+extern void pPrPr_disableITimers (void);
 
 #ifndef INLINE
 #define INLINE extern inline
