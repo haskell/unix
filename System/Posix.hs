@@ -103,7 +103,7 @@ sys/un.h
 To be supported
 ---------------
 
-limits.h
+limits.h	(pathconf()/fpathconf() already done)
 poll.h
 sys/resource.h  (getrusage(): use instead of times() for getProcessTimes?)
 sys/select.h

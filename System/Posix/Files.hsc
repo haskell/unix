@@ -66,12 +66,8 @@ module System.Posix.Files (
     -- * Setting file sizes
     setFileSize, setFdSize,
 
-{-
-    -- run-time limit & POSIX feature testing
-    PathVar(..),
-    getPathVar,
-    getFileVar
--}
+    -- * Find system-specific limits for a file
+    PathVar(..), getPathVar, getFdPathVar,
   ) where
 
 #include "HsUnix.h"
@@ -425,3 +421,62 @@ setFdSize fd off =
 
 foreign import ccall unsafe "ftruncate"
   c_ftruncate :: Fd -> COff -> IO CInt
+
+-- -----------------------------------------------------------------------------
+-- pathconf()/fpathconf() support
+
+data PathVar
+  = FileSizeBits		  {- _PC_FILESIZEBITS     -}
+  | LinkLimit                     {- _PC_LINK_MAX         -}
+  | InputLineLimit                {- _PC_MAX_CANON        -}
+  | InputQueueLimit               {- _PC_MAX_INPUT        -}
+  | FileNameLimit                 {- _PC_NAME_MAX         -}
+  | PathNameLimit                 {- _PC_PATH_MAX         -}
+  | PipeBufferLimit               {- _PC_PIPE_BUF         -}
+				  -- These are described as optional in POSIX:
+  				  {- _PC_ALLOC_SIZE_MIN     -}
+  				  {- _PC_REC_INCR_XFER_SIZE -}
+  				  {- _PC_REC_MAX_XFER_SIZE  -}
+  				  {- _PC_REC_MIN_XFER_SIZE  -}
+ 				  {- _PC_REC_XFER_ALIGN     -}
+  | SymbolicLinkLimit		  {- _PC_SYMLINK_MAX      -}
+  | SetOwnerAndGroupIsRestricted  {- _PC_CHOWN_RESTRICTED -}
+  | FileNamesAreNotTruncated      {- _PC_NO_TRUNC         -}
+  | VDisableChar		  {- _PC_VDISABLE         -}
+  | AsyncIOAvailable		  {- _PC_ASYNC_IO         -}
+  | PrioIOAvailable		  {- _PC_PRIO_IO          -}
+  | SyncIOAvailable		  {- _PC_SYNC_IO          -}
+
+pathVarConst :: PathVar -> CInt
+pathVarConst v = case v of
+	FileSizeBits			-> (#const _PC_FILESIZEBITS)
+	LinkLimit     			-> (#const _PC_LINK_MAX)
+	InputLineLimit			-> (#const _PC_MAX_CANON)
+	InputQueueLimit			-> (#const _PC_MAX_INPUT)
+	FileNameLimit			-> (#const _PC_NAME_MAX)
+	PathNameLimit			-> (#const _PC_PATH_MAX)
+	PipeBufferLimit			-> (#const _PC_PIPE_BUF)
+	SymbolicLinkLimit		-> (#const _PC_SYMLINK_MAX)
+	SetOwnerAndGroupIsRestricted	-> (#const _PC_CHOWN_RESTRICTED)
+	FileNamesAreNotTruncated	-> (#const _PC_NO_TRUNC)
+	VDisableChar			-> (#const _PC_VDISABLE)
+	AsyncIOAvailable		-> (#const _PC_ASYNC_IO)
+	PrioIOAvailable			-> (#const _PC_PRIO_IO)
+	SyncIOAvailable			-> (#const _PC_SYNC_IO)
+
+getPathVar :: FilePath -> PathVar -> IO Limit
+getPathVar name v = do
+  withCString name $ \ nameP -> 
+    throwErrnoIfMinus1 "getPathVar" $ 
+      c_pathconf nameP (pathVarConst v)
+
+foreign import ccall unsafe "pathconf" 
+  c_pathconf :: CString -> CInt -> IO CLong
+
+getFdPathVar :: Fd -> PathVar -> IO Limit
+getFdPathVar fd v =
+    throwErrnoIfMinus1 "getFdPathVar" $ 
+      c_fpathconf fd (pathVarConst v)
+
+foreign import ccall unsafe "fpathconf" 
+  c_fpathconf :: Fd -> CInt -> IO CLong
