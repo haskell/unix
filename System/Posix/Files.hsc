@@ -349,6 +349,12 @@ foreign import ccall unsafe "symlink"
 -- ToDo: should really use SYMLINK_MAX, but not everyone supports it yet,
 -- and it seems that the intention is that SYMLINK_MAX is no larger than
 -- PATH_MAX.
+#if !defined(PATH_MAX)
+-- PATH_MAX is not defined on systems with unlimited path length.
+-- Ugly.  Fix this.
+#define PATH_MAX 4096
+#endif
+
 readSymbolicLink :: FilePath -> IO FilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
