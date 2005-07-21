@@ -13,6 +13,5 @@ SRC_HSC2HS_OPTS += -Iinclude -I../../mk/ $(unix_SRC_HSC2HS_OPTS)
 SRC_HC_OPTS     += -Iinclude $(unix_SRC_HSC2HS_OPTS)
 
 DIST_CLEAN_FILES += unix.buildinfo config.cache config.status 
-LATE_DIST_CLEAN_FILES += config.mk
 
 include $(TOP)/mk/target.mk
