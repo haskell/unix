@@ -103,6 +103,10 @@ INLINE int __hsunix_wstopsig    (int stat) { return WSTOPSIG(stat); }
 INLINE void *__hsunix_rtldNext (void) {return RTLD_NEXT;} 
 #endif
 
+#ifdef HAVE_RTLDDEFAULT
+INLINE void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;} 
+#endif
+
 /* O_SYNC doesn't exist on Mac OS X and (at least some versions of) FreeBSD,
 fall back to O_FSYNC, which should be the same */
 #ifndef O_SYNC

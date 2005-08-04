@@ -62,6 +62,10 @@ foreign import ccall unsafe "__hsunix_rtldNext" rtldNext :: Ptr a
 haveRtldNext = False
 #endif /* HAVE_RTLDNEXT */
 
+#ifdef HAVE_RTLDDEFAULT
+foreign import ccall unsafe "__hsunix_rtldDefault" rtldDefault :: Ptr a
+#endif /* HAVE_RTLDDEFAULT */
+
 haveRtldLocal :: Bool
 
 #ifdef HAVE_RTLDLOCAL
@@ -118,5 +122,9 @@ packDL Next = rtldNext
 #else
 packDL Next = error "RTLD_NEXT not available"
 #endif
+#ifdef HAVE_RTLDDEFAULT
+packDL Default = rtldDefault
+#else
 packDL Default = nullPtr
+#endif
 packDL (DLHandle h) = h
