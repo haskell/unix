@@ -230,7 +230,7 @@ fdOption2Int SynchronousWrites = (#const O_SYNC)
 queryFdOption :: Fd -> FdOption -> IO Bool
 queryFdOption (Fd fd) opt = do
   r <- throwErrnoIfMinus1 "queryFdOption" (c_fcntl_read fd flag)
-  return (testBit r (fromIntegral (fdOption2Int opt)))
+  return ((r .&. fdOption2Int opt) /= 0)
  where
   flag    = case opt of
 	      CloseOnExec       -> (#const F_GETFD)
