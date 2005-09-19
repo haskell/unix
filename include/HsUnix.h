@@ -85,11 +85,11 @@
 extern char **environ;
 
 #ifndef INLINE
-#ifdef __HUGS__
-#define INLINE INLINE_ONLY
-#else
-#define INLINE extern inline
-#endif
+# if defined(__GNUC__)
+#  define INLINE extern inline
+# else
+#  define INLINE inline
+# endif
 #endif
 
 INLINE int __hsunix_wifexited   (int stat) { return WIFEXITED(stat); }
