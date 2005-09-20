@@ -48,8 +48,83 @@ case "$cv_func_usleep_return_type" in
   ;;
 esac
 
-# TODO: avoid adding dl if absent or unneeded
-EXTRA_LIBS=dl
+dnl ** sometimes RTLD_NEXT is hidden in #ifdefs we really don't wan to set
+AC_MSG_CHECKING(for RTLD_NEXT from dlfcn.h)
+AC_EGREP_CPP(yes,
+[
+ #include <dlfcn.h>
+ #ifdef RTLD_NEXT
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_RTLDNEXT], [1], [Define to 1 if we can see RTLD_NEXT in dlfcn.h.])
+], [
+  AC_MSG_RESULT(no)
+  ])    
+
+dnl ** RTLD_DEFAULT isn't available on cygwin
+AC_MSG_CHECKING(for RTLD_DEFAULT from dlfcn.h)
+AC_EGREP_CPP(yes,
+[
+ #include <dlfcn.h>
+ #ifdef RTLD_DEFAULT
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_RTLDDEFAULT], [1], [Define to 1 if RTLD_DEFAULT is available.])
+], [
+  AC_MSG_RESULT(no)
+  ])    
+
+dnl ** RTLD_LOCAL isn't available on cygwin or openbsd
+AC_MSG_CHECKING(for RTLD_LOCAL from dlfcn.h)
+AC_EGREP_CPP(yes,
+[
+ #include <dlfcn.h>
+ #ifdef RTLD_LOCAL
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_RTLDLOCAL], [1], [Define to 1 if RTLD_LOCAL is available.])
+], [
+  AC_MSG_RESULT(no)
+  ])    
+
+dnl ** RTLD_GLOBAL isn't available on openbsd
+AC_MSG_CHECKING(for RTLD_GLOBAL from dlfcn.h)
+AC_EGREP_CPP(yes,
+[
+ #include <dlfcn.h>
+ #ifdef RTLD_GLOBAL
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_RTLDGLOBAL], [1], [Define to 1 if RTLD_GLOBAL is available.])
+], [
+  AC_MSG_RESULT(no)
+  ])    
+
+dnl ** RTLD_NOW isn't available on openbsd
+AC_MSG_CHECKING(for RTLD_NOW from dlfcn.h)
+AC_EGREP_CPP(yes,
+[
+ #include <dlfcn.h>
+ #ifdef RTLD_NOW
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_RTLDNOW], [1], [Define to 1 if we can see RTLD_NOW in dlfcn.h])
+], [
+  AC_MSG_RESULT(no)
+  ])    
+
+# Avoid adding dl if absent or unneeded
+AC_CHECK_LIB(dl, dlopen, [EXTRA_LIBS=dl], [EXTRA_LIBS=])
 AC_SUBST([EXTRA_LIBS])
 
 AC_CONFIG_FILES([unix.buildinfo])
