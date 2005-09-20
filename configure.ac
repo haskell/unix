@@ -5,7 +5,19 @@ AC_CONFIG_SRCDIR([include/HsUnix.h])
 
 AC_CONFIG_HEADERS([include/HsUnixConfig.h])
 
-AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid lchown setenv unsetenv])
+# Is this a Unix system?
+AC_CHECK_FUNC([creat], [BUILD_PACKAGE_BOOL=True], [BUILD_PACKAGE_BOOL=False])
+AC_SUBST([BUILD_PACKAGE_BOOL])
+
+AC_C_CONST
+
+AC_CHECK_HEADERS([dirent.h fcntl.h grp.h limits.h pwd.h signal.h string.h])
+AC_CHECK_HEADERS([sys/resource.h sys/stat.h sys/times.h sys/time.h])
+AC_CHECK_HEADERS([sys/utsname.h sys/wait.h])
+AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
+
+AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
+AC_CHECK_FUNCS([lchown setenv sysconf unsetenv])
 
 AC_MSG_CHECKING([for _SC_GETGR_R_SIZE_MAX])
 AC_EGREP_CPP(we_have_that_sysconf_thing,

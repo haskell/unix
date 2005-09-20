@@ -9,8 +9,6 @@
 #ifndef HSUNIX_H
 #define HSUNIX_H
 
-#include "ghcconfig.h"
-
 #include "HsUnixConfig.h"
 
 /* ultra-evil... */

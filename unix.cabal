@@ -4,25 +4,40 @@ license:	BSD3
 license-file:	LICENSE
 maintainer:	libraries@haskell.org
 synopsis:	POSIX functionality
-build-depends:	base
+description:
+	This package gives you access to the set of operating system
+	services standardised by POSIX 1003.1b (or the IEEE Portable
+	Operating System Interface for Computing Environments -
+	IEEE Std. 1003.1).
+	.
+	The package is not supported under Windows (except under Cygwin).
 exposed-modules:
-	System.Posix,
-	System.Posix.DynamicLinker.Module,
-	System.Posix.DynamicLinker.Prim,
-	System.Posix.Directory,
-	System.Posix.DynamicLinker,
-	System.Posix.Env,
-	System.Posix.Error,
-	System.Posix.Files,
-	System.Posix.IO,
-	System.Posix.Process,
-	System.Posix.Resource,
-	System.Posix.Temp,
-	System.Posix.Terminal,
-	System.Posix.Time,
-	System.Posix.Unistd,
-	System.Posix.User,
-	System.Posix.Signals.Exts
-include-dirs: 	include, ../../ghc/includes
-includes:	HsUnix.h
+		System.Posix
+		System.Posix.DynamicLinker.Module
+		System.Posix.DynamicLinker.Prim
+		System.Posix.Directory
+		System.Posix.DynamicLinker
+		System.Posix.Env
+		System.Posix.Error
+		System.Posix.Files
+		System.Posix.IO
+		System.Posix.Process
+		System.Posix.Resource
+		System.Posix.Temp
+		System.Posix.Terminal
+		System.Posix.Time
+		System.Posix.Unistd
+		System.Posix.User
+		System.Posix.Signals.Exts
+extra-source-files:
+		configure.ac configure
+		unix.buildinfo.in include/HsUnixConfig.h.in
+		include/HsUnix.h
+extra-tmp-files:
+		config.log config.status autom4te.cache
+		unix.buildinfo include/HsUnixConfig.h
+build-depends:	base
 extensions:	CPP
+include-dirs: 	include
+includes:	HsUnix.h
+c-sources:	cbits/HsUnix.c
