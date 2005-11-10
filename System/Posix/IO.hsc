@@ -9,7 +9,10 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- POSIX IO support
+-- POSIX IO support.  These types and functions correspond to the unix
+-- functions open(2), close(2), etc.  For more portable functions
+-- which are more like fopen(3) and friends from stdio.h, see
+-- 'System.IO'.
 --
 -----------------------------------------------------------------------------
 
@@ -82,10 +85,12 @@ import qualified Hugs.IO (handleToFd, openFd)
 
 -- -----------------------------------------------------------------------------
 -- Pipes
--- |The 'createPipe' function creates a pair of connected file descriptors. The first
--- component is the fd to read from, the second is the write end.
--- Although pipes may be bidirectional, this behaviour is not portable and
--- programmers should use two separate pipes for this purpose.
+-- |The 'createPipe' function creates a pair of connected file
+-- descriptors. The first component is the fd to read from, the second
+-- is the write end.  Although pipes may be bidirectional, this
+-- behaviour is not portable and programmers should use two separate
+-- pipes for this purpose.  May throw an exception if this is an
+-- invalid descriptor.
 
 createPipe :: IO (Fd, Fd)
 createPipe =
@@ -98,9 +103,11 @@ createPipe =
 -- -----------------------------------------------------------------------------
 -- Duplicating file descriptors
 
+-- | May throw an exception if this is an invalid descriptor.
 dup :: Fd -> IO Fd
 dup (Fd fd) = do r <- throwErrnoIfMinus1 "dup" (c_dup fd); return (Fd r)
 
+-- | May throw an exception if this is an invalid descriptor.
 dupTo :: Fd -> Fd -> IO Fd
 dupTo (Fd fd1) (Fd fd2) = do
   r <- throwErrnoIfMinus1 "dupTo" (c_dup2 fd1 fd2)
@@ -116,15 +123,19 @@ stdError   = Fd (#const STDERR_FILENO)
 
 data OpenMode = ReadOnly | WriteOnly | ReadWrite
 
+-- |Correspond to some of the int flags from C's fcntl.h.
 data OpenFileFlags =
  OpenFileFlags {
-    append    :: Bool,
-    exclusive :: Bool,
-    noctty    :: Bool,
-    nonBlock  :: Bool,
-    trunc     :: Bool
+    append    :: Bool, -- ^ O_APPEND
+    exclusive :: Bool, -- ^ O_EXCL
+    noctty    :: Bool, -- ^ O_NOCTTY
+    nonBlock  :: Bool, -- ^ O_NONBLOCK
+    trunc     :: Bool  -- ^ O_TRUNC
  }
 
+
+-- |Default values for the 'OpenFileFlags' type. False for each of
+-- append, exclusive, noctty, nonBlock, and trunc.
 defaultFileFlags :: OpenFileFlags
 defaultFileFlags =
  OpenFileFlags {
@@ -135,9 +146,12 @@ defaultFileFlags =
     trunc     = False
   }
 
+
+-- |Open and optionally create this file.  See 'System.Posix.Files'
+-- for information on how to use the 'FileMode' type.
 openFd :: FilePath
        -> OpenMode
-       -> Maybe FileMode -- Just x => O_CREAT, Nothing => must exist
+       -> Maybe FileMode -- ^Just x => creates the file with the given modes, Nothing => the file must exist.
        -> OpenFileFlags
        -> IO Fd
 openFd name how maybe_mode (OpenFileFlags append exclusive noctty
@@ -164,9 +178,16 @@ openFd name how maybe_mode (OpenFileFlags append exclusive noctty
 		   WriteOnly -> (#const O_WRONLY)
 		   ReadWrite -> (#const O_RDWR)
 
+-- |Create and open this file in WriteOnly mode.  A special case of
+-- 'openFd'.  See 'System.Posix.Files' for information on how to use
+-- the 'FileMode' type.
+
 createFile :: FilePath -> FileMode -> IO Fd
 createFile name mode
   = openFd name WriteOnly (Just mode) defaultFileFlags{ trunc=True } 
+
+-- |Close this file descriptor.  May throw an exception if this is an
+-- invalid descriptor.
 
 closeFd :: Fd -> IO ()
 closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
@@ -216,10 +237,10 @@ fdToHandle fd = do
 -- -----------------------------------------------------------------------------
 -- Fd options
 
-data FdOption = AppendOnWrite
-	      | CloseOnExec
-	      | NonBlockingRead
-	      | SynchronousWrites
+data FdOption = AppendOnWrite     -- ^O_APPEND
+	      | CloseOnExec       -- ^FD_CLOEXEC
+	      | NonBlockingRead   -- ^O_NONBLOCK
+	      | SynchronousWrites -- ^O_SYNC
 
 fdOption2Int :: FdOption -> CInt
 fdOption2Int CloseOnExec       = (#const FD_CLOEXEC)
@@ -227,6 +248,7 @@ fdOption2Int AppendOnWrite     = (#const O_APPEND)
 fdOption2Int NonBlockingRead   = (#const O_NONBLOCK)
 fdOption2Int SynchronousWrites = (#const O_SYNC)
 
+-- | May throw an exception if this is an invalid descriptor.
 queryFdOption :: Fd -> FdOption -> IO Bool
 queryFdOption (Fd fd) opt = do
   r <- throwErrnoIfMinus1 "queryFdOption" (c_fcntl_read fd flag)
@@ -236,6 +258,7 @@ queryFdOption (Fd fd) opt = do
 	      CloseOnExec       -> (#const F_GETFD)
 	      other		-> (#const F_GETFL)
 
+-- | May throw an exception if this is an invalid descriptor.
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
 setFdOption (Fd fd) opt val = do
   r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd getflag)
@@ -256,6 +279,7 @@ mode2Int AbsoluteSeek = (#const SEEK_SET)
 mode2Int RelativeSeek = (#const SEEK_CUR)
 mode2Int SeekFromEnd  = (#const SEEK_END)
 
+-- | May throw an exception if this is an invalid descriptor.
 fdSeek :: Fd -> SeekMode -> FileOffset -> IO FileOffset
 fdSeek (Fd fd) mode off =
   throwErrnoIfMinus1 "fdSeek" (c_lseek fd off (mode2Int mode))
@@ -269,6 +293,7 @@ data LockRequest = ReadLock
 
 type FileLock = (LockRequest, SeekMode, FileOffset, FileOffset)
 
+-- | May throw an exception if this is an invalid descriptor.
 getLock :: Fd -> FileLock -> IO (Maybe (ProcessID, FileLock))
 getLock (Fd fd) lock =
   allocaLock lock $ \p_flock -> do
@@ -314,11 +339,13 @@ bytes2ProcessIDAndLock p = do
   int2mode (#const SEEK_END) = SeekFromEnd
   int2mode _ = error $ "int2mode: bad argument"
 
+-- | May throw an exception if this is an invalid descriptor.
 setLock :: Fd -> FileLock -> IO ()
 setLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
     throwErrnoIfMinus1_ "setLock" (c_fcntl_lock fd (#const F_SETLK) p_flock)
 
+-- | May throw an exception if this is an invalid descriptor.
 waitToSetLock :: Fd -> FileLock -> IO ()
 waitToSetLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
@@ -328,7 +355,10 @@ waitToSetLock (Fd fd) lock = do
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}
 
-fdRead :: Fd -> ByteCount -> IO (String, ByteCount)
+-- | May throw an exception if this is an invalid descriptor.
+fdRead :: Fd
+       -> ByteCount -- ^How many bytes to read
+       -> IO (String, ByteCount) -- ^The bytes read, how many bytes were read.
 fdRead _fd 0 = return ("", 0)
 fdRead (Fd fd) nbytes = do
     allocaBytes (fromIntegral nbytes) $ \ bytes -> do
@@ -339,6 +369,7 @@ fdRead (Fd fd) nbytes = do
        s <- peekCStringLen (bytes, fromIntegral n)
        return (s, n)
 
+-- | May throw an exception if this is an invalid descriptor.
 fdWrite :: Fd -> String -> IO ByteCount
 fdWrite (Fd fd) str = withCStringLen str $ \ (strPtr,len) -> do
     rc <- throwErrnoIfMinus1Retry "fdWrite" (c_write fd strPtr (fromIntegral len))
