@@ -40,6 +40,9 @@ import System.Directory hiding (createDirectory)
 import Foreign
 import Foreign.C
 
+-- | @createDirectory dir mode@ calls @mkdir@ to 
+--   create a new directory, @dir@, with permissions based on
+--  @mode@.
 createDirectory :: FilePath -> FileMode -> IO ()
 createDirectory name mode =
   withCString name $ \s -> 
@@ -50,12 +53,18 @@ foreign import ccall unsafe "mkdir"
 
 newtype DirStream = DirStream (Ptr CDir)
 
+-- | @openDirStream dir@ calls @opendir@ to obtain a
+--   directory stream for @dir@.
 openDirStream :: FilePath -> IO DirStream
 openDirStream name =
   withCString name $ \s -> do
     dirp <- throwErrnoPathIfNull "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
+-- | @readDirStream dp@ calls @readdir@ to obtain the
+--   next directory entry (@struct dirent@) for the open directory
+--   stream @dp@, and returns the @d_name@ member of that
+--  structure.
 readDirStream :: DirStream -> IO FilePath
 readDirStream (DirStream dirp) =
   alloca $ \ptr_dEnt  -> loop ptr_dEnt
@@ -78,9 +87,13 @@ readDirStream (DirStream dirp) =
 		    then return []
 		    else throwErrno "readDirStream"
 
+-- | @rewindDirStream dp@ calls @rewinddir@ to reposition
+--   the directory stream @dp@ at the beginning of the directory.
 rewindDirStream :: DirStream -> IO ()
 rewindDirStream (DirStream dirp) = c_rewinddir dirp
 
+-- | @closeDirStream dp@ calls @closedir@ to close
+--   the directory stream @dp@.
 closeDirStream :: DirStream -> IO ()
 closeDirStream (DirStream dirp) = do
   throwErrnoIfMinus1_ "closeDirStream" (c_closedir dirp)
@@ -107,9 +120,14 @@ foreign import ccall unsafe "telldir"
  kept around for b.wards compatibility and for having more POSIXy
  names
 -}
+
+-- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
+--   of the current working directory.
 getWorkingDirectory :: IO FilePath
 getWorkingDirectory = getCurrentDirectory
 
+-- | @changeWorkingDirectory dir@ calls @chdir@ to change
+--   the current working directory to @dir@.
 changeWorkingDirectory :: FilePath -> IO ()
 changeWorkingDirectory name = setCurrentDirectory name
 

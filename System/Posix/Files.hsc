@@ -170,6 +170,8 @@ symbolicLinkMode = (#const S_IFLNK)
 socketMode :: FileMode
 socketMode = (#const S_IFSOCK)
 
+-- | @setFileMode path mode@ calls @chmod@ to set the
+--   permission bits associated with file @path@ to @mode@.
 setFileMode :: FilePath -> FileMode -> IO ()
 setFileMode name m =
   withCString name $ \s -> do
@@ -182,6 +184,9 @@ setFdMode fd m =
 foreign import ccall unsafe "fchmod" 
   c_fchmod :: Fd -> CMode -> IO CInt
 
+-- | @setFileCreationMask mode@ calls @umask@ to set
+--   the process's file creation mask to @mode@.  The previous file
+--   creation mask is returned.
 setFileCreationMask :: FileMode -> IO FileMode
 setFileCreationMask mask = c_umask mask
 
@@ -281,6 +286,8 @@ isSymbolicLink stat =
 isSocket stat = 
   (fileMode stat `intersectFileModes` fileTypeModes) == socketMode
 
+-- | @getFileStatus path@ calls @stat@ to get the
+--   @FileStatus@ information for the file @path@.
 getFileStatus :: FilePath -> IO FileStatus
 getFileStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
@@ -289,6 +296,9 @@ getFileStatus path = do
       throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
+-- | @getFdStatus fd@ calls @fstat@ to get the
+--   @FileStatus@ information for the file associated with
+--   @Fd@ @fd@.
 getFdStatus :: Fd -> IO FileStatus
 getFdStatus (Fd fd) = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
@@ -307,6 +317,9 @@ getSymbolicLinkStatus path = do
 foreign import ccall unsafe "lstat" 
   c_lstat :: CString -> Ptr CStat -> IO CInt
 
+-- | @createNamedPipe fifo mode@ calls @mkfifo@ to 
+--   create a new named pipe, @fifo@, with permissions based on
+--   @mode@.
 createNamedPipe :: FilePath -> FileMode -> IO ()
 createNamedPipe name mode = do
   withCString name $ \s -> 
@@ -323,12 +336,16 @@ foreign import ccall unsafe "mknod"
 -- -----------------------------------------------------------------------------
 -- Hard links
 
+-- | @createLink old new@ calls @link@ to create a 
+--   new path, @new@, linked to an existing file, @old@.
 createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
   withCString name1 $ \s1 ->
   withCString name2 $ \s2 ->
   throwErrnoPathIfMinus1_ "createLink" name1 (c_link s1 s2)
 
+-- | @removeLink path@ calls @unlink@ to remove the link
+--   named @path@.
 removeLink :: FilePath -> IO ()
 removeLink name =
   withCString name $ \s ->
@@ -369,6 +386,8 @@ foreign import ccall unsafe "readlink"
 -- -----------------------------------------------------------------------------
 -- Renaming files
 
+-- | @rename old new@ calls @rename@ to rename a 
+--   file or directory from @old@ to @new@.
 rename :: FilePath -> FilePath -> IO ()
 rename name1 name2 =
   withCString name1 $ \s1 ->
@@ -378,6 +397,9 @@ rename name1 name2 =
 -- -----------------------------------------------------------------------------
 -- chmod()
 
+-- | @setOwnerAndGroup path uid gid@ calls @chown@ to
+--   set the @UserID@ and @GroupID@ associated with file
+--   @path@ to @uid@ and @gid@, respectively.
 setOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setOwnerAndGroup name uid gid = do
   withCString name $ \s ->
@@ -407,6 +429,9 @@ foreign import ccall unsafe "lchown"
 -- -----------------------------------------------------------------------------
 -- utime()
 
+-- | @setFileTimes path atime mtime@ calls @utime@ to
+--   set the access and modification times associated with file
+--   @path@ to @atime@ and @mtime@, respectively.
 setFileTimes :: FilePath -> EpochTime -> EpochTime -> IO ()
 setFileTimes name atime mtime = do
   withCString name $ \s ->
@@ -415,6 +440,9 @@ setFileTimes name atime mtime = do
      (#poke struct utimbuf, modtime) p mtime
      throwErrnoPathIfMinus1_ "setFileTimes" name (c_utime s p)
 
+-- | @touchFile path@ calls @utime@ to
+--   set the access and modification times associated with file
+--   @path@ to the current time.
 touchFile :: FilePath -> IO ()
 touchFile name = do
   withCString name $ \s ->
@@ -502,6 +530,13 @@ pathVarConst v = case v of
 	SymbolicLinkLimit	-> error "_PC_SYMLINK_MAX not available"
 #endif
 
+
+-- | @getPathVar var path@ calls @pathconf@ to obtain the
+--   dynamic value of the requested configurable file limit or option associated
+--   with file or directory @path@.  For
+--   defined file limits, @getPathVar@ returns the associated
+--   value.  For defined file options, the result of @getPathVar@
+--   is undefined, but not failure.
 getPathVar :: FilePath -> PathVar -> IO Limit
 getPathVar name v = do
   withCString name $ \ nameP -> 
@@ -511,6 +546,13 @@ getPathVar name v = do
 foreign import ccall unsafe "pathconf" 
   c_pathconf :: CString -> CInt -> IO CLong
 
+
+-- | @getFdPathVar var fd@ calls @fpathconf@ to obtain the
+--   dynamic value of the requested configurable file limit or option associated
+--   with the file or directory attached to the open channel @fd@.
+--   For defined file limits, @getFdPathVar@ returns the associated
+--   value.  For defined file options, the result of @getFdPathVar@
+--   is undefined, but not failure.
 getFdPathVar :: Fd -> PathVar -> IO Limit
 getFdPathVar fd v =
     throwErrnoIfMinus1 "getFdPathVar" $ 

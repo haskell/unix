@@ -28,6 +28,8 @@ import Foreign.C
 -- -----------------------------------------------------------------------------
 -- epochTime
 
+-- | @epochTime@ calls @time@ to obtain the number of 
+--   seconds that have elapsed since the epoch (Jan 01 00:00:00 GMT 1970).
 epochTime :: IO EpochTime
 epochTime = throwErrnoIfMinus1 "epochTime" (c_time nullPtr)
 

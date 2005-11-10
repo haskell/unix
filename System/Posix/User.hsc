@@ -54,30 +54,40 @@ import Control.Concurrent.MVar  ( newMVar, withMVar )
 -- -----------------------------------------------------------------------------
 -- user environemnt
 
+-- | @getRealUserID@ calls @getuid@ to obtain the real @UserID@
+--   associated with the current process.
 getRealUserID :: IO UserID
 getRealUserID = c_getuid
 
 foreign import ccall unsafe "getuid"
   c_getuid :: IO CUid
 
+-- | @getRealGroupID@ calls @getgid@ to obtain the real @GroupID@
+--   associated with the current process.
 getRealGroupID :: IO GroupID
 getRealGroupID = c_getgid
 
 foreign import ccall unsafe "getgid"
   c_getgid :: IO CGid
 
+-- | @getEffectiveUserID@ calls @geteuid@ to obtain the effective
+--   @UserID@ associated with the current process.
 getEffectiveUserID :: IO UserID
 getEffectiveUserID = c_geteuid
 
 foreign import ccall unsafe "geteuid"
   c_geteuid :: IO CUid
 
+-- | @getEffectiveGroupID@ calls @getegid@ to obtain the effective
+--   @GroupID@ associated with the current process.
 getEffectiveGroupID :: IO GroupID
 getEffectiveGroupID = c_getegid
 
 foreign import ccall unsafe "getegid"
   c_getegid :: IO CGid
 
+-- | @getGroups@ calls @getgroups@ to obtain the list of
+--   supplementary @GroupID@s associated with the current process.
 getGroups :: IO [GroupID]
 getGroups = do
     ngroups <- c_getgroups 0 nullPtr
@@ -89,21 +99,30 @@ getGroups = do
 foreign import ccall unsafe "getgroups"
   c_getgroups :: CInt -> Ptr CGid -> IO CInt
 
--- ToDo: use getlogin_r
+
+
+
+-- | @getLoginName@ calls @getlogin@ to obtain the login name
+--   associated with the current process.
 getLoginName :: IO String
 getLoginName =  do
+    -- ToDo: use getlogin_r
     str <- throwErrnoIfNull "getLoginName" c_getlogin
     peekCString str
 
 foreign import ccall unsafe "getlogin"
   c_getlogin :: IO CString
 
+-- | @setUserID uid@ calls @setuid@ to set the real, effective, and
+--   saved set-user-id associated with the current process to @uid@.
 setUserID :: UserID -> IO ()
 setUserID uid = throwErrnoIfMinus1_ "setUserID" (c_setuid uid)
 
 foreign import ccall unsafe "setuid"
   c_setuid :: CUid -> IO CInt
 
+-- | @setGroupID gid@ calls @setgid@ to set the real, effective, and
+--   saved set-group-id associated with the current process to @gid@.
 setGroupID :: GroupID -> IO ()
 setGroupID gid = throwErrnoIfMinus1_ "setGroupID" (c_setgid gid)
 
@@ -113,6 +132,8 @@ foreign import ccall unsafe "setgid"
 -- -----------------------------------------------------------------------------
 -- User names
 
+-- | @getEffectiveUserName@ gets the name
+--   associated with the effective @UserID@ of the process.
 getEffectiveUserName :: IO String
 getEffectiveUserName = do
     euid <- getEffectiveUserID
@@ -129,6 +150,9 @@ data GroupEntry =
   groupMembers :: [String]
  }
 
+-- | @getGroupEntryForID gid@ calls @getgrgid@ to obtain
+--   the @GroupEntry@ information associated with @GroupID@
+--   @gid@.
 getGroupEntryForID :: GroupID -> IO GroupEntry
 #ifdef HAVE_GETGRGID_R
 getGroupEntryForID gid = do
@@ -149,7 +173,9 @@ foreign import ccall unsafe "getgrgid_r"
 getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 #endif
 
-
+-- | @getGroupEntryForName name@ calls @getgrnam@ to obtain
+--   the @GroupEntry@ information associated with the group called
+--   @name@.
 getGroupEntryForName :: String -> IO GroupEntry
 #ifdef HAVE_GETGRNAM_R
 getGroupEntryForName name = do
@@ -210,6 +236,9 @@ lock = unsafePerformIO $ newMVar ()
 {-# NOINLINE lock #-}
 #endif
 
+-- | @getUserEntryForID gid@ calls @getpwuid@ to obtain
+--   the @UserEntry@ information associated with @UserID@
+--   @uid@.
 getUserEntryForID :: UserID -> IO UserEntry
 #ifdef HAVE_GETPWUID_R
 getUserEntryForID uid = do
@@ -237,6 +266,9 @@ foreign import ccall unsafe "getpwuid"
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 #endif
 
+-- | @getUserEntryForName name@ calls @getpwnam@ to obtain
+--   the @UserEntry@ information associated with the user login
+--   @name@.
 getUserEntryForName :: String -> IO UserEntry
 #if HAVE_GETPWNAM_R
 getUserEntryForName name = do
