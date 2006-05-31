@@ -55,11 +55,12 @@ foreign import ccall unsafe "getenv"
 
 getEnvironmentPrim :: IO [String]
 getEnvironmentPrim = do
-  arr <- peekArray0 nullPtr c_environ_p
+  c_environ <- peek c_environ_p
+  arr <- peekArray0 nullPtr c_environ
   mapM peekCString arr
 
 foreign import ccall unsafe "&environ"
-   c_environ_p :: Ptr CString
+   c_environ_p :: Ptr (Ptr CString)
 
 -- |'getEnvironment' retrieves the entire environment as a
 -- list of @(key,value)@ pairs.
