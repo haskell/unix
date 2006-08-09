@@ -264,10 +264,10 @@ foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CP
 --   the command is passed to <function>execv*</function> as <varname>arg[0]</varname>;
 --   the argument list passed to <function>executeFile</function> therefore 
 --   begins with <varname>arg[1]</varname>.
-executeFile :: FilePath			    -- Command
-            -> Bool			    -- Search PATH?
-            -> [String]			    -- Arguments
-            -> Maybe [(String, String)]	    -- Environment
+executeFile :: FilePath			    -- ^ Command
+            -> Bool			    -- ^ Search PATH?
+            -> [String]			    -- ^ Arguments
+            -> Maybe [(String, String)]	    -- ^ Environment
             -> IO ()
 executeFile path search args Nothing = do
   withCString path $ \s ->
