@@ -9,7 +9,17 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- POSIX file support
+-- Functions defined by the POSIX standards for manipulating and querying the
+-- file system. Names of underlying POSIX functions are indicated whenever
+-- possible. A more complete documentation of the POSIX functions together
+-- with a more detailed description of different error conditions are usually
+-- available in the system's manual pages or from
+-- <http://www.unix.org/version3/online.html> (free registration required).
+--
+-- When a function that calls an underlying POSIX function fails, the errno
+-- code is converted to an 'IOError' using 'Foreign.C.Error.errnoToIOError'.
+-- For a list of which errno codes may be generated, consult the POSIX
+-- documentation for the underlying function.
 --
 -----------------------------------------------------------------------------
 
@@ -86,62 +96,83 @@ import Foreign.C
 -- The abstract type 'FileMode', constants and operators for
 -- manipulating the file modes defined by POSIX.
 
+-- | No permissions.
 nullFileMode :: FileMode
 nullFileMode = 0
 
+-- | Owner has read permission.
 ownerReadMode :: FileMode
 ownerReadMode = (#const S_IRUSR)
 
+-- | Owner has write permission.
 ownerWriteMode :: FileMode
 ownerWriteMode = (#const S_IWUSR)
 
+-- | Owner has execute permission.
 ownerExecuteMode :: FileMode
 ownerExecuteMode = (#const S_IXUSR)
 
+-- | Group has read permission.
 groupReadMode :: FileMode
 groupReadMode = (#const S_IRGRP)
 
+-- | Group has write permission.
 groupWriteMode :: FileMode
 groupWriteMode = (#const S_IWGRP)
 
+-- | Group has execute permission.
 groupExecuteMode :: FileMode
 groupExecuteMode = (#const S_IXGRP)
 
+-- | Others have read permission.
 otherReadMode :: FileMode
 otherReadMode = (#const S_IROTH)
 
+-- | Others have write permission.
 otherWriteMode :: FileMode
 otherWriteMode = (#const S_IWOTH)
 
+-- | Others have execute permission.
 otherExecuteMode :: FileMode
 otherExecuteMode = (#const S_IXOTH)
 
+-- | Set user ID on execution.
 setUserIDMode :: FileMode
 setUserIDMode = (#const S_ISUID)
 
+-- | Set group ID on execution.
 setGroupIDMode :: FileMode
 setGroupIDMode = (#const S_ISGID)
 
+-- | Owner, group and others have read and write permission.
 stdFileMode :: FileMode
 stdFileMode = ownerReadMode  .|. ownerWriteMode .|. 
 	      groupReadMode  .|. groupWriteMode .|. 
 	      otherReadMode  .|. otherWriteMode
 
+-- | Owner has read, write and execute permission.
 ownerModes :: FileMode
 ownerModes = (#const S_IRWXU)
 
+-- | Group has read, write and execute permission.
 groupModes :: FileMode
 groupModes = (#const S_IRWXG)
 
+-- | Others have read, write and execute permission.
 otherModes :: FileMode
 otherModes = (#const S_IRWXO)
 
+-- | Owner, group and others have read, write and execute permission.
 accessModes :: FileMode
 accessModes = ownerModes .|. groupModes .|. otherModes
 
+-- | Combines the two file modes into one that contains modes that appear in
+-- either.
 unionFileModes :: FileMode -> FileMode -> FileMode
 unionFileModes m1 m2 = m1 .|. m2
 
+-- | Combines two file modes into one that only contains modes that appear in
+-- both.
 intersectFileModes :: FileMode -> FileMode -> FileMode
 intersectFileModes m1 m2 = m1 .&. m2
 
@@ -170,13 +201,21 @@ symbolicLinkMode = (#const S_IFLNK)
 socketMode :: FileMode
 socketMode = (#const S_IFSOCK)
 
--- | @setFileMode path mode@ calls @chmod@ to set the
---   permission bits associated with file @path@ to @mode@.
+-- | @setFileMode path mode@ changes permission of the file given by @path@
+-- to @mode@. This operation may fail with 'throwErrnoPathIfMinus1_' if @path@
+-- doesn't exist or if the effective user ID of the current process is not that
+-- of the file's owner.
+--
+-- Note: calls @chmod@.
 setFileMode :: FilePath -> FileMode -> IO ()
 setFileMode name m =
   withCString name $ \s -> do
     throwErrnoPathIfMinus1_ "setFileMode" name (c_chmod s m)
 
+-- | @setFdMode fd mode@ acts like 'setFileMode' but uses a file descriptor
+-- @fd@ instead of a 'FilePath'.
+--
+-- Note: calls @fchmod@.
 setFdMode :: Fd -> FileMode -> IO ()
 setFdMode fd m =
   throwErrnoIfMinus1_ "setFdMode" (c_fchmod fd m)
@@ -184,15 +223,22 @@ setFdMode fd m =
 foreign import ccall unsafe "fchmod" 
   c_fchmod :: Fd -> CMode -> IO CInt
 
--- | @setFileCreationMask mode@ calls @umask@ to set
---   the process's file creation mask to @mode@.  The previous file
---   creation mask is returned.
+-- | @setFileCreationMask mode@ sets the file mode creation mask to @mode@.
+-- Modes set by this operation are subtracted from files and directories upon
+-- creation. The previous file creation mask is returned.
+--
+-- Note: calls @umask@.
 setFileCreationMask :: FileMode -> IO FileMode
 setFileCreationMask mask = c_umask mask
 
 -- -----------------------------------------------------------------------------
 -- access()
 
+-- | @fileAccess name read write exec@ checks if the file (or other file system
+-- object) @name@ can be accessed for reading, writing and\/or executing. To
+-- check a permission set the corresponding argument to 'True'.
+--
+-- Note: calls @access@.
 fileAccess :: FilePath -> Bool -> Bool -> Bool -> IO Bool
 fileAccess name read write exec = access name flags
   where
@@ -201,6 +247,9 @@ fileAccess name read write exec = access name flags
    write_f = if write then (#const W_OK) else 0
    exec_f  = if exec  then (#const X_OK) else 0
 
+-- | Checks for the existence of the file.
+--
+-- Note: calls @access@.
 fileExist :: FilePath -> IO Bool
 fileExist name = 
   withCString name $ \s -> do
@@ -226,18 +275,35 @@ access name flags =
 -- -----------------------------------------------------------------------------
 -- stat() support
 
+-- | POSIX defines operations to get information, such as owner, permissions,
+-- size and access times, about a file. This information is represented by the
+-- 'FileStatus' type.
+--
+-- Note: see @chmod@.
 newtype FileStatus = FileStatus (ForeignPtr CStat)
 
+-- | ID of the device on which this file resides.
 deviceID         :: FileStatus -> DeviceID
+-- | inode number
 fileID           :: FileStatus -> FileID
+-- | File mode (such as permissions).
 fileMode         :: FileStatus -> FileMode
+-- | Number of hard links to this file.
 linkCount        :: FileStatus -> LinkCount
+-- | ID of owner.
 fileOwner        :: FileStatus -> UserID
+-- | ID of group.
 fileGroup        :: FileStatus -> GroupID
+-- | Describes the device that this file represents.
 specialDeviceID  :: FileStatus -> DeviceID
+-- | Size of the file in bytes. If this file is a symbolic link the size is
+-- the length of the pathname it contains.
 fileSize         :: FileStatus -> FileOffset
+-- | Time of last access.
 accessTime       :: FileStatus -> EpochTime
+-- | Time of last modification.
 modificationTime :: FileStatus -> EpochTime
+-- | Time of last status change (i.e. owner, group, link count, mode, etc.).
 statusChangeTime :: FileStatus -> EpochTime
 
 deviceID (FileStatus stat) = 
@@ -263,12 +329,19 @@ modificationTime (FileStatus stat) =
 statusChangeTime (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_ctime)
 
+-- | Checks if this file is a block device.
 isBlockDevice     :: FileStatus -> Bool
+-- | Checks if this file is a character device.
 isCharacterDevice :: FileStatus -> Bool
+-- | Checks if this file is a named pipe device.
 isNamedPipe       :: FileStatus -> Bool
+-- | Checks if this file is a regular file device.
 isRegularFile     :: FileStatus -> Bool
+-- | Checks if this file is a directory device.
 isDirectory       :: FileStatus -> Bool
+-- | Checks if this file is a symbolic link device.
 isSymbolicLink    :: FileStatus -> Bool
+-- | Checks if this file is a socket device.
 isSocket          :: FileStatus -> Bool
 
 isBlockDevice stat = 
@@ -286,8 +359,10 @@ isSymbolicLink stat =
 isSocket stat = 
   (fileMode stat `intersectFileModes` fileTypeModes) == socketMode
 
--- | @getFileStatus path@ calls @stat@ to get the
---   @FileStatus@ information for the file @path@.
+-- | @getFileStatus path@ calls gets the @FileStatus@ information (user ID,
+-- size, access times, etc.) for the file @path@.
+--
+-- Note: calls @stat@.
 getFileStatus :: FilePath -> IO FileStatus
 getFileStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
@@ -296,9 +371,9 @@ getFileStatus path = do
       throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
--- | @getFdStatus fd@ calls @fstat@ to get the
---   @FileStatus@ information for the file associated with
---   @Fd@ @fd@.
+-- | @getFdStatus fd@ acts as 'getFileStatus' but uses a file descriptor @fd@.
+--
+-- Note: calls @fstat@.
 getFdStatus :: Fd -> IO FileStatus
 getFdStatus (Fd fd) = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
@@ -306,6 +381,11 @@ getFdStatus (Fd fd) = do
     throwErrnoIfMinus1_ "getFdStatus" (c_fstat fd p)
   return (FileStatus fp)
 
+-- | Acts as 'getFileStatus' except when the 'FilePath' refers to a symbolic
+-- link. In that case the @FileStatus@ information of the symbolic link itself
+-- is returned instead of that of the file it points to.
+--
+-- Note: calls @lstat@.
 getSymbolicLinkStatus :: FilePath -> IO FileStatus
 getSymbolicLinkStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
@@ -317,14 +397,25 @@ getSymbolicLinkStatus path = do
 foreign import ccall unsafe "lstat" 
   c_lstat :: CString -> Ptr CStat -> IO CInt
 
--- | @createNamedPipe fifo mode@ calls @mkfifo@ to 
---   create a new named pipe, @fifo@, with permissions based on
---   @mode@.
+-- | @createNamedPipe fifo mode@  
+-- creates a new named pipe, @fifo@, with permissions based on
+-- @mode@. May fail with 'throwErrnoPathIfMinus1_' if a file named @name@
+-- already exists or if the effective user ID of the current process doesn't
+-- have permission to create the pipe.
+--
+-- Note: calls @mkfifo@.
 createNamedPipe :: FilePath -> FileMode -> IO ()
 createNamedPipe name mode = do
   withCString name $ \s -> 
     throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
 
+-- | @createDevice path mode dev@ creates either a regular or a special file
+-- depending on the value of @mode@ (and @dev@). May fail with
+-- 'throwErrnoPathIfMinus1_' if a file named @name@ already exists or if the
+-- effective user ID of the current process doesn't have permission to create
+-- the file.
+--
+-- Note: calls @mknod@.
 createDevice :: FilePath -> FileMode -> DeviceID -> IO ()
 createDevice path mode dev =
   withCString path $ \s ->
@@ -336,16 +427,19 @@ foreign import ccall unsafe "mknod"
 -- -----------------------------------------------------------------------------
 -- Hard links
 
--- | @createLink old new@ calls @link@ to create a 
---   new path, @new@, linked to an existing file, @old@.
+-- | @createLink old new@ creates a new path, @new@, linked to an existing file,
+-- @old@.
+--
+-- Note: calls @link@.
 createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
   withCString name1 $ \s1 ->
   withCString name2 $ \s2 ->
   throwErrnoPathIfMinus1_ "createLink" name1 (c_link s1 s2)
 
--- | @removeLink path@ calls @unlink@ to remove the link
---   named @path@.
+-- | @removeLink path@ removes the link named @path@.
+--
+-- Note: calls @unlink@.
 removeLink :: FilePath -> IO ()
 removeLink name =
   withCString name $ \s ->
@@ -354,6 +448,13 @@ removeLink name =
 -- -----------------------------------------------------------------------------
 -- Symbolic Links
 
+-- | @createSymbolicLink file1 file2@ creates a symbolic link named @file2@
+-- which points to the file @file1@.
+--
+-- Symbolic links are interpreted at run-time as if the contents of the link
+-- had been substituted into the path being followed to find a file or directory.
+--
+-- Note: calls @symlink@.
 createSymbolicLink :: FilePath -> FilePath -> IO ()
 createSymbolicLink file1 file2 =
   withCString file1 $ \s1 ->
@@ -372,6 +473,9 @@ foreign import ccall unsafe "symlink"
 #define PATH_MAX 4096
 #endif
 
+-- | Reads the @FilePath@ pointed to by the symbolic link and returns it.
+--
+-- Note: calls @readlink@.
 readSymbolicLink :: FilePath -> IO FilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
@@ -386,8 +490,9 @@ foreign import ccall unsafe "readlink"
 -- -----------------------------------------------------------------------------
 -- Renaming files
 
--- | @rename old new@ calls @rename@ to rename a 
---   file or directory from @old@ to @new@.
+-- | @rename old new@ renames a file or directory from @old@ to @new@.
+--
+-- Note: calls @rename@.
 rename :: FilePath -> FilePath -> IO ()
 rename name1 name2 =
   withCString name1 $ \s1 ->
@@ -395,11 +500,14 @@ rename name1 name2 =
   throwErrnoPathIfMinus1_ "rename" name1 (c_rename s1 s2)
 
 -- -----------------------------------------------------------------------------
--- chmod()
+-- chown()
 
--- | @setOwnerAndGroup path uid gid@ calls @chown@ to
---   set the @UserID@ and @GroupID@ associated with file
---   @path@ to @uid@ and @gid@, respectively.
+-- | @setOwnerAndGroup path uid gid@ changes the owner and group of @path@ to
+-- @uid@ and @gid@, respectively.
+--
+-- If @uid@ or @gid@ is specified as -1, then that ID is not changed.
+--
+-- Note: calls @chown@.
 setOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setOwnerAndGroup name uid gid = do
   withCString name $ \s ->
@@ -408,6 +516,10 @@ setOwnerAndGroup name uid gid = do
 foreign import ccall unsafe "chown"
   c_chown :: CString -> CUid -> CGid -> IO CInt
 
+-- | Acts as 'setOwnerAndGroup' but uses a file descriptor instead of a
+-- 'FilePath'.
+--
+-- Note: calls @fchown@.
 setFdOwnerAndGroup :: Fd -> UserID -> GroupID -> IO ()
 setFdOwnerAndGroup (Fd fd) uid gid = 
   throwErrnoIfMinus1_ "setFdOwnerAndGroup" (c_fchown fd uid gid)
@@ -416,6 +528,10 @@ foreign import ccall unsafe "fchown"
   c_fchown :: CInt -> CUid -> CGid -> IO CInt
 
 #if HAVE_LCHOWN
+-- | Acts as 'setOwnerAndGroup' but does not follow symlinks (and thus
+-- changes permissions on the link itself).
+--
+-- Note: calls @lchown@.
 setSymbolicLinkOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
   withCString name $ \s ->
@@ -429,9 +545,10 @@ foreign import ccall unsafe "lchown"
 -- -----------------------------------------------------------------------------
 -- utime()
 
--- | @setFileTimes path atime mtime@ calls @utime@ to
---   set the access and modification times associated with file
---   @path@ to @atime@ and @mtime@, respectively.
+-- | @setFileTimes path atime mtime@ sets the access and modification times
+-- associated with file @path@ to @atime@ and @mtime@, respectively.
+--
+-- Note: calls @utime@.
 setFileTimes :: FilePath -> EpochTime -> EpochTime -> IO ()
 setFileTimes name atime mtime = do
   withCString name $ \s ->
@@ -440,9 +557,10 @@ setFileTimes name atime mtime = do
      (#poke struct utimbuf, modtime) p mtime
      throwErrnoPathIfMinus1_ "setFileTimes" name (c_utime s p)
 
--- | @touchFile path@ calls @utime@ to
---   set the access and modification times associated with file
---   @path@ to the current time.
+-- | @touchFile path@ sets the access and modification times associated with
+-- file @path@ to the current time.
+--
+-- Note: calls @utime@.
 touchFile :: FilePath -> IO ()
 touchFile name = do
   withCString name $ \s ->
@@ -451,6 +569,10 @@ touchFile name = do
 -- -----------------------------------------------------------------------------
 -- Setting file sizes
 
+-- | Truncates the file down to the specified length. If the file was larger
+-- than the given length before this operation was performed the extra is lost.
+--
+-- Note: calls @truncate@.
 setFileSize :: FilePath -> FileOffset -> IO ()
 setFileSize file off = 
   withCString file $ \s ->
@@ -459,6 +581,9 @@ setFileSize file off =
 foreign import ccall unsafe "truncate"
   c_truncate :: CString -> COff -> IO CInt
 
+-- | Acts as 'setFileSize' but uses a file descriptor instead of a 'FilePath'.
+--
+-- Note: calls @ftruncate@.
 setFdSize :: Fd -> FileOffset -> IO ()
 setFdSize (Fd fd) off =
   throwErrnoIfMinus1_ "setFdSize" (c_ftruncate fd off)
@@ -531,12 +656,13 @@ pathVarConst v = case v of
 #endif
 
 
--- | @getPathVar var path@ calls @pathconf@ to obtain the
---   dynamic value of the requested configurable file limit or option associated
---   with file or directory @path@.  For
---   defined file limits, @getPathVar@ returns the associated
---   value.  For defined file options, the result of @getPathVar@
---   is undefined, but not failure.
+-- | @getPathVar var path@ obtains the dynamic value of the requested
+-- configurable file limit or option associated with file or directory @path@.
+-- For defined file limits, @getPathVar@ returns the associated
+-- value.  For defined file options, the result of @getPathVar@
+-- is undefined, but not failure.
+--
+-- Note: calls @pathconf@.
 getPathVar :: FilePath -> PathVar -> IO Limit
 getPathVar name v = do
   withCString name $ \ nameP -> 
@@ -547,12 +673,13 @@ foreign import ccall unsafe "pathconf"
   c_pathconf :: CString -> CInt -> IO CLong
 
 
--- | @getFdPathVar var fd@ calls @fpathconf@ to obtain the
---   dynamic value of the requested configurable file limit or option associated
---   with the file or directory attached to the open channel @fd@.
---   For defined file limits, @getFdPathVar@ returns the associated
---   value.  For defined file options, the result of @getFdPathVar@
---   is undefined, but not failure.
+-- | @getFdPathVar var fd@ obtains the dynamic value of the requested
+-- configurable file limit or option associated with the file or directory
+-- attached to the open channel @fd@. For defined file limits, @getFdPathVar@
+-- returns the associated value.  For defined file options, the result of
+-- @getFdPathVar@ is undefined, but not failure.
+--
+-- Note: calls @fpathconf@.
 getFdPathVar :: Fd -> PathVar -> IO Limit
 getFdPathVar fd v =
     throwErrnoIfMinus1 "getFdPathVar" $ 
