@@ -90,8 +90,7 @@ import GHC.TopHandler	( runIO )
 -- -----------------------------------------------------------------------------
 -- Process environment
 
--- | <function>getProcessID</function> calls <function>getpid</function> to obtain 
---   the <literal>ProcessID</literal> for
+-- | 'getProcessID' calls @getpid@ to obtain the 'ProcessID' for
 --   the current process.
 getProcessID :: IO ProcessID
 getProcessID = c_getpid
@@ -99,7 +98,7 @@ getProcessID = c_getpid
 foreign import ccall unsafe "getpid"
    c_getpid :: IO CPid
 
--- | <function>getProcessID</function> calls <function>getppid</function> to obtain the <literal>ProcessID</literal> for
+-- | 'getProcessID' calls @getppid@ to obtain the 'ProcessID' for
 --   the parent of the current process.
 getParentProcessID :: IO ProcessID
 getParentProcessID = c_getppid
@@ -107,29 +106,29 @@ getParentProcessID = c_getppid
 foreign import ccall unsafe "getppid"
   c_getppid :: IO CPid
 
--- | <function>getProcessGroupID</function> calls <function>getpgrp</function> to obtain the
---   <literal>ProcessGroupID</literal> for the current process.
+-- | 'getProcessGroupID' calls @getpgrp@ to obtain the
+--   'ProcessGroupID' for the current process.
 getProcessGroupID :: IO ProcessGroupID
 getProcessGroupID = c_getpgrp
 
 foreign import ccall unsafe "getpgrp"
   c_getpgrp :: IO CPid
 
--- | <literal>createProcessGroup pid</literal> calls <function>setpgid</function> to make
---   process <literal>pid</literal> a new process group leader.
+-- | @'createProcessGroup' pid@ calls @setpgid@ to make
+--   process @pid@ a new process group leader.
 createProcessGroup :: ProcessID -> IO ProcessGroupID
 createProcessGroup pid = do
   throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid pid 0)
   return pid
 
--- | <literal>joinProcessGroup pgid</literal> calls <function>setpgid</function> to set the
---   <literal>ProcessGroupID</literal> of the current process to <literal>pgid</literal>.
+-- | @'joinProcessGroup' pgid@ calls @setpgid@ to set the
+--   'ProcessGroupID' of the current process to @pgid@.
 joinProcessGroup :: ProcessGroupID -> IO ()
 joinProcessGroup pgid =
   throwErrnoIfMinus1_ "joinProcessGroup" (c_setpgid 0 pgid)
 
--- | <literal>setProcessGroupID pid pgid</literal> calls <function>setpgid</function> to set the
---   <literal>ProcessGroupID</literal> for process <literal>pid</literal> to <literal>pgid</literal>.
+-- | @'setProcessGroupID' pid pgid@ calls @setpgid@ to set the
+--   'ProcessGroupID' for process @pid@ to @pgid@.
 setProcessGroupID :: ProcessID -> ProcessGroupID -> IO ()
 setProcessGroupID pid pgid =
   throwErrnoIfMinus1_ "setProcessGroupID" (c_setpgid pid pgid)
@@ -137,7 +136,7 @@ setProcessGroupID pid pgid =
 foreign import ccall unsafe "setpgid"
   c_setpgid :: CPid -> CPid -> IO CInt
 
--- | <function>createSession</function> calls <function>setsid</function> to create a new session
+-- | 'createSession' calls @setsid@ to create a new session
 --   with the current process as session leader.
 createSession :: IO ProcessGroupID
 createSession = throwErrnoIfMinus1 "createSession" c_setsid
@@ -158,7 +157,7 @@ data ProcessTimes
 		 , childSystemTime :: ClockTick
 		 }
 
--- | <function>getProcessTimes</function> calls <function>times</function> to obtain time-accounting
+-- | 'getProcessTimes' calls @times@ to obtain time-accounting
 --   information for the current process and its children.
 getProcessTimes :: IO ProcessTimes
 getProcessTimes = do
@@ -256,14 +255,14 @@ forkProcess action = do
 foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CPid
 #endif /* __GLASGOW_HASKELL__ */
 
--- | <literal>executeFile cmd args env</literal> calls one of the
---   <function>execv*</function> family, depending on whether or not the current
+-- | @'executeFile' cmd args env@ calls one of the
+--   @execv*@ family, depending on whether or not the current
 --   PATH is to be searched for the command, and whether or not an
 --   environment is provided to supersede the process's current
 --   environment.  The basename (leading directory names suppressed) of
---   the command is passed to <function>execv*</function> as <varname>arg[0]</varname>;
---   the argument list passed to <function>executeFile</function> therefore 
---   begins with <varname>arg[1]</varname>.
+--   the command is passed to @execv*@ as @arg[0]@;
+--   the argument list passed to 'executeFile' therefore 
+--   begins with @arg[1]@.
 executeFile :: FilePath			    -- ^ Command
             -> Bool			    -- ^ Search PATH?
             -> [String]			    -- ^ Arguments
@@ -309,12 +308,12 @@ data ProcessStatus = Exited ExitCode
                    | Stopped Signal
 		   deriving (Eq, Ord, Show)
 
--- | <literal>getProcessStatus blk stopped pid</literal> calls <function>waitpid</function>, returning
---   <literal>Just tc</literal>, the <literal>ProcessStatus</literal> for process <literal>pid</literal> if it is
---   available, <literal>Nothing</literal> otherwise.  If <literal>blk</literal> is <literal>False</literal>, then
---   <literal>WNOHANG</literal> is set in the options for <function>waitpid</function>, otherwise not.
---   If <literal>stopped</literal> is <literal>True</literal>, then <literal>WUNTRACED</literal> is set in the
---   options for <function>waitpid</function>, otherwise not.
+-- | @'getProcessStatus' blk stopped pid@ calls @waitpid@, returning
+--   @'Just' tc@, the 'ProcessStatus' for process @pid@ if it is
+--   available, 'Nothing' otherwise.  If @blk@ is 'False', then
+--   @WNOHANG@ is set in the options for @waitpid@, otherwise not.
+--   If @stopped@ is 'True', then @WUNTRACED@ is set in the
+--   options for @waitpid@, otherwise not.
 getProcessStatus :: Bool -> Bool -> ProcessID -> IO (Maybe ProcessStatus)
 getProcessStatus block stopped pid =
   alloca $ \wstatp -> do
@@ -329,13 +328,13 @@ getProcessStatus block stopped pid =
 foreign import ccall safe "waitpid"
   c_waitpid :: CPid -> Ptr CInt -> CInt -> IO CPid
 
--- | <literal>getGroupProcessStatus blk stopped pgid</literal> calls <function>waitpid</function>,
---   returning <literal>Just (pid, tc)</literal>, the <literal>ProcessID</literal> and
---   <literal>ProcessStatus</literal> for any process in group <literal>pgid</literal> if one is
---   available, <literal>Nothing</literal> otherwise.  If <literal>blk</literal> is <literal>False</literal>, then
---   <literal>WNOHANG</literal> is set in the options for <function>waitpid</function>, otherwise not.
---   If <literal>stopped</literal> is <literal>True</literal>, then <literal>WUNTRACED</literal> is set in the
---   options for <function>waitpid</function>, otherwise not.
+-- | @'getGroupProcessStatus' blk stopped pgid@ calls @waitpid@,
+--   returning @'Just' (pid, tc)@, the 'ProcessID' and
+--   'ProcessStatus' for any process in group @pgid@ if one is
+--   available, 'Nothing' otherwise.  If @blk@ is 'False', then
+--   @WNOHANG@ is set in the options for @waitpid@, otherwise not.
+--   If @stopped@ is 'True', then @WUNTRACED@ is set in the
+--   options for @waitpid@, otherwise not.
 getGroupProcessStatus :: Bool
                       -> Bool
                       -> ProcessGroupID
@@ -348,12 +347,12 @@ getGroupProcessStatus block stopped pgid =
       0  -> return Nothing
       _  -> do ps <- decipherWaitStatus wstatp
 	       return (Just (pid, ps))
--- | <literal>getAnyProcessStatus blk stopped</literal> calls <function>waitpid</function>, returning
---   <literal>Just (pid, tc)</literal>, the <literal>ProcessID</literal> and <literal>ProcessStatus</literal> for any
---   child process if one is available, <literal>Nothing</literal> otherwise.  If
---   <literal>blk</literal> is <literal>False</literal>, then <literal>WNOHANG</literal> is set in the options for
---   <function>waitpid</function>, otherwise not.  If <literal>stopped</literal> is <literal>True</literal>, then
---   <literal>WUNTRACED</literal> is set in the options for <function>waitpid</function>, otherwise not.
+-- | @'getAnyProcessStatus' blk stopped@ calls @waitpid@, returning
+--   @'Just' (pid, tc)@, the 'ProcessID' and 'ProcessStatus' for any
+--   child process if one is available, 'Nothing' otherwise.  If
+--   @blk@ is 'False', then @WNOHANG@ is set in the options for
+--   @waitpid@, otherwise not.  If @stopped@ is 'True', then
+--   @WUNTRACED@ is set in the options for @waitpid@, otherwise not.
 getAnyProcessStatus :: Bool -> Bool -> IO (Maybe (ProcessID, ProcessStatus))
 getAnyProcessStatus block stopped = getGroupProcessStatus block stopped 1
 
@@ -410,8 +409,8 @@ foreign import ccall unsafe "__hsunix_wstopsig"
 -- -----------------------------------------------------------------------------
 -- Exiting
 
--- | <literal>exitImmediately status</literal> calls <function>&lowbar;exit</function> to terminate the process
---   with the indicated exit <literal>status</literal>.
+-- | @'exitImmediately' status@ calls @_exit@ to terminate the process
+--   with the indicated exit @status@.
 --   The operation never returns.
 exitImmediately :: ExitCode -> IO ()
 exitImmediately exitcode = c_exit (exitcode2Int exitcode)
