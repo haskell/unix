@@ -12,6 +12,8 @@ SRC_HADDOCK_OPTS += -t "Haskell Hierarchical Libraries ($(PACKAGE) package)"
 SRC_HSC2HS_OPTS += -Iinclude -I../../mk/ $(unix_SRC_HSC2HS_OPTS)
 SRC_HC_OPTS     += -Iinclude $(unix_SRC_HSC2HS_OPTS)
 
+EXCLUDED_SRCS += Setup.hs
+
 DIST_CLEAN_FILES += unix.buildinfo config.cache config.status 
 
 include $(TOP)/mk/target.mk
