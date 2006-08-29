@@ -146,6 +146,7 @@ getEffectiveUserName = do
 data GroupEntry =
  GroupEntry {
   groupName    :: String,
+  groupPassword :: String,
   groupID      :: GroupID,
   groupMembers :: [String]
  }
@@ -209,10 +210,11 @@ grBufSize = 2048	-- just assume some value (1024 is too small on OpenBSD)
 unpackGroupEntry :: Ptr CGroup -> IO GroupEntry
 unpackGroupEntry ptr = do
    name    <- (#peek struct group, gr_name) ptr >>= peekCString
+   passwd  <- (#peek struct group, gr_passwd) ptr >>= peekCString
    gid     <- (#peek struct group, gr_gid) ptr
    mem     <- (#peek struct group, gr_mem) ptr
    members <- peekArray0 nullPtr mem >>= mapM peekCString
-   return (GroupEntry name gid members)
+   return (GroupEntry name passwd gid members)
 
 -- -----------------------------------------------------------------------------
 -- The user database (pwd.h)
