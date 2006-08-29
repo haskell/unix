@@ -145,10 +145,10 @@ getEffectiveUserName = do
 
 data GroupEntry =
  GroupEntry {
-  groupName    :: String,
-  groupPassword :: String,
-  groupID      :: GroupID,
-  groupMembers :: [String]
+  groupName    :: String,       -- | The name of this group (gr_name)
+  groupPassword :: String,      -- | The password for this group (gr_passwd)
+  groupID      :: GroupID,      -- | The unique numeric ID for this group (gr_gid)
+  groupMembers :: [String]      -- | A list of zero or more usernames that are members (gr_mem)
  }
 
 -- | @getGroupEntryForID gid@ calls @getgrgid@ to obtain
@@ -221,13 +221,13 @@ unpackGroupEntry ptr = do
 
 data UserEntry =
  UserEntry {
-   userName      :: String,
-   userPassword  :: String,
-   userID        :: UserID,
-   userGroupID   :: GroupID,
-   userGecos     :: String,     -- | Usually the real name for the user
-   homeDirectory :: String,
-   userShell     :: String
+   userName      :: String,     -- | Textual name of this user (pw_name)
+   userPassword  :: String,     -- | Password -- may be empty or fake if shadow is in use (pw_passwd)
+   userID        :: UserID,     -- | Numeric ID for this user (pw_uid)
+   userGroupID   :: GroupID,    -- | Primary group ID (pw_gid)
+   userGecos     :: String,     -- | Usually the real name for the user (pw_gecos)
+   homeDirectory :: String,     -- | Home directory (pw_dir)
+   userShell     :: String      -- | Default shell (pw_shell)
  }
 
 --
