@@ -220,8 +220,10 @@ unpackGroupEntry ptr = do
 data UserEntry =
  UserEntry {
    userName      :: String,
+   userPassword  :: String,
    userID        :: UserID,
    userGroupID   :: GroupID,
+   userGecos     :: String,     -- | Usually the real name for the user
    homeDirectory :: String,
    userShell     :: String
  }
@@ -316,11 +318,13 @@ foreign import ccall unsafe "sysconf"
 unpackUserEntry :: Ptr CPasswd -> IO UserEntry
 unpackUserEntry ptr = do
    name   <- (#peek struct passwd, pw_name)  ptr >>= peekCString
+   passwd <- (#peek struct passwd, pw_passwd) ptr >>= peekCString
    uid    <- (#peek struct passwd, pw_uid)   ptr
    gid    <- (#peek struct passwd, pw_gid)   ptr
+   gecos  <- (#peek struct passwd, pw_gecos) ptr >>= peekCString
    dir    <- (#peek struct passwd, pw_dir)   ptr >>= peekCString
    shell  <- (#peek struct passwd, pw_shell) ptr >>= peekCString
-   return (UserEntry name uid gid dir shell)
+   return (UserEntry name passwd uid gid gecos dir shell)
 
 -- Used when calling re-entrant system calls that signal their 'errno' 
 -- directly through the return value.
