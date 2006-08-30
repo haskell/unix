@@ -17,6 +17,7 @@ AC_CHECK_HEADERS([sys/utsname.h sys/wait.h])
 AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
+AC_CHECK_FUNCS([getpwent getgrent])
 AC_CHECK_FUNCS([lchown setenv sysconf unsetenv])
 
 AC_MSG_CHECKING([for _SC_GETGR_R_SIZE_MAX])

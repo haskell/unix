@@ -28,11 +28,13 @@ module System.Posix.User (
     GroupEntry(..),
     getGroupEntryForID,
     getGroupEntryForName,
+    getAllGroupEntries,
 
     -- *** The user database
     UserEntry(..),
     getUserEntryForID,
     getUserEntryForName,
+    getAllUserEntries,
 
     -- ** Modifying the user environment
     setUserID,
@@ -47,7 +49,7 @@ import Foreign
 import Foreign.C
 import System.Posix.Internals	( CGroup, CPasswd )
 
-#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R)
+#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 import Control.Concurrent.MVar  ( newMVar, withMVar )
 #endif
 
@@ -197,6 +199,25 @@ foreign import ccall unsafe "getgrnam_r"
 getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not supported"
 #endif
 
+-- | @getAllGroupEntries@ returns all group entries on the system by
+--   repeatedly calling @getgrent@
+getAllGroupEntries :: IO [GroupEntry]
+#ifdef HAVE_GETGRENT
+getAllGroupEntries =
+    withMVar lock $ \_ -> worker []
+    where worker accum =
+          do ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $ c_getgrent
+             if ppw == nullPtr
+                then return (reverse accum)
+                else do thisentry <- unpackGroupEntry ppw
+                        worker (thisentry : accum)
+
+foreign import ccall unsafe "getgrent"
+  c_getgrent :: IO (Ptr CGroup)
+#else
+getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
+#endif
+
 #if defined(HAVE_GETGRGID_R) || defined(HAVE_GETGRNAM_R)
 grBufSize :: Int
 #if defined(HAVE_SYSCONF) && defined(HAVE_SC_GETGR_R_SIZE_MAX)
@@ -235,7 +256,9 @@ data UserEntry =
 -- calls modify the same object, which isn't threadsafe. We attempt to
 -- mitigate this issue, on platforms that don't provide the safe _r versions
 --
-#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R)
+-- Also, getpwent/setpwent require a global lock since they maintain
+-- an internal file position pointer.
+#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 lock = unsafePerformIO $ newMVar ()
 {-# NOINLINE lock #-}
 #endif
@@ -300,6 +323,25 @@ foreign import ccall unsafe "getpwnam"
   c_getpwnam :: CString -> IO (Ptr CPasswd)
 #else
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
+#endif
+
+-- | @getAllUserEntries@ returns all user entries on the system by 
+--   repeatedly calling @getpwent@
+getAllUserEntries :: IO [UserEntry]
+#ifdef HAVE_GETPWENT
+getAllUserEntries = 
+    withMVar lock $ \_ -> worker []
+    where worker accum = 
+          do ppw <- throwErrnoIfNullAndError "getAllUserEntries" $ c_getpwent
+             if ppw == nullPtr
+                then return (reverse accum)
+                else do thisentry <- unpackUserEntry ppw
+                        worker (thisentry : accum)
+
+foreign import ccall unsafe "getpwent"
+  c_getpwent :: IO (Ptr CPasswd)
+#else
+getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 #endif
 
 #if defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWNAM_R)
