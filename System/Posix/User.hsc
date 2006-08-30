@@ -206,11 +206,13 @@ getAllGroupEntries :: IO [GroupEntry]
 getAllGroupEntries =
     withMVar lock $ \_ -> worker []
     where worker accum =
-          do ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $ c_getgrent
-             if ppw == nullPtr
-                then return (reverse accum)
-                else do thisentry <- unpackGroupEntry ppw
-                        worker (thisentry : accum)
+              do resetErrno
+                 ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $ 
+                        c_getgrent
+                 if ppw == nullPtr
+                     then return (reverse accum)
+                     else do thisentry <- unpackGroupEntry ppw
+                             worker (thisentry : accum)
 
 foreign import ccall unsafe "getgrent"
   c_getgrent :: IO (Ptr CGroup)
@@ -332,11 +334,13 @@ getAllUserEntries :: IO [UserEntry]
 getAllUserEntries = 
     withMVar lock $ \_ -> worker []
     where worker accum = 
-          do ppw <- throwErrnoIfNullAndError "getAllUserEntries" $ c_getpwent
-             if ppw == nullPtr
-                then return (reverse accum)
-                else do thisentry <- unpackUserEntry ppw
-                        worker (thisentry : accum)
+              do resetErrno
+                 ppw <- throwErrnoIfNullAndError "getAllUserEntries" $ 
+                        c_getpwent
+                 if ppw == nullPtr
+                     then return (reverse accum)
+                     else do thisentry <- unpackUserEntry ppw
+                             worker (thisentry : accum)
 
 foreign import ccall unsafe "getpwent"
   c_getpwent :: IO (Ptr CPasswd)
@@ -379,3 +383,12 @@ throwErrorIfNonZero_ loc act = do
      then return ()
      else ioError (errnoToIOError loc (Errno (fromIntegral rc)) Nothing Nothing)
 
+-- Used when a function returns NULL to indicate either an error or
+-- EOF, depending on whether the global errno is nonzero.
+throwErrnoIfNullAndError :: String -> IO (Ptr a) -> IO (Ptr a)
+throwErrnoIfNullAndError loc act = do
+    rc <- act
+    errno <- getErrno
+    if rc == nullPtr && errno /= eOK
+       then throwErrno loc
+       else return rc
