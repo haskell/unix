@@ -151,7 +151,7 @@ data GroupEntry =
   groupPassword :: String,      -- | The password for this group (gr_passwd)
   groupID      :: GroupID,      -- | The unique numeric ID for this group (gr_gid)
   groupMembers :: [String]      -- | A list of zero or more usernames that are members (gr_mem)
- }
+ } deriving (Show, Read, Eq)
 
 -- | @getGroupEntryForID gid@ calls @getgrgid@ to obtain
 --   the @GroupEntry@ information associated with @GroupID@
@@ -251,7 +251,7 @@ data UserEntry =
    userGecos     :: String,     -- | Usually the real name for the user (pw_gecos)
    homeDirectory :: String,     -- | Home directory (pw_dir)
    userShell     :: String      -- | Default shell (pw_shell)
- }
+ } deriving (Show, Read, Eq)
 
 --
 -- getpwuid and getpwnam leave results in a static object. Subsequent
