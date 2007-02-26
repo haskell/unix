@@ -394,7 +394,7 @@ getSymbolicLinkStatus path = do
       throwErrnoPathIfMinus1_ "getSymbolicLinkStatus" path (c_lstat s p)
   return (FileStatus fp)
 
-foreign import ccall unsafe "lstat" 
+foreign import ccall unsafe "__hsunix_lstat" 
   c_lstat :: CString -> Ptr CStat -> IO CInt
 
 -- | @createNamedPipe fifo mode@  
@@ -421,7 +421,7 @@ createDevice path mode dev =
   withCString path $ \s ->
     throwErrnoPathIfMinus1_ "createDevice" path (c_mknod s mode dev)
 
-foreign import ccall unsafe "mknod" 
+foreign import ccall unsafe "__hsunix_mknod" 
   c_mknod :: CString -> CMode -> CDev -> IO CInt
 
 -- -----------------------------------------------------------------------------

@@ -118,4 +118,16 @@ INLINE int __hsunix_SIGINFO()	{ return SIGINFO; }
 INLINE int __hsunix_SIGWINCH()	{ return SIGWINCH; }
 #endif
 
+// lstat is a macro on some platforms, so we need a wrapper:
+INLINE int __hsunix_lstat(const char *path, struct stat *buf) 
+{ 
+    return lstat(path,buf);
+}
+
+// lstat is a macro on some platforms, so we need a wrapper:
+INLINE int __hsunix_mknod(const char *pathname, mode_t mode, dev_t dev)
+{ 
+    return mknod(pathname,mode,dev);
+}
+
 #endif
