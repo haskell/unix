@@ -243,6 +243,16 @@ The 'IO' action passed as an argument is executed in the child process; no other
 threads will be copied to the child process.
 On success, 'forkProcess' returns the child's 'ProcessID' to the parent process;
 in case of an error, an exception is thrown.
+
+'forkProcess' comes with a giant warning: since any other running
+threads are not copied into the child process, it's easy to go wrong:
+e.g. by accessing some shared resource that was held by another thread
+in the parent.  Another example is the I\/O manager thread: since the
+I\/O manager isn't running in the child, attempting to do any
+Handle-based I\/O will deadlock.
+
+Using 'forkProcess' in order to do 'executeFile' is likely to work.
+Anything else: you're on your own.
 -}
 
 forkProcess :: IO () -> IO ProcessID
