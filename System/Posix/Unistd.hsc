@@ -22,7 +22,7 @@ module System.Posix.Unistd (
     getSysVar,
 
     -- * Sleeping
-    sleep, usleep,
+    sleep, usleep, nanosleep,
 
   {-
     ToDo from unistd.h:
@@ -50,9 +50,8 @@ module System.Posix.Unistd (
 
 import Foreign.C.Error
 import Foreign.C.String ( peekCString )
-import Foreign.C.Types ( CInt, CUInt, CLong )
-import Foreign.Marshal.Alloc ( allocaBytes )
-import Foreign.Ptr ( Ptr, plusPtr )
+import Foreign.C.Types
+import Foreign
 import System.Posix.Types
 import System.Posix.Internals
 
@@ -110,6 +109,9 @@ foreign import ccall safe "sleep"
 -- neither of these shortcomings.
 --
 usleep :: Int -> IO ()
+#ifdef HAVE_NANOSLEEP
+usleep usecs = nanosleep (fromIntegral usecs * 1000)
+#else
 usleep 0 = return ()
 #ifdef USLEEP_RETURNS_VOID
 usleep usecs = c_usleep (fromIntegral usecs)
@@ -123,6 +125,40 @@ foreign import ccall safe "usleep"
 #else
 foreign import ccall safe "usleep"
   c_usleep :: CUInt -> IO CInt
+#endif
+#endif /* HAVE_NANOSLEEP */
+
+-- | Sleep for the specified duration (in nanoseconds)
+--
+nanosleep :: Integer -> IO ()
+#ifndef HAVE_NANOSLEEP
+nanosleep = error "nanosleep: not available on this platform"
+#else
+nanosleep 0 = return ()
+nanosleep nsecs = do
+  allocaBytes (#const sizeof(struct timespec)) $ \pts1 -> do
+  allocaBytes (#const sizeof(struct timespec)) $ \pts2 -> do
+     let (tv_sec,tv_nsec) = nsecs `divMod` 1000000000
+     let 
+       loop tv_sec tv_nsec = do
+         (#poke struct timespec, tv_sec)  pts1 tv_sec
+         (#poke struct timespec, tv_nsec) pts1 tv_nsec
+         res <- c_nanosleep pts1 pts2
+         if res == 0
+            then return ()
+            else do errno <- getErrno
+                    if errno == eINTR
+                       then do
+                           tv_sec  <- (#peek struct timespec, tv_sec)  pts2
+                           tv_nsec <- (#peek struct timespec, tv_nsec) pts2
+                           loop tv_sec tv_nsec
+                       else throwErrno "nanosleep"
+     loop (fromIntegral tv_sec :: CTime) (fromIntegral tv_nsec :: CTime)
+
+newtype CTimeSpec = CTimeSpec CTimeSpec
+
+foreign import ccall safe "nanosleep" 
+  c_nanosleep :: Ptr CTimeSpec -> Ptr CTimeSpec -> IO CInt
 #endif
 
 -- -----------------------------------------------------------------------------

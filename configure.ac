@@ -19,6 +19,7 @@ AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
 AC_CHECK_FUNCS([getpwent getgrent])
 AC_CHECK_FUNCS([lchown setenv sysconf unsetenv])
+AC_CHECK_FUNCS([nanosleep])
 
 AC_MSG_CHECKING([for _SC_GETGR_R_SIZE_MAX])
 AC_EGREP_CPP(we_have_that_sysconf_thing,
