@@ -114,7 +114,7 @@ usleep 0 = return ()
 #ifdef USLEEP_RETURNS_VOID
 usleep usecs = c_usleep (fromIntegral usecs)
 #else
-usleep usecs = throwErrnoIfMinus1Retry_ "usleep" (c_usleep (fromIntegral usecs))
+usleep usecs = throwErrnoIfMinus1_ "usleep" (c_usleep (fromIntegral usecs))
 #endif
 
 #ifdef USLEEP_RETURNS_VOID
