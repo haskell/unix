@@ -33,6 +33,9 @@ module System.Posix.Files (
     otherReadMode, otherWriteMode, otherExecuteMode, otherModes,
     setUserIDMode, setGroupIDMode,
     stdFileMode,   accessModes,
+    fileTypeModes,
+    blockSpecialMode, characterSpecialMode, namedPipeMode, regularFileMode,
+    directoryMode, symbolicLinkMode, socketMode,
 
     -- ** Setting file modes
     setFileMode, setFdMode, setFileCreationMask,
@@ -410,7 +413,8 @@ createNamedPipe name mode = do
     throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
 
 -- | @createDevice path mode dev@ creates either a regular or a special file
--- depending on the value of @mode@ (and @dev@). May fail with
+-- depending on the value of @mode@ (and @dev@).  @mode@ will normally be either
+-- 'blockSpecialMode' or 'characterSpecialMode'.  May fail with
 -- 'throwErrnoPathIfMinus1_' if a file named @name@ already exists or if the
 -- effective user ID of the current process doesn't have permission to create
 -- the file.
