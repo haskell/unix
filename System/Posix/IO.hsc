@@ -264,7 +264,8 @@ setFdOption (Fd fd) opt val = do
   r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd getflag)
   let r' | val       = r .|. opt_val
 	 | otherwise = r .&. (complement opt_val)
-  throwErrnoIfMinus1_ "setFdOption" (c_fcntl_write fd setflag r')
+  throwErrnoIfMinus1_ "setFdOption"
+                      (c_fcntl_write fd setflag (fromIntegral r'))
  where
   (getflag,setflag)= case opt of
 	      CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD)) 

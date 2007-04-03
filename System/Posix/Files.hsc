@@ -267,7 +267,7 @@ fileExist name =
 access :: FilePath -> CMode -> IO Bool
 access name flags = 
   withCString name $ \s -> do
-    r <- c_access s flags
+    r <- c_access s (fromIntegral flags)
     if (r == 0)
 	then return True
 	else do err <- getErrno
