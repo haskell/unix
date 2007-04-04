@@ -220,11 +220,11 @@ setFileMode name m =
 --
 -- Note: calls @fchmod@.
 setFdMode :: Fd -> FileMode -> IO ()
-setFdMode fd m =
+setFdMode (Fd fd) m =
   throwErrnoIfMinus1_ "setFdMode" (c_fchmod fd m)
 
 foreign import ccall unsafe "fchmod" 
-  c_fchmod :: Fd -> CMode -> IO CInt
+  c_fchmod :: CInt -> CMode -> IO CInt
 
 -- | @setFileCreationMask mode@ sets the file mode creation mask to @mode@.
 -- Modes set by this operation are subtracted from files and directories upon
@@ -685,9 +685,9 @@ foreign import ccall unsafe "pathconf"
 --
 -- Note: calls @fpathconf@.
 getFdPathVar :: Fd -> PathVar -> IO Limit
-getFdPathVar fd v =
+getFdPathVar (Fd fd) v =
     throwErrnoIfMinus1 "getFdPathVar" $ 
       c_fpathconf fd (pathVarConst v)
 
 foreign import ccall unsafe "fpathconf" 
-  c_fpathconf :: Fd -> CInt -> IO CLong
+  c_fpathconf :: CInt -> CInt -> IO CLong

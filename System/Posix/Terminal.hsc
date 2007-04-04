@@ -360,14 +360,14 @@ foreign import ccall unsafe "cfsetospeed"
 -- | @getTerminalAttributes fd@ calls @tcgetattr@ to obtain
 --   the @TerminalAttributes@ associated with @Fd@ @fd@.
 getTerminalAttributes :: Fd -> IO TerminalAttributes
-getTerminalAttributes fd = do
+getTerminalAttributes (Fd fd) = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p ->
       throwErrnoIfMinus1_ "getTerminalAttributes" (c_tcgetattr fd p)
   return $ makeTerminalAttributes fp
 
 foreign import ccall unsafe "tcgetattr"
-  c_tcgetattr :: Fd -> Ptr CTermios -> IO CInt
+  c_tcgetattr :: CInt -> Ptr CTermios -> IO CInt
 
 data TerminalState
   = Immediately
@@ -381,7 +381,7 @@ setTerminalAttributes :: Fd
                       -> TerminalAttributes
                       -> TerminalState
                       -> IO ()
-setTerminalAttributes fd termios state = do
+setTerminalAttributes (Fd fd) termios state = do
   withTerminalAttributes termios $ \p ->
     throwErrnoIfMinus1_ "setTerminalAttributes"
       (c_tcsetattr fd (state2Int state) p)
@@ -392,25 +392,25 @@ setTerminalAttributes fd termios state = do
     state2Int WhenFlushed = (#const TCSAFLUSH)
 
 foreign import ccall unsafe "tcsetattr"
-   c_tcsetattr :: Fd -> CInt -> Ptr CTermios -> IO CInt
+   c_tcsetattr :: CInt -> CInt -> Ptr CTermios -> IO CInt
 
 -- | @sendBreak fd duration@ calls @tcsendbreak@ to transmit a
 --   continuous stream of zero-valued bits on @Fd@ @fd@ for the
 --   specified implementation-dependent @duration@.
 sendBreak :: Fd -> Int -> IO ()
-sendBreak fd duration
+sendBreak (Fd fd) duration
   = throwErrnoIfMinus1_ "sendBreak" (c_tcsendbreak fd (fromIntegral duration))
 
 foreign import ccall unsafe "tcsendbreak"
-  c_tcsendbreak :: Fd -> CInt -> IO CInt
+  c_tcsendbreak :: CInt -> CInt -> IO CInt
 
 -- | @drainOutput fd@ calls @tcdrain@ to block until all output
 --   written to @Fd@ @fd@ has been transmitted.
 drainOutput :: Fd -> IO ()
-drainOutput fd = throwErrnoIfMinus1_ "drainOutput" (c_tcdrain fd)
+drainOutput (Fd fd) = throwErrnoIfMinus1_ "drainOutput" (c_tcdrain fd)
 
 foreign import ccall unsafe "tcdrain"
-  c_tcdrain :: Fd -> IO CInt
+  c_tcdrain :: CInt -> IO CInt
 
 
 data QueueSelector
@@ -422,7 +422,7 @@ data QueueSelector
 --   pending input and\/or output for @Fd@ @fd@,
 --   as indicated by the @QueueSelector@ @queues@.
 discardData :: Fd -> QueueSelector -> IO ()
-discardData fd queue =
+discardData (Fd fd) queue =
   throwErrnoIfMinus1_ "discardData" (c_tcflush fd (queue2Int queue))
   where
     queue2Int :: QueueSelector -> CInt
@@ -431,7 +431,7 @@ discardData fd queue =
     queue2Int BothQueues  = (#const TCIOFLUSH)
 
 foreign import ccall unsafe "tcflush"
-  c_tcflush :: Fd -> CInt -> IO CInt
+  c_tcflush :: CInt -> CInt -> IO CInt
 
 data FlowAction
   = SuspendOutput	-- ^ TCOOFF
@@ -443,7 +443,7 @@ data FlowAction
 --   flow of data on @Fd@ @fd@, as indicated by
 --   @action@.
 controlFlow :: Fd -> FlowAction -> IO ()
-controlFlow fd action =
+controlFlow (Fd fd) action =
   throwErrnoIfMinus1_ "controlFlow" (c_tcflow fd (action2Int action))
   where
     action2Int :: FlowAction -> CInt
@@ -453,28 +453,28 @@ controlFlow fd action =
     action2Int TransmitStart = (#const TCION)
 
 foreign import ccall unsafe "tcflow"
-  c_tcflow :: Fd -> CInt -> IO CInt
+  c_tcflow :: CInt -> CInt -> IO CInt
 
 -- | @getTerminalProcessGroupID fd@ calls @tcgetpgrp@ to
 --   obtain the @ProcessGroupID@ of the foreground process group 
 --   associated with the terminal attached to @Fd@ @fd@.
 getTerminalProcessGroupID :: Fd -> IO ProcessGroupID
-getTerminalProcessGroupID fd = do
+getTerminalProcessGroupID (Fd fd) = do
   throwErrnoIfMinus1 "getTerminalProcessGroupID" (c_tcgetpgrp fd)
 
 foreign import ccall unsafe "tcgetpgrp"
-  c_tcgetpgrp :: Fd -> IO CPid
+  c_tcgetpgrp :: CInt -> IO CPid
 
 -- | @setTerminalProcessGroupID fd pgid@ calls @tcsetpgrp@ to
 --   set the @ProcessGroupID@ of the foreground process group 
 --   associated with the terminal attached to @Fd@ 
 --   @fd@ to @pgid@.
 setTerminalProcessGroupID :: Fd -> ProcessGroupID -> IO ()
-setTerminalProcessGroupID fd pgid =
+setTerminalProcessGroupID (Fd fd) pgid =
   throwErrnoIfMinus1_ "setTerminalProcessGroupID" (c_tcsetpgrp fd pgid)
 
 foreign import ccall unsafe "tcsetpgrp"
-  c_tcsetpgrp :: Fd -> CPid -> IO CInt
+  c_tcsetpgrp :: CInt -> CPid -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- file descriptor queries
@@ -482,25 +482,25 @@ foreign import ccall unsafe "tcsetpgrp"
 -- | @queryTerminal fd@ calls @isatty@ to determine whether or
 --   not @Fd@ @fd@ is associated with a terminal.
 queryTerminal :: Fd -> IO Bool
-queryTerminal fd = do
+queryTerminal (Fd fd) = do
   r <- c_isatty fd
   return (r == 1)
   -- ToDo: the spec says that it can set errno to EBADF if the result is zero
 
 foreign import ccall unsafe "isatty"
-  c_isatty :: Fd -> IO CInt
+  c_isatty :: CInt -> IO CInt
 
 -- | @getTerminalName fd@ calls @ttyname@ to obtain a name associated
 --   with the terminal for @Fd@ @fd@. If @fd@ is associated
 --   with a terminal, @getTerminalName@ returns the name of the
 --   terminal.
 getTerminalName :: Fd -> IO FilePath
-getTerminalName fd = do
+getTerminalName (Fd fd) = do
   s <- throwErrnoIfNull "getTerminalName" (c_ttyname fd)
   peekCString s  
 
 foreign import ccall unsafe "ttyname"
-  c_ttyname :: Fd -> IO CString
+  c_ttyname :: CInt -> IO CString
 
 -- | @getControllingTerminalName@ calls @ctermid@ to obtain
 --   a name associated with the controlling terminal for the process.  If a

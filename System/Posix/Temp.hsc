@@ -41,7 +41,7 @@ mkstemp template = do
   withCString template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
     name <- peekCString ptr
-    h <- fdToHandle fd
+    h <- fdToHandle (Fd fd)
     return (name, h)
 #else
   name <- mktemp template
@@ -62,5 +62,5 @@ foreign import ccall unsafe "mktemp"
 #endif
 
 foreign import ccall unsafe "mkstemp"
-  c_mkstemp :: CString -> IO Fd
+  c_mkstemp :: CString -> IO CInt
 
