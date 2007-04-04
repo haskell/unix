@@ -98,14 +98,14 @@ closeDirStream :: DirStream -> IO ()
 closeDirStream (DirStream dirp) = do
   throwErrnoIfMinus1_ "closeDirStream" (c_closedir dirp)
 
-newtype DirStreamOffset = DirStreamOffset CLong
+newtype DirStreamOffset = DirStreamOffset COff
 
 seekDirStream :: DirStream -> DirStreamOffset -> IO ()
 seekDirStream (DirStream dirp) (DirStreamOffset off) =
   c_seekdir dirp off
 
 foreign import ccall unsafe "seekdir"
-  c_seekdir :: Ptr CDir -> CLong -> IO ()
+  c_seekdir :: Ptr CDir -> COff -> IO ()
 
 tellDirStream :: DirStream -> IO DirStreamOffset
 tellDirStream (DirStream dirp) = do
@@ -113,7 +113,7 @@ tellDirStream (DirStream dirp) = do
   return (DirStreamOffset off)
 
 foreign import ccall unsafe "telldir"
-  c_telldir :: Ptr CDir -> IO CLong
+  c_telldir :: Ptr CDir -> IO COff
 
 {-
  Renamings of functionality provided via Directory interface,

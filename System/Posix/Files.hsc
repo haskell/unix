@@ -489,7 +489,7 @@ readSymbolicLink file =
       peekCStringLen (buf,fromIntegral len)
 
 foreign import ccall unsafe "readlink"
-  c_readlink :: CString -> CString -> CInt -> IO CInt
+  c_readlink :: CString -> CString -> CSize -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- Renaming files
