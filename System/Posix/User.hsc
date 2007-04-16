@@ -223,8 +223,7 @@ getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
 #if defined(HAVE_GETGRGID_R) || defined(HAVE_GETGRNAM_R)
 grBufSize :: Int
 #if defined(HAVE_SYSCONF) && defined(HAVE_SC_GETGR_R_SIZE_MAX)
-grBufSize = fromIntegral $ unsafePerformIO $
-		c_sysconf (#const _SC_GETGR_R_SIZE_MAX)
+grBufSize = sysconfWithDefault 2048 (#const _SC_GETGR_R_SIZE_MAX)
 #else
 grBufSize = 2048	-- just assume some value (1024 is too small on OpenBSD)
 #endif
@@ -351,8 +350,7 @@ getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 #if defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWNAM_R)
 pwBufSize :: Int
 #if  defined(HAVE_SYSCONF) && defined(HAVE_SC_GETPW_R_SIZE_MAX)
-pwBufSize = fromIntegral $ unsafePerformIO $
-		c_sysconf (#const _SC_GETPW_R_SIZE_MAX)
+pwBufSize = sysconfWithDefault 1024 (#const _SC_GETPW_R_SIZE_MAX)
 #else
 pwBufSize = 1024
 #endif
@@ -361,6 +359,15 @@ pwBufSize = 1024
 #ifdef HAVE_SYSCONF
 foreign import ccall unsafe "sysconf"
   c_sysconf :: CInt -> IO CLong
+
+-- We need a default value since sysconf can fail and return -1
+-- even when the parameter name is defined in unistd.h.
+-- One example of this is _SC_GETPW_R_SIZE_MAX under 
+-- Mac OS X 10.4.9 on i386.
+sysconfWithDefault :: Int -> CInt -> Int
+sysconfWithDefault def sc = 
+    unsafePerformIO $ do v <- fmap fromIntegral $ c_sysconf sc
+                         return $ if v == (-1) then def else v
 #endif
 
 unpackUserEntry :: Ptr CPasswd -> IO UserEntry
