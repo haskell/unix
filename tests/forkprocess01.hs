@@ -3,7 +3,7 @@
 import System.Exit
 import System.Posix.Process
 main = do
-  p <- forkProcess exitFailure
+  p <- forkProcess $ exitWith (ExitFailure 72)
   r <- getProcessStatus True False p
   print r
 
