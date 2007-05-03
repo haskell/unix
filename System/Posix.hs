@@ -25,7 +25,9 @@ module System.Posix (
   module System.Posix.Terminal,
   module System.Posix.Time,
   module System.Posix.User,
-  module System.Posix.Resource
+  module System.Posix.Resource,
+  module System.Posix.Semaphore,
+  module System.Posix.SharedMem
  ) where
 
 import System.Posix.Types
@@ -41,6 +43,8 @@ import System.Posix.Terminal
 import System.Posix.Time
 import System.Posix.User
 import System.Posix.Resource
+import System.Posix.Semaphore
+import System.Posix.SharedMem
 
 {- TODO
 

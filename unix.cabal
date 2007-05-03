@@ -29,6 +29,8 @@ exposed-modules:
 		System.Posix.Unistd
 		System.Posix.User
 		System.Posix.Signals.Exts
+                System.Posix.Semaphore
+                System.Posix.SharedMem
 extra-source-files:
 		configure.ac configure
 		unix.buildinfo.in include/HsUnixConfig.h.in
