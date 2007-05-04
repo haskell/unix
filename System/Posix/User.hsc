@@ -52,6 +52,9 @@ import System.Posix.Internals	( CGroup, CPasswd )
 #if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 import Control.Concurrent.MVar  ( newMVar, withMVar )
 #endif
+#ifdef HAVE_GETPWENT
+import Control.Exception
+#endif
 
 -- -----------------------------------------------------------------------------
 -- user environemnt
@@ -331,7 +334,7 @@ getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supporte
 getAllUserEntries :: IO [UserEntry]
 #ifdef HAVE_GETPWENT
 getAllUserEntries = 
-    withMVar lock $ \_ -> worker []
+    withMVar lock $ \_ -> bracket_ c_setpwent c_endpwent $ worker []
     where worker accum = 
               do resetErrno
                  ppw <- throwErrnoIfNullAndError "getAllUserEntries" $ 
@@ -343,6 +346,10 @@ getAllUserEntries =
 
 foreign import ccall unsafe "getpwent"
   c_getpwent :: IO (Ptr CPasswd)
+foreign import ccall unsafe "setpwent"
+  c_setpwent :: IO ()
+foreign import ccall unsafe "endpwent"
+  c_endpwent :: IO ()
 #else
 getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 #endif
