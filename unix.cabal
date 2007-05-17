@@ -39,6 +39,7 @@ extra-tmp-files:
 build-depends:	base
 extensions:	CPP
 include-dirs: 	include
+includes:       HsUnix.h
 install-includes:
 		HsUnix.h HsUnixConfig.h
 c-sources:	cbits/HsUnix.c
