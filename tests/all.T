@@ -10,7 +10,7 @@ test('fileexist01', conf, compile_and_run, ['-package unix'])
 test('forkprocess01', compose(only_compiler_types(['ghc']), 
 		      compose(expect_fail_for('threaded2'), conf)),
 	compile_and_run, ['-package unix'])
-test('user001', conf, compile_and_run, ['-package unix'])
+test('user001', compose(conf, no_stdin), compile_and_run, ['-package unix'])
 
 if config.platform == 'i386-unknown-freebsd':
         conf = expect_fail
