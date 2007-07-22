@@ -72,7 +72,7 @@ import Data.Bits
 
 #ifdef __GLASGOW_HASKELL__
 import GHC.IOBase
-import GHC.Handle hiding (fdToHandle, openFd)
+import GHC.Handle hiding (fdToHandle)
 import qualified GHC.Handle
 #endif
 
