@@ -74,9 +74,9 @@ import System.IO
 import System.IO.Error
 import System.Exit
 import System.Posix.Error
+import System.Posix.Process.Internals ( pPrPr_disableITimers, c_execvpe )
 import System.Posix.Types
 import System.Posix.Signals
-import System.Process.Internals ( pPrPr_disableITimers, c_execvpe )
 import Control.Monad
 
 #ifdef __GLASGOW_HASKELL__

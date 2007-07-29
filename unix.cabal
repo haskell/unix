@@ -22,12 +22,14 @@ exposed-modules:
 		System.Posix.Files
 		System.Posix.IO
 		System.Posix.Process
+		System.Posix.Process.Internals
 		System.Posix.Resource
 		System.Posix.Temp
 		System.Posix.Terminal
 		System.Posix.Time
 		System.Posix.Unistd
 		System.Posix.User
+        System.Posix.Signals
 		System.Posix.Signals.Exts
                 System.Posix.Semaphore
                 System.Posix.SharedMem
@@ -38,10 +40,10 @@ extra-source-files:
 extra-tmp-files:
 		config.log config.status autom4te.cache
 		unix.buildinfo include/HsUnixConfig.h
-build-depends:	base, directory, process
-extensions:	CPP
+build-depends:	base, directory
+extensions:	CPP, ForeignFunctionInterface
 include-dirs: 	include
-includes:       HsUnix.h
+includes:       HsUnix.h execvpe.h
 install-includes:
-		HsUnix.h HsUnixConfig.h
-c-sources:	cbits/HsUnix.c
+		HsUnix.h HsUnixConfig.h execvpe.h
+c-sources:	cbits/HsUnix.c cbits/execvpe.c
