@@ -12,7 +12,7 @@
 --
 -----------------------------------------------------------------------------
 
-#include "HsBaseConfig.h"
+#include "HsUnixConfig.h"
 
 module System.Posix.Signals (
   -- * The Signal type
