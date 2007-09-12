@@ -5,6 +5,10 @@
    -------------------------------------------------------------------------- */
 #include "execvpe.h"
 
+#ifdef __GLASGOW_HASKELL__
+#include "Rts.h"
+#endif
+
 #if !(defined(_MSC_VER) || defined(__MINGW32__) || defined(_WIN32)) /* to the end */
 
 /* Evidently non-Posix. */
@@ -158,18 +162,9 @@ execvpe(char *name, char *const argv[], char **envp)
 /* Copied verbatim from ghc/lib/std/cbits/system.c. */
 void pPrPr_disableITimers (void)
 {
-#  ifdef HAVE_SETITIMER
-   /* Reset the itimers in the child, so it doesn't get plagued
-    * by SIGVTALRM interrupts.
-    */
-   struct timeval tv_null = { 0, 0 };
-   struct itimerval itv;
-   itv.it_interval = tv_null;
-   itv.it_value = tv_null;
-   setitimer(ITIMER_REAL, &itv, NULL);
-   setitimer(ITIMER_VIRTUAL, &itv, NULL);
-   setitimer(ITIMER_PROF, &itv, NULL);
-#  endif
+#ifdef __GLASGOW_HASKELL__
+    stopTimer();
+#endif
 }
 
 #endif
