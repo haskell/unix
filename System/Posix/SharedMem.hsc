@@ -40,6 +40,7 @@ data ShmOpenFlags = ShmOpenFlags
 
 -- | Open a shared memory object with the given name, flags, and mode.
 shmOpen :: String -> ShmOpenFlags -> FileMode -> IO Fd
+#ifdef HAVE_SHM_OPEN
 shmOpen name flags mode =
     do cflags <- return 0
        cflags <- return $ cflags .|. (if shmReadWrite flags
@@ -57,14 +58,26 @@ shmOpen name flags mode =
               do fd <- throwErrnoIfMinus1 "shmOpen" $ 
                        shm_open cname cflags mode
                  return $ Fd fd
+#else
+shmOpen = error "System.Posix.SharedMem:shm_open: not available"
+#endif
 
 -- | Delete the shared memory object with the given name.
 shmUnlink :: String -> IO ()
+#ifdef HAVE_SHM_UNLINK
 shmUnlink name = withCAString name shmUnlink'
-    where shmUnlink' cname = 
+    where shmUnlink' cname =
               throwErrnoIfMinus1_ "shmUnlink" $ shm_unlink cname
+#else
+shmUnlink = error "System.Posix.SharedMem:shm_unlink: not available"
+#endif
 
+#ifdef HAVE_SHM_OPEN
 foreign import ccall unsafe "shm_open"
         shm_open :: CString -> CInt -> CMode -> IO CInt
+#endif
+
+#ifdef HAVE_SHM_UNLINK
 foreign import ccall unsafe "shm_unlink"
         shm_unlink :: CString -> IO CInt
+#endif
