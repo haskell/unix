@@ -60,22 +60,33 @@ module System.Posix.Terminal (
   -- ** Testing a file descriptor
   queryTerminal,
   getTerminalName,
-  getControllingTerminalName
+  getControllingTerminalName,
 
+  -- ** Pseudoterminal operations
+  openPseudoTerminal,
+  getSlaveTerminalName
   ) where
 
 #include "HsUnix.h"
 
 import Data.Bits
 import Data.Char
-import Foreign.C.Error ( throwErrnoIfMinus1, throwErrnoIfMinus1_, throwErrnoIfNull )
-import Foreign.C.String ( CString, peekCString )
+import Foreign.C.Error ( errnoToIOError, throwErrnoIfMinus1,
+                         throwErrnoIfMinus1_, throwErrnoIfNull )
+#ifndef HAVE_PTSNAME
+import Foreign.C.Error ( eNOSYS )
+#endif
+import Foreign.C.String ( CString, peekCString, withCString )
 import Foreign.C.Types ( CInt )
 import Foreign.ForeignPtr ( ForeignPtr, withForeignPtr, mallocForeignPtrBytes )
+import Foreign.Marshal.Alloc ( alloca )
 import Foreign.Marshal.Utils ( copyBytes )
 import Foreign.Ptr ( Ptr, nullPtr, plusPtr )
 import Foreign.Storable ( Storable(..) )
+import System.IO.Error ( ioError )
 import System.IO.Unsafe ( unsafePerformIO )
+import System.Posix.IO ( OpenFileFlags(..), OpenMode(..), defaultFileFlags,
+                         openFd )
 import System.Posix.Types
 
 -- -----------------------------------------------------------------------------
@@ -514,6 +525,72 @@ getControllingTerminalName = do
 
 foreign import ccall unsafe "ctermid"
   c_ctermid :: CString -> IO CString
+
+-- | @getSlaveTerminalName@ calls @ptsname@ to obtain the name of the
+-- slave terminal associated with a pseudoterminal pair.  The file
+-- descriptor to pass in must be that of the master.
+getSlaveTerminalName :: Fd -> IO FilePath
+
+#ifdef HAVE_PTSNAME
+getSlaveTerminalName (Fd fd) = do
+  s <- throwErrnoIfNull "getSlaveTerminalName" (c_ptsname fd)
+  peekCString s
+
+foreign import ccall unsafe "__hsunix_ptsname"
+  c_ptsname :: CInt -> IO CString
+#else
+getSlaveTerminalName _ =
+    ioError (errnoToIOError "getSlaveTerminalName" eNOSYS Nothing Nothing)
+#endif
+
+-- | @openPseudoTerminal@ creates a pseudoterminal (pty) pair, and
+-- returns the newly created pair as a (@master@, @slave@) tuple.
+openPseudoTerminal :: IO (Fd, Fd)
+
+#ifdef HAVE_OPENPTY
+openPseudoTerminal =
+  alloca $ \p_master ->
+    alloca $ \p_slave -> do
+      throwErrnoIfMinus1_ "openPty"
+          (c_openpty p_master p_slave nullPtr nullPtr nullPtr)
+      master <- peek p_master
+      slave <- peek p_slave
+      return (Fd master, Fd slave)
+
+foreign import ccall unsafe "openpty"
+  c_openpty :: Ptr CInt -> Ptr CInt -> CString -> Ptr CTermios -> Ptr a
+            -> IO CInt
+#else
+openPseudoTerminal = do
+  (Fd master) <- openFd "/dev/ptmx" ReadWrite Nothing
+                        defaultFileFlags{noctty=True}
+  throwErrnoIfMinus1_ "openPseudoTerminal" (c_grantpt master)
+  throwErrnoIfMinus1_ "openPseudoTerminal" (c_unlockpt master)
+  slaveName <- getSlaveTerminalName (Fd master)
+  slave <- openFd slaveName ReadWrite Nothing defaultFileFlags{noctty=True}
+  pushModule slave "ptem"
+  pushModule slave "ldterm"
+# ifndef __hpux
+  pushModule slave "ttcompat"
+# endif /* __hpux */
+  return (Fd master, slave)
+
+-- Push a STREAMS module, for System V systems.
+pushModule :: Fd -> String -> IO ()
+pushModule (Fd fd) name =
+  withCString name $ \p_name ->
+    throwErrnoIfMinus1_ "openPseudoTerminal"
+                        (c_push_module fd p_name)
+
+foreign import ccall unsafe "__hsunix_push_module"
+  c_push_module :: CInt -> CString -> IO CInt
+
+foreign import ccall unsafe "__hsunix_grantpt"
+  c_grantpt :: CInt -> IO CInt
+
+foreign import ccall unsafe "__hsunix_unlockpt"
+  c_unlockpt :: CInt -> IO CInt
+#endif /* !HAVE_OPENPTY */
 
 -- -----------------------------------------------------------------------------
 -- Local utility functions

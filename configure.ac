@@ -14,12 +14,14 @@ AC_C_CONST
 AC_CHECK_HEADERS([dirent.h fcntl.h grp.h limits.h pwd.h signal.h string.h])
 AC_CHECK_HEADERS([sys/resource.h sys/stat.h sys/times.h sys/time.h])
 AC_CHECK_HEADERS([sys/utsname.h sys/wait.h])
+AC_CHECK_HEADERS([libutil.h pty.h utmp.h])
 AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
 AC_CHECK_FUNCS([getpwent getgrent])
 AC_CHECK_FUNCS([lchown setenv sysconf unsetenv])
 AC_CHECK_FUNCS([nanosleep])
+AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
 AC_CHECK_FUNCS([shm_open shm_unlink])
 
@@ -144,8 +146,35 @@ AC_EGREP_CPP(yes,
   AC_MSG_RESULT(no)
   ])    
 
+AC_CHECK_FUNCS(openpty,,
+   AC_CHECK_LIB(util,openpty,
+     [AC_DEFINE(HAVE_OPENPTY) EXTRA_LIBS="$EXTRA_LIBS util"],
+     AC_CHECK_LIB(bsd,openpty, [AC_DEFINE(HAVE_OPENPTY) EXTRA_LIBS="$EXTRA_LIBS bsd"])
+   )
+)
+
+AC_MSG_CHECKING(for /dev/ptmx)
+if test -r /dev/ptmx
+then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(HAVE_DEV_PTMX, 1,
+  [Define if we have /dev/ptmx.])
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(for /dev/ptc)
+if test -r /dev/ptc
+then
+  AC_MSG_RESULT(yes)
+  AC_DEFINE(HAVE_DEV_PTC, 1,
+  [Define if we have /dev/ptc.])
+else
+  AC_MSG_RESULT(no)
+fi
+
 # Avoid adding dl if absent or unneeded
-AC_CHECK_LIB(dl, dlopen, [EXTRA_LIBS=dl], [EXTRA_LIBS=])
+AC_CHECK_LIB(dl, dlopen, [EXTRA_LIBS="$EXTRA_LIBS dl"])
 AC_SUBST([EXTRA_LIBS])
 
 AC_CONFIG_FILES([unix.buildinfo])

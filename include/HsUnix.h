@@ -74,6 +74,16 @@
 #include <dirent.h>
 #endif
 
+#ifdef HAVE_LIBUTIL_H
+#include <libutil.h>
+#endif
+#ifdef HAVE_PTY_H
+#include <pty.h>
+#endif
+#ifdef HAVE_UTMP_H
+#include <utmp.h>
+#endif
+
 #include <dlfcn.h>
 
 #ifdef HAVE_SIGNAL_H
@@ -128,6 +138,40 @@ INLINE int __hsunix_lstat(const char *path, struct stat *buf)
 INLINE int __hsunix_mknod(const char *pathname, mode_t mode, dev_t dev)
 { 
     return mknod(pathname,mode,dev);
+}
+
+#ifdef HAVE_PTSNAME
+// I cannot figure out how to make the definitions of the following
+// functions visible in <stdlib.h> on Linux.  But these definitions
+// follow the POSIX specs, and everything links and runs.
+
+INLINE char *__hsunix_ptsname(int fd)
+{
+    extern char *ptsname(int);
+    return ptsname(fd);
+}
+
+INLINE int __hsunix_grantpt(int fd)
+{
+    extern int grantpt(int);
+    return grantpt(fd);
+}
+
+INLINE int __hsunix_unlockpt(int fd)
+{
+    extern int unlockpt(int);
+    return unlockpt(fd);
+}
+#endif
+
+// push a SVR4 STREAMS module; do nothing if STREAMS not available
+INLINE int __hsunix_push_module(int fd, const char *module)
+{
+#if defined(I_PUSH) && !defined(__CYGWIN__) && !defined(HAVE_DEV_PTC)
+    return ioctl(fd, I_PUSH, module);
+#else
+    return 0;
+#endif
 }
 
 #endif
