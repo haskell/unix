@@ -1,5 +1,5 @@
 name:		unix
-version:	2.0
+version:	2.2
 license:	BSD3
 license-file:	LICENSE
 maintainer:	libraries@haskell.org
