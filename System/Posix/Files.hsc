@@ -179,7 +179,6 @@ unionFileModes m1 m2 = m1 .|. m2
 intersectFileModes :: FileMode -> FileMode -> FileMode
 intersectFileModes m1 m2 = m1 .&. m2
 
--- Not exported:
 fileTypeModes :: FileMode
 fileTypeModes = (#const S_IFMT)
 
