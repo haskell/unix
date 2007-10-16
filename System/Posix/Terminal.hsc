@@ -334,6 +334,8 @@ data BaudRate
   | B9600
   | B19200
   | B38400
+  | B57600
+  | B115200
 
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do
@@ -635,6 +637,8 @@ baud2Word B4800 = (#const B4800)
 baud2Word B9600 = (#const B9600)
 baud2Word B19200 = (#const B19200)
 baud2Word B38400 = (#const B38400)
+baud2Word B57600 = (#const B57600)
+baud2Word B115200 = (#const B115200)
 
 -- And convert a word back to a baud rate
 -- We really need some cpp macros here.
@@ -657,6 +661,8 @@ word2Baud x =
     else if x == (#const B9600) then B9600
     else if x == (#const B19200) then B19200
     else if x == (#const B38400) then B38400
+    else if x == (#const B57600) then B57600
+    else if x == (#const B115200) then B115200
     else error "unknown baud rate"
 
 -- Clear termios i_flag
