@@ -585,11 +585,19 @@ pushModule (Fd fd) name =
 foreign import ccall unsafe "__hsunix_push_module"
   c_push_module :: CInt -> CString -> IO CInt
 
+#ifdef HAVE_PTSNAME
 foreign import ccall unsafe "__hsunix_grantpt"
   c_grantpt :: CInt -> IO CInt
 
 foreign import ccall unsafe "__hsunix_unlockpt"
   c_unlockpt :: CInt -> IO CInt
+#else
+c_grantpt :: CInt -> IO CInt
+c_grantpt _ = return (fromIntegral 0)
+
+c_unlockpt :: CInt -> IO CInt
+c_unlockpt _ = return (fromIntegral 0)
+#endif /* HAVE_PTSNAME */
 #endif /* !HAVE_OPENPTY */
 
 -- -----------------------------------------------------------------------------
