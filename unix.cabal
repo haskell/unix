@@ -11,6 +11,7 @@ description:
 	IEEE Std. 1003.1).
 	.
 	The package is not supported under Windows (except under Cygwin).
+build-type: Configure
 exposed-modules:
 		System.Posix
 		System.Posix.DynamicLinker.Module
