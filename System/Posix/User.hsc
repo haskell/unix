@@ -55,6 +55,10 @@ import Control.Concurrent.MVar  ( newMVar, withMVar )
 #ifdef HAVE_GETPWENT
 import Control.Exception
 #endif
+#ifdef HAVE_GETGRNAM_R
+import Control.Monad
+import System.IO.Error
+#endif
 
 -- -----------------------------------------------------------------------------
 -- user environemnt
@@ -187,13 +191,18 @@ getGroupEntryForName :: String -> IO GroupEntry
 getGroupEntryForName name = do
   allocaBytes (#const sizeof(struct group)) $ \pgr ->
     allocaBytes grBufSize $ \pbuf ->
-      alloca $ \ ppgr -> 
-	withCString name $ \ pstr -> do
+      alloca $ \ ppgr ->
+        withCString name $ \ pstr -> do
           throwErrorIfNonZero_ "getGroupEntryForName" $
-	     c_getgrnam_r pstr pgr pbuf (fromIntegral grBufSize) ppgr
-	  throwErrnoIfNull "getGroupEntryForName" $
-	     peekElemOff ppgr 0
-	  unpackGroupEntry pgr
+            c_getgrnam_r pstr pgr pbuf (fromIntegral grBufSize) ppgr
+          r <- peekElemOff ppgr 0
+          when (r == nullPtr) $
+            ioError $ flip ioeSetErrorString "no group name"
+                    $ mkIOError doesNotExistErrorType
+                                "getGroupEntryForName"
+                                Nothing
+                                (Just name)
+          unpackGroupEntry pgr
 
 foreign import ccall unsafe "getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
