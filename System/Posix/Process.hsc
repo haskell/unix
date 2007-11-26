@@ -9,8 +9,8 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- POSIX process support.  See also the "System.Cmd" and "System.Process"
--- modules.
+-- POSIX process support.  See also the System.Cmd and System.Process
+-- modules in the process package.
 --
 -----------------------------------------------------------------------------
 

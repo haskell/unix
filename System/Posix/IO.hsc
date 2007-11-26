@@ -12,7 +12,7 @@
 -- POSIX IO support.  These types and functions correspond to the unix
 -- functions open(2), close(2), etc.  For more portable functions
 -- which are more like fopen(3) and friends from stdio.h, see
--- 'System.IO'.
+-- "System.IO".
 --
 -----------------------------------------------------------------------------
 
