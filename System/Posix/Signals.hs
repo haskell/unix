@@ -97,10 +97,11 @@ import Foreign.C
 import System.IO.Unsafe
 import System.Posix.Types
 import System.Posix.Internals
+import Control.Concurrent (withMVar)
 
 #ifdef __GLASGOW_HASKELL__
 #include "Signals.h"
-import GHC.Conc	( ensureIOManagerIsRunning )
+import GHC.Conc	( ensureIOManagerIsRunning, signalHandlerLock )
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -322,6 +323,8 @@ installHandler int handler maybe_mask = do
         Just (SignalSet x) -> withForeignPtr x $ install' 
   where 
     install' mask = 
+         -- prevent race with the IO manager thread, see #1922
+      withMVar signalHandlerLock $ \_ ->
       alloca $ \p_sp -> do
 
       rc <- case handler of
