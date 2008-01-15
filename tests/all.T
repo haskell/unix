@@ -20,4 +20,6 @@ test('queryfdoption01', compose(omit_ways(['ghci']), compose(only_compiler_types
 test('getEnvironment01', conf, compile_and_run, ['-package unix'])
 test('getGroupEntryForName', compose(conf, expect_fail), compile_and_run,
      ['-package unix'])
+test('getUserEntryForName', compose(conf, expect_fail), compile_and_run,
+     ['-package unix'])
 
