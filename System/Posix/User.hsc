@@ -55,7 +55,7 @@ import Control.Concurrent.MVar  ( newMVar, withMVar )
 #ifdef HAVE_GETPWENT
 import Control.Exception
 #endif
-#ifdef HAVE_GETGRNAM_R
+#if defined(HAVE_GETGRNAM_R) || defined(HAVE_GETPWNAM_R)
 import Control.Monad
 import System.IO.Error
 #endif
@@ -314,17 +314,22 @@ getUserEntryForName :: String -> IO UserEntry
 getUserEntryForName name = do
   allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
     allocaBytes pwBufSize $ \pbuf ->
-      alloca $ \ pppw -> 
-	withCString name $ \ pstr -> do
+      alloca $ \ pppw ->
+        withCString name $ \ pstr -> do
           throwErrorIfNonZero_ "getUserEntryForName" $
-	       c_getpwnam_r pstr ppw pbuf (fromIntegral pwBufSize) pppw
-	  throwErrnoIfNull "getUserEntryForName" $
-		peekElemOff pppw 0
-	  unpackUserEntry ppw
+            c_getpwnam_r pstr ppw pbuf (fromIntegral pwBufSize) pppw
+          r <- peekElemOff pppw 0
+          when (r == nullPtr) $
+            ioError $ flip ioeSetErrorString "no user name"
+                    $ mkIOError doesNotExistErrorType
+                                "getUserEntryForName"
+                                Nothing
+                                (Just name)
+          unpackUserEntry ppw
 
 foreign import ccall unsafe "getpwnam_r"
-  c_getpwnam_r :: CString -> Ptr CPasswd -> 
-			CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
+  c_getpwnam_r :: CString -> Ptr CPasswd
+               -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWNAM
 getUserEntryForName name = do
   withCString name $ \ pstr -> do
