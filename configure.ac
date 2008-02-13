@@ -11,6 +11,10 @@ AC_SUBST([BUILD_PACKAGE_BOOL])
 
 AC_C_CONST
 
+dnl ** Enable large file support.  NB. do this before testing the type of
+dnl    off_t, because it will affect the result of that test.
+AC_SYS_LARGEFILE
+
 AC_CHECK_HEADERS([dirent.h fcntl.h grp.h limits.h pwd.h signal.h string.h])
 AC_CHECK_HEADERS([sys/resource.h sys/stat.h sys/times.h sys/time.h])
 AC_CHECK_HEADERS([sys/utsname.h sys/wait.h])
