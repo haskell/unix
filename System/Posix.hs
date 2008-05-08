@@ -70,17 +70,13 @@ Exceptions are listed where appropriate.
 Interfaces supported
 --------------------
 
-base package:
-
-regex.h		Text.Regex.Posix
-signal.h	System.Posix.Signals
-
 unix package:
 
 dirent.h 	System.Posix.Directory
 dlfcn.h 	System.Posix.DynamicLinker
 errno.h 	Foreign.C.Error
 fcntl.h 	System.Posix.IO
+signal.h	System.Posix.Signals
 sys/stat.h	System.Posix.Files
 sys/times.h	System.Posix.Process
 sys/types.h	System.Posix.Types (with exceptions...)
@@ -94,6 +90,10 @@ grp.h		System.Posix.User
 stdlib.h: 	System.Posix.Env (getenv()/setenv()/unsetenv())
 		System.Posix.Temp (mkstemp())
 sys/resource.h: System.Posix.Resource (get/setrlimit() only)
+
+regex-posix package:
+
+regex.h		Text.Regex.Posix
 
 network package:
 
