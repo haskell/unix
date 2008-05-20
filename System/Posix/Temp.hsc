@@ -61,6 +61,6 @@ foreign import ccall unsafe "mktemp"
   c_mktemp :: CString -> IO CString
 #endif
 
-foreign import ccall unsafe "mkstemp"
+foreign import ccall unsafe "HsBase.h __hscore_mkstemp"
   c_mkstemp :: CString -> IO CInt
 
