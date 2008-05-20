@@ -59,10 +59,10 @@ data ResourceLimit
 
 type RLimit = ()
 
-foreign import ccall unsafe "getrlimit"
+foreign import ccall unsafe "HsBase.h __hscore_getrlimit"
   c_getrlimit :: CInt -> Ptr RLimit -> IO CInt
 
-foreign import ccall unsafe "setrlimit"
+foreign import ccall unsafe "HsBase.h __hscore_setrlimit"
   c_setrlimit :: CInt -> Ptr RLimit -> IO CInt
 
 getResourceLimit :: Resource -> IO ResourceLimits
