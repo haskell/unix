@@ -174,4 +174,20 @@ INLINE int __hsunix_push_module(int fd, const char *module)
 #endif
 }
 
+#if !defined(__MINGW32__)
+INLINE int __hscore_mkstemp(char *filetemplate) {
+    return (mkstemp(filetemplate));
+}
+#endif
+
+#if !defined(__MINGW32__) && !defined(irix_HOST_OS)
+INLINE int __hscore_getrlimit(int resource, struct rlimit *rlim) {
+    return (getrlimit(resource, rlim));
+}
+
+INLINE int __hscore_setrlimit(int resource, struct rlimit *rlim) {
+    return (setrlimit(resource, rlim));
+}
+#endif
+
 #endif
