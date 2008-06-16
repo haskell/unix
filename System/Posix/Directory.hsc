@@ -1,4 +1,4 @@
-{-# OPTIONS -fffi #-}
+{-# LANGUAGE ForeignFunctionInterface #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Files
