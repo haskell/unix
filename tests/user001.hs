@@ -9,7 +9,7 @@ p :: Show a => String -> IO a -> IO ()
 p s m = (do putStr (s ++ ": ")
             c <- fmap check m
             putStrLn $ if c then "OK" else "I am the pope!")
-        `Exception.catch` (putStrLn . ("ERROR: " ++) . show)
+        `Exception.catchAny` (putStrLn . ("ERROR: " ++) . show)
 
 main :: IO ()
 main = do p "getRealUserID"        $ getRealUserID
