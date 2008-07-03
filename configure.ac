@@ -75,6 +75,19 @@ case "$cv_func_usleep_return_type" in
   ;;
 esac
 
+###  POSIX.1003.1 unsetenv returns 0 or -1 (EINVAL), but older implementations
+###  in common use return void.
+AC_CACHE_CHECK([return type of unsetenv], cv_func_unsetenv_return_type,
+  [AC_EGREP_HEADER(changequote(<, >)<void[      ]+unsetenv>changequote([, ]),
+                   /usr/include/stdlib.h,
+                   [cv_func_unsetenv_return_type=void],
+                   [cv_func_unsetenv_return_type=int])])
+case "$cv_func_unsetenv_return_type" in
+  "void" )
+    AC_DEFINE([UNSETENV_RETURNS_VOID], [1], [Define if stdlib.h declares unsetenv to return void.])
+  ;;
+esac
+
 dnl ** sometimes RTLD_NEXT is hidden in #ifdefs we really don't wan to set
 AC_MSG_CHECKING(for RTLD_NEXT from dlfcn.h)
 AC_EGREP_CPP(yes,

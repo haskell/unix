@@ -79,10 +79,11 @@ getEnvironment = do
 unsetEnv :: String -> IO ()
 #ifdef HAVE_UNSETENV
 
-unsetEnv name = withCString name c_unsetenv
+unsetEnv name = withCString name $ \ s ->
+  throwErrnoIfMinus1_ "unsetenv" (c_unsetenv s)
 
-foreign import ccall unsafe "unsetenv"
-   c_unsetenv :: CString -> IO ()
+foreign import ccall unsafe "__hsunix_unsetenv"
+   c_unsetenv :: CString -> IO CInt
 #else
 unsetEnv name = putEnv (name ++ "=")
 #endif

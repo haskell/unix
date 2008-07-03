@@ -190,4 +190,14 @@ INLINE int __hscore_setrlimit(int resource, struct rlimit *rlim) {
 }
 #endif
 
+INLINE int __hsunix_unsetenv(const char *name)
+{
+#ifdef UNSETENV_RETURNS_VOID
+    unsetenv(name);
+    return 0;
+#else
+    return unsetenv(name);
+#endif
+}
+
 #endif
