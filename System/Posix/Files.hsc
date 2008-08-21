@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Files
@@ -242,12 +243,12 @@ setFileCreationMask mask = c_umask mask
 --
 -- Note: calls @access@.
 fileAccess :: FilePath -> Bool -> Bool -> Bool -> IO Bool
-fileAccess name read write exec = access name flags
+fileAccess name readOK writeOK execOK = access name flags
   where
    flags   = read_f .|. write_f .|. exec_f
-   read_f  = if read  then (#const R_OK) else 0
-   write_f = if write then (#const W_OK) else 0
-   exec_f  = if exec  then (#const X_OK) else 0
+   read_f  = if readOK  then (#const R_OK) else 0
+   write_f = if writeOK then (#const W_OK) else 0
+   exec_f  = if execOK  then (#const X_OK) else 0
 
 -- | Checks for the existence of the file.
 --

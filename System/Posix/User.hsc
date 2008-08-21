@@ -50,7 +50,7 @@ import Foreign.C
 import System.Posix.Internals	( CGroup, CPasswd )
 
 #if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
-import Control.Concurrent.MVar  ( newMVar, withMVar )
+import Control.Concurrent.MVar  ( MVar, newMVar, withMVar )
 #endif
 #ifdef HAVE_GETPWENT
 import Control.Exception
@@ -272,6 +272,7 @@ data UserEntry =
 -- Also, getpwent/setpwent require a global lock since they maintain
 -- an internal file position pointer.
 #if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
+lock :: MVar ()
 lock = unsafePerformIO $ newMVar ()
 {-# NOINLINE lock #-}
 #endif

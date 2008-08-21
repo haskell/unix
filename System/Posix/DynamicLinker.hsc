@@ -74,10 +74,10 @@ dlsym source symbol = do
     throwDLErrorIf "dlsym" (== nullFunPtr) $ c_dlsym (packDL source) s
 
 withDL :: String -> [RTLDFlags] -> (DL -> IO a) -> IO a
-withDL mod flags f = bracket (dlopen mod flags) (dlclose) f
+withDL file flags f = bracket (dlopen file flags) (dlclose) f
 
 withDL_ :: String -> [RTLDFlags] -> (DL -> IO a) -> IO ()
-withDL_ mod flags f = withDL mod flags f >> return ()
+withDL_ file flags f = withDL file flags f >> return ()
 
 -- |'undl' obtains the raw handle. You mustn't do something like
 -- @withDL mod flags $ liftM undl >>= \ p -> use p@
@@ -92,4 +92,5 @@ throwDLErrorIf s p f = do
     then dlerror >>= \ err -> ioError (userError ( s ++ ": " ++ err))
     else return r
 
+throwDLErrorIf_ :: String -> (a -> Bool) -> IO a -> IO ()
 throwDLErrorIf_ s p f = throwDLErrorIf s p f >> return ()

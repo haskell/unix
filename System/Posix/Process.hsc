@@ -328,9 +328,9 @@ data ProcessStatus = Exited ExitCode
 getProcessStatus :: Bool -> Bool -> ProcessID -> IO (Maybe ProcessStatus)
 getProcessStatus block stopped pid =
   alloca $ \wstatp -> do
-    pid <- throwErrnoIfMinus1Retry "getProcessStatus"
+    pid' <- throwErrnoIfMinus1Retry "getProcessStatus"
 		(c_waitpid pid wstatp (waitOptions block stopped))
-    case pid of
+    case pid' of
       0  -> return Nothing
       _  -> do ps <- decipherWaitStatus wstatp
 	       return (Just ps)

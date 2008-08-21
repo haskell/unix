@@ -71,8 +71,8 @@ unModule (Module adr)  = adr
 --
 
 moduleOpen :: String -> [RTLDFlags] -> IO Module
-moduleOpen mod flags = do
-  modPtr <- withCString mod $ \ modAddr -> c_dlopen modAddr (packRTLDFlags flags)
+moduleOpen file flags = do
+  modPtr <- withCString file $ \ modAddr -> c_dlopen modAddr (packRTLDFlags flags)
   if (modPtr == nullPtr)
       then moduleError >>= \ err -> ioError (userError ("dlopen: " ++ err))
       else return $ Module modPtr
@@ -80,12 +80,12 @@ moduleOpen mod flags = do
 -- Gets a symbol pointer from a module (EXPORTED)
 --
 moduleSymbol :: Module -> String -> IO (FunPtr a)
-moduleSymbol mod sym = dlsym (DLHandle (unModule mod)) sym
+moduleSymbol file sym = dlsym (DLHandle (unModule file)) sym
 
 -- Closes a module (EXPORTED)
 -- 
 moduleClose     :: Module -> IO ()
-moduleClose mod  = dlclose (DLHandle (unModule mod))
+moduleClose file  = dlclose (DLHandle (unModule file))
 
 -- Gets a string describing the last module error (EXPORTED)
 -- 
@@ -101,15 +101,15 @@ withModule :: Maybe String
 	   -> [RTLDFlags]
            -> (Module -> IO a) 
 	   -> IO a
-withModule dir mod flags p = do
-  let modPath = case dir of
-                  Nothing -> mod
-	          Just p  -> p ++ if ((head (reverse p)) == '/')
-                                       then mod
-				       else ('/':mod)
-  mod <- moduleOpen modPath flags
-  result <- p mod
-  moduleClose mod
+withModule mdir file flags p = do
+  let modPath = case mdir of
+                  Nothing -> file
+	          Just dir  -> dir ++ if ((head (reverse dir)) == '/')
+                                       then file
+				       else ('/':file)
+  modu <- moduleOpen modPath flags
+  result <- p modu
+  moduleClose modu
   return result
 
 withModule_ :: Maybe String 
@@ -117,4 +117,4 @@ withModule_ :: Maybe String
 	    -> [RTLDFlags]
             -> (Module -> IO a) 
 	    -> IO ()
-withModule_ dir mod flags p = withModule dir mod flags p >>= \ _ -> return ()
+withModule_ dir file flags p = withModule dir file flags p >>= \ _ -> return ()

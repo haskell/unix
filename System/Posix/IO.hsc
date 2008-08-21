@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.IO
@@ -154,8 +155,8 @@ openFd :: FilePath
        -> Maybe FileMode -- ^Just x => creates the file with the given modes, Nothing => the file must exist.
        -> OpenFileFlags
        -> IO Fd
-openFd name how maybe_mode (OpenFileFlags append exclusive noctty
-				nonBlock truncate) = do
+openFd name how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
+				nonBlockFlag truncateFlag) = do
    withCString name $ \s -> do
     fd <- throwErrnoPathIfMinus1 "openFd" name (c_open s all_flags mode_w)
     return (Fd fd)
@@ -163,11 +164,11 @@ openFd name how maybe_mode (OpenFileFlags append exclusive noctty
     all_flags  = creat .|. flags .|. open_mode
 
     flags =
-       (if append    then (#const O_APPEND)   else 0) .|.
-       (if exclusive then (#const O_EXCL)     else 0) .|.
-       (if noctty    then (#const O_NOCTTY)   else 0) .|.
-       (if nonBlock  then (#const O_NONBLOCK) else 0) .|.
-       (if truncate  then (#const O_TRUNC)    else 0)
+       (if appendFlag    then (#const O_APPEND)   else 0) .|.
+       (if exclusiveFlag then (#const O_EXCL)     else 0) .|.
+       (if nocttyFlag    then (#const O_NOCTTY)   else 0) .|.
+       (if nonBlockFlag  then (#const O_NONBLOCK) else 0) .|.
+       (if truncateFlag  then (#const O_TRUNC)    else 0)
 
     (creat, mode_w) = case maybe_mode of 
 			Nothing -> (0,0)
@@ -256,7 +257,7 @@ queryFdOption (Fd fd) opt = do
  where
   flag    = case opt of
 	      CloseOnExec       -> (#const F_GETFD)
-	      other		-> (#const F_GETFL)
+	      _    		-> (#const F_GETFL)
 
 -- | May throw an exception if this is an invalid descriptor.
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
@@ -269,7 +270,7 @@ setFdOption (Fd fd) opt val = do
  where
   (getflag,setflag)= case opt of
 	      CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD)) 
-	      other		-> ((#const F_GETFL),(#const F_SETFL))
+	      _    		-> ((#const F_GETFL),(#const F_SETFL))
   opt_val = fdOption2Int opt
 
 -- -----------------------------------------------------------------------------

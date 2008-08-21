@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports -fno-warn-unused-binds #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Unistd
@@ -138,7 +139,7 @@ nanosleep 0 = return ()
 nanosleep nsecs = do
   allocaBytes (#const sizeof(struct timespec)) $ \pts1 -> do
   allocaBytes (#const sizeof(struct timespec)) $ \pts2 -> do
-     let (tv_sec,tv_nsec) = nsecs `divMod` 1000000000
+     let (tv_sec0, tv_nsec0) = nsecs `divMod` 1000000000
      let 
        loop tv_sec tv_nsec = do
          (#poke struct timespec, tv_sec)  pts1 tv_sec
@@ -149,11 +150,11 @@ nanosleep nsecs = do
             else do errno <- getErrno
                     if errno == eINTR
                        then do
-                           tv_sec  <- (#peek struct timespec, tv_sec)  pts2
-                           tv_nsec <- (#peek struct timespec, tv_nsec) pts2
-                           loop tv_sec tv_nsec
+                           tv_sec'  <- (#peek struct timespec, tv_sec)  pts2
+                           tv_nsec' <- (#peek struct timespec, tv_nsec) pts2
+                           loop tv_sec' tv_nsec'
                        else throwErrno "nanosleep"
-     loop (fromIntegral tv_sec :: CTime) (fromIntegral tv_nsec :: CTime)
+     loop (fromIntegral tv_sec0 :: CTime) (fromIntegral tv_nsec0 :: CTime)
 
 newtype CTimeSpec = CTimeSpec CTimeSpec
 

@@ -330,8 +330,8 @@ installHandler int handler maybe_mask = do
       rc <- case handler of
       	      Default      -> stg_sig_install int STG_SIG_DFL p_sp mask
       	      Ignore       -> stg_sig_install int STG_SIG_IGN p_sp mask
-      	      Catch m      -> hinstall m p_sp mask int STG_SIG_HAN
-      	      CatchOnce m  -> hinstall m p_sp mask int STG_SIG_RST
+      	      Catch m      -> hinstall m p_sp mask STG_SIG_HAN
+      	      CatchOnce m  -> hinstall m p_sp mask STG_SIG_RST
 
       case rc of
 	STG_SIG_DFL -> return Default
@@ -346,7 +346,7 @@ installHandler int handler maybe_mask = do
 	_other ->
 	   error "internal error: System.Posix.Signals.installHandler"
 
-    hinstall m p_sp mask int reset = do
+    hinstall m p_sp mask reset = do
       sptr <- newStablePtr m
       poke p_sp sptr
       stg_sig_install int reset p_sp mask
