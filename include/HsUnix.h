@@ -10,6 +10,7 @@
 #define HSUNIX_H
 
 #include "HsUnixConfig.h"
+#include "HsFFI.h"
 
 /* ultra-evil... */
 #undef PACKAGE_BUGREPORT
@@ -197,6 +198,18 @@ INLINE int __hsunix_unsetenv(const char *name)
     return 0;
 #else
     return unsetenv(name);
+#endif
+}
+
+/* A size that will contain many path names, but not necessarily all
+ * (PATH_MAX is not defined on systems with unlimited path length,
+ * e.g. the Hurd).
+ */
+INLINE HsInt __hsunix_long_path_size() {
+#ifdef PATH_MAX
+    return PATH_MAX;
+#else
+    return 4096;
 #endif
 }
 

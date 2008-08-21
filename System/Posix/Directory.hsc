@@ -33,10 +33,11 @@ module System.Posix.Directory (
    changeWorkingDirectoryFd,
   ) where
 
+import System.IO.Error
 import System.Posix.Error
 import System.Posix.Types
 import System.Posix.Internals
-import System.Directory hiding (createDirectory)
+--import System.Directory hiding (createDirectory)
 import Foreign
 import Foreign.C
 
@@ -124,12 +125,47 @@ foreign import ccall unsafe "telldir"
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
 --   of the current working directory.
 getWorkingDirectory :: IO FilePath
-getWorkingDirectory = getCurrentDirectory
+getWorkingDirectory = do
+  p <- mallocBytes long_path_size
+  go p long_path_size
+  where go p bytes = do
+    	  p' <- c_getcwd p (fromIntegral bytes)
+	  if p' /= nullPtr 
+	     then do s <- peekCString p'
+		     free p'
+		     return s
+	     else do errno <- getErrno
+		     if errno == eRANGE
+		        then do let bytes' = bytes * 2
+			        p'' <- reallocBytes p bytes'
+			        go p'' bytes'
+		        else throwErrno "getCurrentDirectory"
+
+foreign import ccall unsafe "getcwd"
+   c_getcwd   :: Ptr CChar -> CSize -> IO (Ptr CChar)
+
+foreign import ccall unsafe "__hsunix_long_path_size"
+  long_path_size :: Int
 
 -- | @changeWorkingDirectory dir@ calls @chdir@ to change
 --   the current working directory to @dir@.
 changeWorkingDirectory :: FilePath -> IO ()
-changeWorkingDirectory name = setCurrentDirectory name
+changeWorkingDirectory path =
+  modifyIOError (`ioeSetFileName` path) $
+    withCString path $ \s -> 
+       throwErrnoIfMinus1Retry_ "changeWorkingDirectory" (c_chdir s)
+
+foreign import ccall unsafe "chdir"
+   c_chdir :: CString -> IO CInt
+
+removeDirectory :: FilePath -> IO ()
+removeDirectory path =
+  modifyIOError (`ioeSetFileName` path) $
+    withCString path $ \s ->
+       throwErrnoIfMinus1Retry_ "removeDirectory" (c_rmdir s)
+
+foreign import ccall unsafe "rmdir"
+   c_rmdir :: CString -> IO CInt
 
 changeWorkingDirectoryFd :: Fd -> IO ()
 changeWorkingDirectoryFd (Fd fd) = 

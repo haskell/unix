@@ -502,6 +502,9 @@ rename name1 name2 =
   withCString name2 $ \s2 ->
   throwErrnoPathIfMinus1_ "rename" name1 (c_rename s1 s2)
 
+foreign import ccall unsafe "rename"
+   c_rename :: CString -> CString -> IO CInt
+
 -- -----------------------------------------------------------------------------
 -- chown()
 
