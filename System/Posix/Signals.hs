@@ -152,8 +152,10 @@ sigUSR1   :: CInt
 sigUSR1   = CONST_SIGUSR1
 sigUSR2   :: CInt
 sigUSR2   = CONST_SIGUSR2
+#if CONST_SIGPOLL != -1
 sigPOLL   :: CInt
 sigPOLL   = CONST_SIGPOLL
+#endif
 sigPROF   :: CInt
 sigPROF   = CONST_SIGPROF
 sigSYS    :: CInt
