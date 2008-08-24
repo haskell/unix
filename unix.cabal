@@ -4,6 +4,7 @@ license:	BSD3
 license-file:	LICENSE
 maintainer:	libraries@haskell.org
 synopsis:	POSIX functionality
+category:       System
 description:
 	This package gives you access to the set of operating system
 	services standardised by POSIX 1003.1b (or the IEEE Portable
