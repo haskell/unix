@@ -366,7 +366,7 @@ fdRead (Fd fd) nbytes = do
     allocaBytes (fromIntegral nbytes) $ \ bytes -> do
     rc    <-  throwErrnoIfMinus1Retry "fdRead" (c_read fd bytes nbytes)
     case fromIntegral rc of
-      0 -> ioError (IOError Nothing EOF "fdRead" "EOF" Nothing)
+      0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
       n -> do
        s <- peekCStringLen (bytes, fromIntegral n)
        return (s, n)
