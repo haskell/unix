@@ -278,7 +278,7 @@ executeFile :: FilePath			    -- ^ Command
             -> Bool			    -- ^ Search PATH?
             -> [String]			    -- ^ Arguments
             -> Maybe [(String, String)]	    -- ^ Environment
-            -> IO ()
+            -> IO a
 executeFile path search args Nothing = do
   withCString path $ \s ->
     withMany withCString (path:args) $ \cstrs ->
@@ -287,6 +287,7 @@ executeFile path search args Nothing = do
 	if search 
 	   then throwErrnoPathIfMinus1_ "executeFile" path (c_execvp s arr)
 	   else throwErrnoPathIfMinus1_ "executeFile" path (c_execv s arr)
+        return undefined -- never reached
 
 executeFile path search args (Just env) = do
   withCString path $ \s ->
@@ -301,6 +302,7 @@ executeFile path search args (Just env) = do
 		   (c_execvpe s arg_arr env_arr)
 	   else throwErrnoPathIfMinus1_ "executeFile" path
 		   (c_execve s arg_arr env_arr)
+        return undefined -- never reached
 
 foreign import ccall unsafe "execvp"
   c_execvp :: CString -> Ptr CString -> IO CInt
