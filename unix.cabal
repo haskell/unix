@@ -3,6 +3,7 @@ version:	2.3.1.0
 license:	BSD3
 license-file:	LICENSE
 maintainer:	libraries@haskell.org
+bug-reports: http://hackage.haskell.org/trac/ghc/newticket?component=libraries/unix
 synopsis:	POSIX functionality
 category:       System
 description:
@@ -12,29 +13,6 @@ description:
 	IEEE Std. 1003.1).
 	.
 	The package is not supported under Windows (except under Cygwin).
-build-type: Configure
-exposed-modules:
-		System.Posix
-		System.Posix.DynamicLinker.Module
-		System.Posix.DynamicLinker.Prim
-		System.Posix.Directory
-		System.Posix.DynamicLinker
-		System.Posix.Env
-		System.Posix.Error
-		System.Posix.Files
-		System.Posix.IO
-		System.Posix.Process
-		System.Posix.Process.Internals
-		System.Posix.Resource
-		System.Posix.Temp
-		System.Posix.Terminal
-		System.Posix.Time
-		System.Posix.Unistd
-		System.Posix.User
-        System.Posix.Signals
-		System.Posix.Signals.Exts
-                System.Posix.Semaphore
-                System.Posix.SharedMem
 extra-source-files:
 		configure.ac configure
 		unix.buildinfo.in include/HsUnixConfig.h.in
@@ -42,10 +20,41 @@ extra-source-files:
 extra-tmp-files:
 		config.log config.status autom4te.cache
 		unix.buildinfo include/HsUnixConfig.h
-build-depends:	base
-extensions:	CPP, ForeignFunctionInterface
-include-dirs: 	include
-includes:       HsUnix.h execvpe.h
-install-includes:
-		HsUnix.h HsUnixConfig.h execvpe.h
-c-sources:	cbits/HsUnix.c cbits/execvpe.c
+build-type: Configure
+Cabal-Version: >= 1.2
+
+Library
+    exposed-modules:
+        System.Posix
+        System.Posix.DynamicLinker.Module
+        System.Posix.DynamicLinker.Prim
+        System.Posix.Directory
+        System.Posix.DynamicLinker
+        System.Posix.Env
+        System.Posix.Error
+        System.Posix.Files
+        System.Posix.IO
+        System.Posix.Process
+        System.Posix.Process.Internals
+        System.Posix.Resource
+        System.Posix.Temp
+        System.Posix.Terminal
+        System.Posix.Time
+        System.Posix.Unistd
+        System.Posix.User
+        System.Posix.Signals
+        System.Posix.Signals.Exts
+        System.Posix.Semaphore
+        System.Posix.SharedMem
+    build-depends:	base
+    extensions:	CPP, ForeignFunctionInterface
+    include-dirs: 	include
+    includes:       HsUnix.h execvpe.h
+    install-includes:
+        HsUnix.h HsUnixConfig.h execvpe.h
+    c-sources:	cbits/HsUnix.c cbits/execvpe.c
+
+source-repository head
+    type:     darcs
+    location: http://darcs.haskell.org/packages/unix/
+
