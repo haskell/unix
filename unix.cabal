@@ -21,7 +21,7 @@ extra-tmp-files:
 		config.log config.status autom4te.cache
 		unix.buildinfo include/HsUnixConfig.h
 build-type: Configure
-Cabal-Version: >= 1.2
+Cabal-Version: >= 1.6
 
 Library
     exposed-modules:
