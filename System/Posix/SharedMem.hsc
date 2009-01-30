@@ -23,6 +23,8 @@ module System.Posix.SharedMem
 #include <sys/mman.h>
 #include <sys/fcntl.h>
 
+#include "HsUnix.h"
+
 import System.Posix.Types
 import System.Posix.Error
 import Foreign.C
