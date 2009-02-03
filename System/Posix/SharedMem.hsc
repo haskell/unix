@@ -45,19 +45,19 @@ data ShmOpenFlags = ShmOpenFlags
 shmOpen :: String -> ShmOpenFlags -> FileMode -> IO Fd
 #ifdef HAVE_SHM_OPEN
 shmOpen name flags mode =
-    do cflags <- return 0
-       cflags <- return $ cflags .|. (if shmReadWrite flags
-                                      then #{const O_RDWR}
-                                      else #{const O_RDONLY})
-       cflags <- return $ cflags .|. (if shmCreate flags then #{const O_CREAT} 
-                                      else 0)
-       cflags <- return $ cflags .|. (if shmExclusive flags 
-                                      then #{const O_EXCL} 
-                                      else 0)
-       cflags <- return $ cflags .|. (if shmTrunc flags then #{const O_TRUNC} 
-                                      else 0)
-       withCAString name (shmOpen' cflags mode)
-    where shmOpen' cflags mode cname =
+    do cflags0 <- return 0
+       cflags1 <- return $ cflags0 .|. (if shmReadWrite flags
+                                        then #{const O_RDWR}
+                                        else #{const O_RDONLY})
+       cflags2 <- return $ cflags1 .|. (if shmCreate flags then #{const O_CREAT} 
+                                        else 0)
+       cflags3 <- return $ cflags2 .|. (if shmExclusive flags 
+                                        then #{const O_EXCL} 
+                                        else 0)
+       cflags4 <- return $ cflags3 .|. (if shmTrunc flags then #{const O_TRUNC} 
+                                        else 0)
+       withCAString name (shmOpen' cflags4)
+    where shmOpen' cflags cname =
               do fd <- throwErrnoIfMinus1 "shmOpen" $ 
                        shm_open cname cflags mode
                  return $ Fd fd
