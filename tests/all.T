@@ -24,3 +24,5 @@ test('getGroupEntryForName', compose(conf, expect_fail), compile_and_run,
 test('getUserEntryForName', compose(conf, expect_fail), compile_and_run,
      ['-package unix'])
 
+
+test('signals004', normal, compile_and_run, ['-package unix'])

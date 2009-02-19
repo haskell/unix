@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveDataTypeable,PatternGuards #-}
+{-# OPTIONS_GHC -fno-cse #-} -- global variables
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Signals
@@ -13,6 +15,11 @@
 -----------------------------------------------------------------------------
 
 #include "HsUnixConfig.h"
+##include "HsUnixConfig.h"
+
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
 
 module System.Posix.Signals (
   -- * The Signal type
@@ -58,7 +65,7 @@ module System.Posix.Signals (
 
 #ifdef __GLASGOW_HASKELL__
   -- * Handling signals
-  Handler(..),
+  Handler(Default,Ignore,Catch,CatchOnce),
   installHandler,
 #endif
 
@@ -94,20 +101,21 @@ module System.Posix.Signals (
 
 import Foreign
 import Foreign.C
-import System.IO.Unsafe
 import System.Posix.Types
 import System.Posix.Internals
-import Control.Concurrent (withMVar)
+import System.Posix.Process.Internals
+import System.Posix.Process
+import Control.Monad
+import Data.Dynamic
 
 #ifdef __GLASGOW_HASKELL__
-#include "Signals.h"
-import GHC.Conc	( ensureIOManagerIsRunning, signalHandlerLock )
+##include "Signals.h"
+import GHC.IOBase
+import GHC.Conc hiding (Signal)
 #endif
 
 -- -----------------------------------------------------------------------------
 -- Specific signals
-
-type Signal = CInt
 
 nullSignal :: Signal
 nullSignal = 0
@@ -293,11 +301,35 @@ foreign import ccall unsafe "raise"
 #endif
 
 #ifdef __GLASGOW_HASKELL__
+type Signal = CInt
+
+
+-- | The actions to perform when a signal is received.
 data Handler = Default
              | Ignore
 	     -- not yet: | Hold 
              | Catch (IO ())
              | CatchOnce (IO ())
+             | CatchInfo (SignalInfo -> IO ())
+             | CatchInfoOnce (SignalInfo -> IO ())
+  deriving (Typeable)
+
+-- | Information about a received signal (derived from @siginfo_t@).
+data SignalInfo = SignalInfo {
+      siginfoSignal   :: Signal,
+      siginfoError    :: Errno,
+      siginfoSpecific :: SignalSpecificInfo
+  }
+
+-- | Information specific to a particular type of signal
+-- (derived from @siginfo_t@).
+data SignalSpecificInfo
+  = NoSignalSpecificInfo
+  | SigChldInfo {
+      siginfoPid    :: ProcessID,
+      siginfoUid    :: UserID,
+      siginfoStatus :: ProcessStatus
+    }
 
 -- | @installHandler int handler iset@ calls @sigaction@ to install an
 --   interrupt handler for signal @int@.  If @handler@ is @Default@,
@@ -318,52 +350,92 @@ installHandler =
   error "installHandler: not available for Parallel Haskell"
 #else
 
-installHandler int handler maybe_mask = do
-    ensureIOManagerIsRunning  -- for the threaded RTS
-    case maybe_mask of
-	Nothing -> install' nullPtr
-        Just (SignalSet x) -> withForeignPtr x $ install' 
-  where 
-    install' mask = 
-         -- prevent race with the IO manager thread, see #1922
-      withMVar signalHandlerLock $ \_ ->
-      alloca $ \p_sp -> do
+installHandler sig handler _maybe_mask = do
+  ensureIOManagerIsRunning  -- for the threaded RTS
 
-      rc <- case handler of
-      	      Default      -> stg_sig_install int STG_SIG_DFL p_sp mask
-      	      Ignore       -> stg_sig_install int STG_SIG_IGN p_sp mask
-      	      Catch m      -> hinstall m p_sp mask STG_SIG_HAN
-      	      CatchOnce m  -> hinstall m p_sp mask STG_SIG_RST
+  -- if we're setting the action to DFL or IGN, we should do that *first*
+  -- if we're setting a handler,
+  --   if the previous action was handle, then setHandler is ok
+  --   if the previous action was IGN/DFL, then setHandler followed by sig_install
+  (old_action, old_handler) <-
+    case handler of
+      Ignore  -> do
+        old_action  <- stg_sig_install sig STG_SIG_IGN nullPtr
+        old_handler <- setHandler sig Nothing
+        return (old_action, old_handler)
 
-      case rc of
-	STG_SIG_DFL -> return Default
-	STG_SIG_IGN -> return Ignore
-	STG_SIG_ERR -> throwErrno "installHandler"
-	STG_SIG_HAN -> do
-        	m <- peekHandler p_sp
-		return (Catch m)
-	STG_SIG_RST -> do
-        	m <- peekHandler p_sp
-		return (CatchOnce m)
-	_other ->
-	   error "internal error: System.Posix.Signals.installHandler"
+      Default -> do
+        old_action  <- stg_sig_install sig STG_SIG_DFL nullPtr
+        old_handler <- setHandler sig Nothing
+        return (old_action, old_handler)
 
-    hinstall m p_sp mask reset = do
-      sptr <- newStablePtr m
-      poke p_sp sptr
-      stg_sig_install int reset p_sp mask
+      _some_kind_of_catch -> do
+        -- I don't think it's possible to get CatchOnce right.  If
+        -- there's a signal in flight, then we might run the handler
+        -- more than once.
+        let dyn = toDyn handler
+        old_handler <- case handler of
+            Catch         action -> setHandler sig (Just (const action,dyn))
+            CatchOnce     action -> setHandler sig (Just (const action,dyn))
+            CatchInfo     action -> setHandler sig (Just (getinfo action,dyn))
+            CatchInfoOnce action -> setHandler sig (Just (getinfo action,dyn))
+            _                    -> error "installHandler"
+            
+        let action = case handler of
+                Catch _         -> STG_SIG_HAN
+                CatchOnce _     -> STG_SIG_RST
+                CatchInfo _     -> STG_SIG_HAN
+                CatchInfoOnce _ -> STG_SIG_RST
+                _               -> error "installHandler"
 
-    peekHandler p_sp = do
-      osptr <- peek p_sp
-      deRefStablePtr osptr
+        old_action <- stg_sig_install sig action nullPtr
+                   -- mask is pointless, so leave it NULL
+
+        return (old_action, old_handler)
+
+  case (old_handler,old_action) of
+    (_,       STG_SIG_DFL) -> return $ Default
+    (_,       STG_SIG_IGN) -> return $ Ignore
+    (Nothing, _)           -> return $ Ignore
+    (Just (_,dyn),  _)
+        | Just h <- fromDynamic dyn  -> return h
+        | Just io <- fromDynamic dyn -> return (Catch io)
+        -- handlers put there by the base package have type IO ()
+        | otherwise                  -> return Default
 
 foreign import ccall unsafe
   stg_sig_install
 	:: CInt				-- sig no.
 	-> CInt				-- action code (STG_SIG_HAN etc.)
-	-> Ptr (StablePtr (IO ()))	-- (in, out) Haskell handler
 	-> Ptr CSigset			-- (in, out) blocked
-	-> IO CInt			-- (ret) action code
+	-> IO CInt			-- (ret) old action code
+
+getinfo :: (SignalInfo -> IO ()) -> ForeignPtr Word8 -> IO ()
+getinfo handler fp_info = do
+  si <- unmarshalSigInfo fp_info
+  handler si
+
+unmarshalSigInfo :: ForeignPtr Word8 -> IO SignalInfo
+unmarshalSigInfo fp = do
+  withForeignPtr fp $ \p -> do
+    sig   <- (#peek siginfo_t, si_signo) p
+    errno <- (#peek siginfo_t, si_errno) p
+    extra <- case sig of
+                _ | sig == sigCHLD -> do
+                    pid <- (#peek siginfo_t, si_pid) p
+                    uid <- (#peek siginfo_t, si_uid) p
+                    wstat <- (#peek siginfo_t, si_status) p
+                    pstat <- decipherWaitStatus wstat
+                    return SigChldInfo { siginfoPid = pid,
+                                         siginfoUid = uid,
+                                         siginfoStatus = pstat }
+                _ | otherwise ->
+                    return NoSignalSpecificInfo
+    return
+      SignalInfo {
+        siginfoSignal = sig,
+        siginfoError  = Errno errno,
+        siginfoSpecific = extra }
 
 #endif /* !__PARALLEL_HASKELL__ */
 #endif /* __GLASGOW_HASKELL__ */

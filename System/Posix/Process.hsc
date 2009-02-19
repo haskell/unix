@@ -72,12 +72,10 @@ import Foreign.Ptr ( Ptr, nullPtr )
 import Foreign.StablePtr ( StablePtr, newStablePtr, freeStablePtr )
 import Foreign.Storable ( Storable(..) )
 import System.IO
-import System.IO.Error
 import System.Exit
 import System.Posix.Error
-import System.Posix.Process.Internals ( pPrPr_disableITimers, c_execvpe )
+import System.Posix.Process.Internals
 import System.Posix.Types
-import System.Posix.Signals
 import Control.Monad
 
 #ifdef __GLASGOW_HASKELL__
@@ -316,11 +314,6 @@ foreign import ccall unsafe "execve"
 -- -----------------------------------------------------------------------------
 -- Waiting for process termination
 
-data ProcessStatus = Exited ExitCode
-                   | Terminated Signal
-                   | Stopped Signal
-		   deriving (Eq, Ord, Show)
-
 -- | @'getProcessStatus' blk stopped pid@ calls @waitpid@, returning
 --   @'Just' tc@, the 'ProcessStatus' for process @pid@ if it is
 --   available, 'Nothing' otherwise.  If @blk@ is 'False', then
@@ -334,7 +327,7 @@ getProcessStatus block stopped pid =
 		(c_waitpid pid wstatp (waitOptions block stopped))
     case pid' of
       0  -> return Nothing
-      _  -> do ps <- decipherWaitStatus wstatp
+      _  -> do ps <- readWaitStatus wstatp
 	       return (Just ps)
 
 -- safe, because this call might block
@@ -358,7 +351,7 @@ getGroupProcessStatus block stopped pgid =
 		(c_waitpid (-pgid) wstatp (waitOptions block stopped))
     case pid of
       0  -> return Nothing
-      _  -> do ps <- decipherWaitStatus wstatp
+      _  -> do ps <- readWaitStatus wstatp
 	       return (Just (pid, ps))
 -- | @'getAnyProcessStatus' blk stopped@ calls @waitpid@, returning
 --   @'Just' (pid, tc)@, the 'ProcessID' and 'ProcessStatus' for any
@@ -378,46 +371,10 @@ waitOptions True  True  = (#const WUNTRACED)
 
 -- Turn a (ptr to a) wait status into a ProcessStatus
 
-decipherWaitStatus :: Ptr CInt -> IO ProcessStatus
-decipherWaitStatus wstatp = do
+readWaitStatus :: Ptr CInt -> IO ProcessStatus
+readWaitStatus wstatp = do
   wstat <- peek wstatp
-  if c_WIFEXITED wstat /= 0
-      then do
-        let exitstatus = c_WEXITSTATUS wstat
-        if exitstatus == 0
-	   then return (Exited ExitSuccess)
-	   else return (Exited (ExitFailure (fromIntegral exitstatus)))
-      else do
-        if c_WIFSIGNALED wstat /= 0
-	   then do
-		let termsig = c_WTERMSIG wstat
-		return (Terminated (fromIntegral termsig))
-	   else do
-		if c_WIFSTOPPED wstat /= 0
-		   then do
-			let stopsig = c_WSTOPSIG wstat
-			return (Stopped (fromIntegral stopsig))
-		   else do
-			ioError (mkIOError illegalOperationErrorType
-				   "waitStatus" Nothing Nothing)
-
-foreign import ccall unsafe "__hsunix_wifexited"
-  c_WIFEXITED :: CInt -> CInt 
-
-foreign import ccall unsafe "__hsunix_wexitstatus"
-  c_WEXITSTATUS :: CInt -> CInt
-
-foreign import ccall unsafe "__hsunix_wifsignaled"
-  c_WIFSIGNALED :: CInt -> CInt
-
-foreign import ccall unsafe "__hsunix_wtermsig"
-  c_WTERMSIG :: CInt -> CInt 
-
-foreign import ccall unsafe "__hsunix_wifstopped"
-  c_WIFSTOPPED :: CInt -> CInt
-
-foreign import ccall unsafe "__hsunix_wstopsig"
-  c_WSTOPSIG :: CInt -> CInt
+  decipherWaitStatus wstat
 
 -- -----------------------------------------------------------------------------
 -- Exiting

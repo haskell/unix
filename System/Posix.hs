@@ -12,6 +12,18 @@
 --
 -----------------------------------------------------------------------------
 
+#if MIN_VERSION_base(3,0,0)
+#warning 3
+#endif
+
+#if MIN_VERSION_base(4,0,0)
+#warning 4
+#endif
+
+#if MIN_VERSION_base(4,0,1)
+#warning 401
+#endif
+
 module System.Posix (
   module System.Posix.Types,
   module System.Posix.Signals,
