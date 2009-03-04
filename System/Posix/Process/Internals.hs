@@ -9,8 +9,6 @@ import System.Exit
 import System.IO.Error
 import GHC.Conc (Signal)
 
--- we had to move this into GHC.Conc in GHC to avoid recursive dependencies.
--- it can be moved back when the signal handling stuff in base is moved out.
 data ProcessStatus = Exited ExitCode
                    | Terminated Signal
                    | Stopped Signal
