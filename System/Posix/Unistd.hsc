@@ -156,7 +156,7 @@ nanosleep nsecs = do
                        else throwErrno "nanosleep"
      loop (fromIntegral tv_sec0 :: CTime) (fromIntegral tv_nsec0 :: CTime)
 
-newtype CTimeSpec = CTimeSpec CTimeSpec
+data CTimeSpec
 
 foreign import ccall safe "nanosleep" 
   c_nanosleep :: Ptr CTimeSpec -> Ptr CTimeSpec -> IO CInt

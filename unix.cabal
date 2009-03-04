@@ -47,7 +47,7 @@ Library
         System.Posix.Semaphore
         System.Posix.SharedMem
     build-depends:	base
-    extensions:	CPP, ForeignFunctionInterface
+    extensions:	CPP, ForeignFunctionInterface, EmptyDataDecls
     include-dirs: 	include
     includes:       HsUnix.h execvpe.h
     install-includes:
