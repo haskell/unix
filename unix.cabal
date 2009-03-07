@@ -14,6 +14,7 @@ description:
 	.
 	The package is not supported under Windows (except under Cygwin).
 extra-source-files:
+        config.guess config.sub install-sh
 		configure.ac configure
 		unix.buildinfo.in include/HsUnixConfig.h.in
 		include/HsUnix.h
