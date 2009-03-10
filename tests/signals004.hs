@@ -6,7 +6,9 @@ import Control.Monad
 -- signals are being constantly thrown and caught.
 
 installers = 50
-sigs = 10000
+-- too many signals overflows the IO manager's pipe buffer, this seems
+-- to be the most we can get away with:
+sigs = 400
 
 main = do
   c <- newChan
