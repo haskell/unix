@@ -34,6 +34,7 @@ module System.Posix.IO (
     -- EAGAIN exceptions may occur for non-blocking IO!
 
     fdRead, fdWrite,
+    fdReadBuf, fdWriteBuf,
 
     -- ** Seeking
     fdSeek,
@@ -357,22 +358,55 @@ waitToSetLock (Fd fd) lock = do
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}
 
--- | May throw an exception if this is an invalid descriptor.
+-- | Read data from an 'Fd' and convert it to a 'String'.  Throws an
+-- exception if this is an invalid descriptor, or EOF has been
+-- reached.
 fdRead :: Fd
        -> ByteCount -- ^How many bytes to read
        -> IO (String, ByteCount) -- ^The bytes read, how many bytes were read.
 fdRead _fd 0 = return ("", 0)
-fdRead (Fd fd) nbytes = do
-    allocaBytes (fromIntegral nbytes) $ \ bytes -> do
-    rc    <-  throwErrnoIfMinus1Retry "fdRead" (c_read fd bytes nbytes)
+fdRead fd nbytes = do
+    allocaBytes (fromIntegral nbytes) $ \ buf -> do
+    rc <- fdReadBuf fd buf nbytes
     case fromIntegral rc of
       0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
       n -> do
-       s <- peekCStringLen (bytes, fromIntegral n)
+       s <- peekCStringLen (castPtr buf, fromIntegral n)
        return (s, n)
 
--- | May throw an exception if this is an invalid descriptor.
+-- | Read data from an 'Fd' into memory.  This is exactly equivalent
+-- to the POSIX @read@ function.
+fdReadBuf :: Fd
+          -> Ptr Word8 -- ^ Memory in which to put the data
+          -> ByteCount -- ^ Maximum number of bytes to read
+          -> IO ByteCount -- ^ Number of bytes read (zero for EOF)
+fdReadBuf _fd _buf 0 = return 0
+fdReadBuf fd buf nbytes = 
+  fmap fromIntegral $
+    throwErrnoIfMinus1Retry "fdReadBuf" $ 
+      c_safe_read (fromIntegral fd) (castPtr buf) (fromIntegral nbytes)
+
+foreign import ccall safe "read"
+   c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
+
+-- | Write a 'String' to an 'Fd' (no character conversion is done,
+-- the least-significant 8 bits of each character are written).
 fdWrite :: Fd -> String -> IO ByteCount
-fdWrite (Fd fd) str = withCStringLen str $ \ (strPtr,len) -> do
-    rc <- throwErrnoIfMinus1Retry "fdWrite" (c_write fd strPtr (fromIntegral len))
+fdWrite fd str = 
+  withCStringLen str $ \ (buf,len) -> do
+    rc <- fdWriteBuf fd (castPtr buf) (fromIntegral len)
     return (fromIntegral rc)
+
+-- | Write data from memory to an 'Fd'.  This is exactly equivalent
+-- to the POSIX @write@ function.
+fdWriteBuf :: Fd
+           -> Ptr Word8    -- ^ Memory containing the data to write
+           -> ByteCount    -- ^ Maximum number of bytes to write
+           -> IO ByteCount -- ^ Number of bytes written
+fdWriteBuf fd buf len =
+  fmap fromIntegral $
+    throwErrnoIfMinus1Retry "fdWriteBuf" $ 
+      c_safe_write (fromIntegral fd) (castPtr buf) (fromIntegral len)
+
+foreign import ccall safe "write" 
+   c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
