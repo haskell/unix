@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# OPTIONS_GHC -XRecordWildCards #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.IO
@@ -73,9 +74,19 @@ import Foreign.C
 import Data.Bits
 
 #ifdef __GLASGOW_HASKELL__
+#if __GLASGOW_HASKELL__ >= 611
+import GHC.IO.Handle
+import GHC.IO.Handle.Internals
+import GHC.IO.Handle.Types
+import qualified GHC.IO.FD as FD
+import qualified GHC.IO.Handle.FD as FD
+import GHC.IO.Exception
+import Data.Typeable (cast)
+#else
 import GHC.IOBase
 import GHC.Handle hiding (fdToHandle)
 import qualified GHC.Handle
+#endif
 #endif
 
 #ifdef __HUGS__
@@ -211,6 +222,24 @@ handleToFd :: Handle -> IO Fd
 fdToHandle :: Fd -> IO Handle
 
 #ifdef __GLASGOW_HASKELL__
+#if __GLASGOW_HASKELL__ >= 611
+handleToFd h = withHandle "handleToFd" h $ \ h_@Handle__{haType=_,..} -> do
+  case cast haDevice of
+    Nothing -> ioError (ioeSetErrorString (mkIOError IllegalOperation
+                                           "handleToFd" (Just h) Nothing) 
+                        "handle is not a file descriptor")
+    Just fd -> do
+     -- converting a Handle into an Fd effectively means
+     -- letting go of the Handle; it is put into a closed
+     -- state as a result. 
+     flushWriteBuffer h_
+     FD.release fd
+     return (Handle__{haType=ClosedHandle,..}, Fd (fromIntegral (FD.fdFD fd)))
+
+fdToHandle fd = FD.fdToHandle (fromIntegral fd)
+
+#else
+
 handleToFd h = withHandle "handleToFd" h $ \ h_ -> do
   -- converting a Handle into an Fd effectively means
   -- letting go of the Handle; it is put into a closed
@@ -224,6 +253,7 @@ handleToFd h = withHandle "handleToFd" h $ \ h_ -> do
   return (h_{haFD= (-1),haType=ClosedHandle}, Fd (fromIntegral fd))
 
 fdToHandle fd = GHC.Handle.fdToHandle (fromIntegral fd)
+#endif
 #endif
 
 #ifdef __HUGS__
