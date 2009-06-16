@@ -69,12 +69,12 @@ dnl --- FIXME: /usr/include/unistd.h can't be right?
 
 ### On some systems usleep has no return value.  If it does have one,
 ### we'd like to return it; otherwise, we'll fake it.
-AC_CACHE_CHECK([return type of usleep], cv_func_usleep_return_type,
+AC_CACHE_CHECK([return type of usleep], fptools_cv_func_usleep_return_type,
   [AC_EGREP_HEADER(changequote(<, >)<void[      ]+usleep>changequote([, ]),
                    /usr/include/unistd.h,
-                   [cv_func_usleep_return_type=void],
-                   [cv_func_usleep_return_type=int])])
-case "$cv_func_usleep_return_type" in
+                   [fptools_cv_func_usleep_return_type=void],
+                   [fptools_cv_func_usleep_return_type=int])])
+case "$fptools_cv_func_usleep_return_type" in
   "void" )
     AC_DEFINE([USLEEP_RETURNS_VOID], [1], [Define if the system headers declare usleep to return void.])
   ;;
@@ -82,12 +82,12 @@ esac
 
 ###  POSIX.1003.1 unsetenv returns 0 or -1 (EINVAL), but older implementations
 ###  in common use return void.
-AC_CACHE_CHECK([return type of unsetenv], cv_func_unsetenv_return_type,
+AC_CACHE_CHECK([return type of unsetenv], fptools_cv_func_unsetenv_return_type,
   [AC_EGREP_HEADER(changequote(<, >)<void[      ]+unsetenv>changequote([, ]),
                    /usr/include/stdlib.h,
-                   [cv_func_unsetenv_return_type=void],
-                   [cv_func_unsetenv_return_type=int])])
-case "$cv_func_unsetenv_return_type" in
+                   [fptools_cv_func_unsetenv_return_type=void],
+                   [fptools_cv_func_unsetenv_return_type=int])])
+case "$fptools_cv_func_unsetenv_return_type" in
   "void" )
     AC_DEFINE([UNSETENV_RETURNS_VOID], [1], [Define if stdlib.h declares unsetenv to return void.])
   ;;
