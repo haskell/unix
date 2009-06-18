@@ -67,7 +67,7 @@ import System.IO
 import System.IO.Error
 import System.Posix.Types
 import System.Posix.Error
-import System.Posix.Internals
+import qualified System.Posix.Internals as Base
 
 import Foreign
 import Foreign.C
@@ -113,6 +113,9 @@ createPipe =
     wfd <- peekElemOff p_fd 1
     return (Fd rfd, Fd wfd)
 
+foreign import ccall unsafe "pipe"
+   c_pipe :: Ptr CInt -> IO CInt
+
 -- -----------------------------------------------------------------------------
 -- Duplicating file descriptors
 
@@ -125,6 +128,12 @@ dupTo :: Fd -> Fd -> IO Fd
 dupTo (Fd fd1) (Fd fd2) = do
   r <- throwErrnoIfMinus1 "dupTo" (c_dup2 fd1 fd2)
   return (Fd r)
+
+foreign import ccall unsafe "dup"
+   c_dup :: CInt -> IO CInt
+
+foreign import ccall unsafe "dup2"
+   c_dup2 :: CInt -> CInt -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- Opening and closing files
@@ -191,6 +200,9 @@ openFd name how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
 		   WriteOnly -> (#const O_WRONLY)
 		   ReadWrite -> (#const O_RDWR)
 
+foreign import ccall unsafe "__hscore_open"
+   c_open :: CString -> CInt -> CMode -> IO CInt
+
 -- |Create and open this file in WriteOnly mode.  A special case of
 -- 'openFd'.  See 'System.Posix.Files' for information on how to use
 -- the 'FileMode' type.
@@ -204,6 +216,9 @@ createFile name mode
 
 closeFd :: Fd -> IO ()
 closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
+
+foreign import ccall unsafe "HsBase.h close"
+   c_close :: CInt -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- Converting file descriptors to/from Handles
@@ -304,6 +319,12 @@ setFdOption (Fd fd) opt val = do
 	      _    		-> ((#const F_GETFL),(#const F_SETFL))
   opt_val = fdOption2Int opt
 
+foreign import ccall unsafe "HsBase.h fcntl_read"
+   c_fcntl_read  :: CInt -> CInt -> IO CInt
+
+foreign import ccall unsafe "HsBase.h fcntl_write"
+   c_fcntl_write :: CInt -> CInt -> CLong -> IO CInt
+
 -- -----------------------------------------------------------------------------
 -- Seeking 
 
@@ -315,7 +336,7 @@ mode2Int SeekFromEnd  = (#const SEEK_END)
 -- | May throw an exception if this is an invalid descriptor.
 fdSeek :: Fd -> SeekMode -> FileOffset -> IO FileOffset
 fdSeek (Fd fd) mode off =
-  throwErrnoIfMinus1 "fdSeek" (c_lseek fd off (mode2Int mode))
+  throwErrnoIfMinus1 "fdSeek" (Base.c_lseek fd off (mode2Int mode))
 
 -- -----------------------------------------------------------------------------
 -- Locking
@@ -336,6 +357,11 @@ getLock (Fd fd) lock =
   where
     maybeResult (_, (Unlock, _, _, _)) = Nothing
     maybeResult x = Just x
+
+type CFLock     = ()
+
+foreign import ccall unsafe "HsBase.h fcntl_lock"
+   c_fcntl_lock  :: CInt -> CInt -> Ptr CFLock -> IO CInt
 
 allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
 allocaLock (lockreq, mode, start, len) io = 
