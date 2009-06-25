@@ -27,6 +27,7 @@ AC_CHECK_FUNCS([lchown setenv sysconf unsetenv])
 AC_CHECK_FUNCS([nanosleep])
 AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
+AC_CHECK_FUNCS([readdir_r])
 
 # Avoid adding rt if absent or unneeded
 AC_CHECK_LIB(rt, shm_open, [EXTRA_LIBS="$EXTRA_LIBS rt" CFLAGS="$CFLAGS -lrt"])

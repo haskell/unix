@@ -53,7 +53,7 @@ Library
     includes:       HsUnix.h execvpe.h
     install-includes:
         HsUnix.h HsUnixConfig.h execvpe.h
-    c-sources:	cbits/HsUnix.c cbits/execvpe.c
+    c-sources:	cbits/HsUnix.c cbits/execvpe.c cbits/dirUtils.c
 
 source-repository head
     type:     darcs

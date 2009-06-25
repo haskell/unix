@@ -37,8 +37,6 @@ module System.Posix.Directory (
 import System.IO.Error
 import System.Posix.Error
 import System.Posix.Types
-import System.Posix.Internals
---import System.Directory hiding (createDirectory)
 import Foreign
 import Foreign.C
 
@@ -63,6 +61,9 @@ openDirStream name =
     dirp <- throwErrnoPathIfNull "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
+foreign import ccall unsafe "opendir"
+   c_opendir :: CString  -> IO (Ptr CDir)
+
 -- | @readDirStream dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@, and returns the @d_name@ member of that
@@ -73,32 +74,51 @@ readDirStream (DirStream dirp) =
  where
   loop ptr_dEnt = do
     resetErrno
-    r <- readdir dirp ptr_dEnt
+    r <- c_readdir dirp ptr_dEnt
     if (r == 0)
 	 then do dEnt <- peek ptr_dEnt
 		 if (dEnt == nullPtr)
 		    then return []
 		    else do
 	 	     entry <- (d_name dEnt >>= peekCString)
-		     freeDirEnt dEnt
+		     c_freeDirEnt dEnt
 		     return entry
 	 else do errno <- getErrno
 		 if (errno == eINTR) then loop ptr_dEnt else do
 		 let (Errno eo) = errno
-		 if (eo == end_of_dir)
+		 if (eo == 0)
 		    then return []
 		    else throwErrno "readDirStream"
+
+type CDir       = ()
+type CDirent    = ()
+
+-- traversing directories
+foreign import ccall unsafe "__hscore_readdir"
+  c_readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
+
+foreign import ccall unsafe "__hscore_free_dirent"
+  c_freeDirEnt  :: Ptr CDirent -> IO ()
+
+foreign import ccall unsafe "__hscore_d_name"
+  d_name :: Ptr CDirent -> IO CString
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
 --   the directory stream @dp@ at the beginning of the directory.
 rewindDirStream :: DirStream -> IO ()
 rewindDirStream (DirStream dirp) = c_rewinddir dirp
 
+foreign import ccall unsafe "rewinddir"
+   c_rewinddir :: Ptr CDir -> IO ()
+
 -- | @closeDirStream dp@ calls @closedir@ to close
 --   the directory stream @dp@.
 closeDirStream :: DirStream -> IO ()
 closeDirStream (DirStream dirp) = do
   throwErrnoIfMinus1_ "closeDirStream" (c_closedir dirp)
+
+foreign import ccall unsafe "closedir"
+   c_closedir :: Ptr CDir -> IO CInt
 
 newtype DirStreamOffset = DirStreamOffset COff
 
