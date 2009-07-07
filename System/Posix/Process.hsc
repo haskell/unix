@@ -71,9 +71,7 @@ import Foreign.Marshal.Utils ( withMany )
 import Foreign.Ptr ( Ptr, nullPtr )
 import Foreign.StablePtr ( StablePtr, newStablePtr, freeStablePtr )
 import Foreign.Storable ( Storable(..) )
-import System.IO
 import System.Exit
-import System.Posix.Error
 import System.Posix.Process.Internals
 import System.Posix.Types
 import Control.Monad

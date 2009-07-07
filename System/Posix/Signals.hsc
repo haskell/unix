@@ -103,19 +103,12 @@ import Foreign
 import Foreign.C
 import System.Posix.Types
 import System.Posix.Internals
-import System.Posix.Process.Internals
 import System.Posix.Process
-import Control.Monad
+import System.Posix.Process.Internals
 import Data.Dynamic
 
 #ifdef __GLASGOW_HASKELL__
 ##include "Signals.h"
-
-#if __GLASGOW_HASKELL__ >= 611
-import GHC.IO (IO(..))
-#else
-import GHC.IOBase
-#endif
 
 import GHC.Conc hiding (Signal)
 #endif

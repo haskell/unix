@@ -29,7 +29,6 @@ import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
 import System.Posix.Types
-import System.Posix.Error
 import Control.Concurrent
 import Data.Bits
 
