@@ -801,5 +801,6 @@ withNewTermios termios action = do
   withForeignPtr fp1 $ \p1 -> do
    withTerminalAttributes termios $ \p2 -> do
     copyBytes p1 p2 (#const sizeof(struct termios))
-    action p1
+    _ <- action p1
+    return ()
   return $ makeTerminalAttributes fp1

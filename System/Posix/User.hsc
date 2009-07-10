@@ -171,7 +171,7 @@ getGroupEntryForID gid = do
       throwErrorIfNonZero_ "getGroupEntryForID" $
 	   doubleAllocWhile isERANGE grBufSize $ \s b ->
 	     c_getgrgid_r gid pgr b (fromIntegral s) ppgr
-      throwErrnoIfNull "getGroupEntryForID" $
+      _ <- throwErrnoIfNull "getGroupEntryForID" $
 	   peekElemOff ppgr 0
       unpackGroupEntry pgr
 
@@ -288,7 +288,7 @@ getUserEntryForID uid = do
       throwErrorIfNonZero_ "getUserEntryForID" $
 	   doubleAllocWhile isERANGE pwBufSize $ \s b ->
 	     c_getpwuid_r uid ppw b (fromIntegral s) pppw
-      throwErrnoIfNull "getUserEntryForID" $
+      _ <- throwErrnoIfNull "getUserEntryForID" $
 	   peekElemOff pppw 0
       unpackUserEntry ppw
 
