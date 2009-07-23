@@ -61,7 +61,7 @@ openDirStream name =
     dirp <- throwErrnoPathIfNull "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
-foreign import ccall unsafe "opendir"
+foreign import ccall unsafe "__hsunix_opendir"
    c_opendir :: CString  -> IO (Ptr CDir)
 
 -- | @readDirStream dp@ calls @readdir@ to obtain the

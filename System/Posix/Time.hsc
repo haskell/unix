@@ -33,5 +33,5 @@ import Foreign.C
 epochTime :: IO EpochTime
 epochTime = throwErrnoIfMinus1 "epochTime" (c_time nullPtr)
 
-foreign import ccall unsafe "time"
+foreign import ccall unsafe "__hsunix_time"
   c_time :: Ptr CTime -> IO CTime

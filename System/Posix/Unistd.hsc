@@ -158,7 +158,7 @@ nanosleep nsecs = do
 
 data CTimeSpec
 
-foreign import ccall safe "nanosleep" 
+foreign import ccall safe "__hsunix_nanosleep" 
   c_nanosleep :: Ptr CTimeSpec -> Ptr CTimeSpec -> IO CInt
 #endif
 

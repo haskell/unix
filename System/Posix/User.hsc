@@ -292,7 +292,7 @@ getUserEntryForID uid = do
 	   peekElemOff pppw 0
       unpackUserEntry ppw
 
-foreign import ccall unsafe "getpwuid_r"
+foreign import ccall unsafe "__hsunix_getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd -> 
 			CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWUID
@@ -328,7 +328,7 @@ getUserEntryForName name = do
 			      (Just name)
 	unpackUserEntry ppw
 
-foreign import ccall unsafe "getpwnam_r"
+foreign import ccall unsafe "__hsunix_getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
                -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWNAM
@@ -359,7 +359,7 @@ getAllUserEntries =
                      else do thisentry <- unpackUserEntry ppw
                              worker (thisentry : accum)
 
-foreign import ccall unsafe "getpwent"
+foreign import ccall unsafe "__hsunix_getpwent"
   c_getpwent :: IO (Ptr CPasswd)
 foreign import ccall unsafe "setpwent"
   c_setpwent :: IO ()

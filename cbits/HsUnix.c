@@ -42,6 +42,58 @@ int __hsunix_mknod(const char *pathname, mode_t mode, dev_t dev)
     return mknod(pathname,mode,dev);
 }
 
+#ifdef HAVE_GETPWENT
+// getpwent is a macro on some platforms, so we need a wrapper:
+struct passwd *__hsunix_getpwent(void)
+{
+    return getpwent();
+}
+#endif
+
+#if HAVE_GETPWNAM_R
+// getpwnam_r is a macro on some platforms, so we need a wrapper:
+int __hsunix_getpwnam_r(const char *name, struct passwd *pw, char *buffer,
+                        size_t buflen, struct passwd **result)
+{
+    return getpwnam_r(name, pw, buffer, buflen, result);
+}
+#endif
+
+#ifdef HAVE_GETPWUID_R
+// getpwuid_r is a macro on some platforms, so we need a wrapper:
+int __hsunix_getpwuid_r(uid_t uid, struct passwd *pw, char *buffer,
+                        size_t buflen, struct passwd **result)
+{
+    return getpwuid_r(uid, pw, buffer, buflen, result);
+}
+#endif
+
+#ifdef HAVE_NANOSLEEP
+// nanosleep is a macro on some platforms, so we need a wrapper:
+int __hsunix_nanosleep(const struct timespec *rqtp, struct timespec *rmtp)
+{
+    return nanosleep(rqtp, rmtp);
+}
+#endif
+
+// opendir is a macro on some platforms, so we need a wrapper:
+DIR *__hsunix_opendir(const char *filename)
+{
+    return opendir(filename);
+}
+
+// time is a macro on some platforms, so we need a wrapper:
+time_t __hsunix_time(time_t *tloc)
+{
+    return time(tloc);
+}
+
+// times is a macro on some platforms, so we need a wrapper:
+clock_t __hsunix_times(struct tms *tp)
+{
+    return times(tp);
+}
+
 #ifdef HAVE_PTSNAME
 // I cannot figure out how to make the definitions of the following
 // functions visible in <stdlib.h> on Linux.  But these definitions

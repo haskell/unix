@@ -173,7 +173,7 @@ getProcessTimes = do
 
 type CTms = ()
 
-foreign import ccall unsafe "times"
+foreign import ccall unsafe "__hsunix_times"
   c_times :: Ptr CTms -> IO CClock
 
 -- -----------------------------------------------------------------------------
