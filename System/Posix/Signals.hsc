@@ -108,7 +108,11 @@ import System.Posix.Process.Internals
 import Data.Dynamic
 
 #ifdef __GLASGOW_HASKELL__
+#if __GLASGOW_HASKELL__ >= 611
+##include "rts/Signals.h"
+#else
 ##include "Signals.h"
+#endif
 
 import GHC.Conc hiding (Signal)
 #endif
