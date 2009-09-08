@@ -24,7 +24,8 @@ module System.Posix.Semaphore
 #include <fcntl.h>
 
 import Foreign.C
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
@@ -51,11 +52,10 @@ semOpen name flags mode value =
         semOpen' cname =
             do sem <- throwErrnoPathIfNull "semOpen" name $ 
                       sem_open cname (toEnum cflags) mode (toEnum value)
-               finalizer <- mkCallback (finalize sem)
-               fptr <- newForeignPtr finalizer sem
+               fptr <- newForeignPtr sem (finalize sem)
                return $ Semaphore fptr
-        finalize sem _ = throwErrnoPathIfMinus1_ "semOpen" name $
-                         sem_close sem in
+        finalize sem = throwErrnoPathIfMinus1_ "semOpen" name $
+                       sem_close sem in
     withCAString name semOpen'
 
 -- | Delete the semaphore with the given name.
