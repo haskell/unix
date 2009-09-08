@@ -111,9 +111,6 @@ semGetValue_ sem ptr = do throwErrnoIfMinus1Retry_ "semGetValue" $
                           cint <- peek ptr
                           return $ fromEnum cint
 
-foreign import ccall safe "wrapper"
-        mkCallback :: (Ptr () -> IO ()) -> IO (FunPtr (Ptr () -> IO ()))
-        
 foreign import ccall safe "sem_open"
         sem_open :: CString -> CInt -> CMode -> CUInt -> IO (Ptr ())
 foreign import ccall safe "sem_close"
