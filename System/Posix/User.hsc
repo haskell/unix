@@ -213,6 +213,12 @@ getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not suppor
 
 -- | @getAllGroupEntries@ returns all group entries on the system by
 --   repeatedly calling @getgrent@
+
+--
+-- getAllGroupEntries may fail with isDoesNotExistError on Linux due to
+-- this bug in glibc:
+--   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=466647
+--
 getAllGroupEntries :: IO [GroupEntry]
 #ifdef HAVE_GETGRENT
 getAllGroupEntries =
