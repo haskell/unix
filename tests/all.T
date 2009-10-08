@@ -32,7 +32,12 @@ test('getUserEntryForName', compose(conf, expect_fail), compile_and_run,
 
 test('signals004', normal, compile_and_run, ['-package unix'])
 
-test('fdReadBuf001', only_ways(['threaded1','threaded2','ghci']), compile_and_run, ['-package unix'])
+if ('threaded1' in config.run_ways):
+   only_threaded_ways = only_ways(['ghci','threaded1','threaded2'])
+else:
+   only_threaded_ways = skip
+
+test('fdReadBuf001', only_threaded_ways, compile_and_run, ['-package unix'])
 
 test('fileStatus',
      extra_clean(['dir', 'regular', 'link-dir', 'link-regular']),
