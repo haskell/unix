@@ -45,12 +45,5 @@ test('fileStatus',
      ['-package unix'])
 
 
-# Omit GHCi way because in GHCi there are two IO manager threads, one
-# for GHCi itself and one for the user program.  This is a consequence
-# of the fact that we aren't sharing the base package between GHCi and
-# the user program, and it will change when we switch to shared
-# libraries.  Unfortunately the test hangs if we try to run it under
-# GHCi right now, so we can't just make it an expected failure.
-#
-test('1185', [ omit_ways(['ghci']), expect_fail_for(['threaded2']) ], 
+test('1185', [ expect_fail_for(['threaded2']) ], 
              compile_and_run, ['-package unix'])
