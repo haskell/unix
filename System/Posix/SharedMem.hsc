@@ -21,7 +21,7 @@ module System.Posix.SharedMem
 
 #include <sys/types.h>
 #include <sys/mman.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 
 #include "HsUnix.h"
 
