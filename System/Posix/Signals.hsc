@@ -295,7 +295,7 @@ foreign import ccall unsafe "killpg"
 raiseSignal :: Signal -> IO ()
 raiseSignal sig = throwErrnoIfMinus1_ "raiseSignal" (c_raise sig)
 
-#if defined(__GLASGOW_HASKELL__) && (defined(openbsd_HOST_OS) || defined(freebsd_HOST_OS))
+#if defined(__GLASGOW_HASKELL__) && (defined(openbsd_HOST_OS) || defined(freebsd_HOST_OS) || defined(dragonfly_HOST_OS))
 foreign import ccall unsafe "genericRaise"
   c_raise :: CInt -> IO CInt
 #else
