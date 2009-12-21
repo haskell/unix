@@ -66,13 +66,12 @@ AC_DEFINE([HAVE_SC_GETPW_R_SIZE_MAX], [1], [Define to 1 if <unistd.h> defines _S
 
 dnl ---------- usleep ----------
 dnl --- stolen from guile configure ---
-dnl --- FIXME: /usr/include/unistd.h can't be right?
 
 ### On some systems usleep has no return value.  If it does have one,
 ### we'd like to return it; otherwise, we'll fake it.
 AC_CACHE_CHECK([return type of usleep], fptools_cv_func_usleep_return_type,
   [AC_EGREP_HEADER(changequote(<, >)<void[      ]+usleep>changequote([, ]),
-                   /usr/include/unistd.h,
+                   unistd.h,
                    [fptools_cv_func_usleep_return_type=void],
                    [fptools_cv_func_usleep_return_type=int])])
 case "$fptools_cv_func_usleep_return_type" in
@@ -85,7 +84,7 @@ esac
 ###  in common use return void.
 AC_CACHE_CHECK([return type of unsetenv], fptools_cv_func_unsetenv_return_type,
   [AC_EGREP_HEADER(changequote(<, >)<void[      ]+unsetenv>changequote([, ]),
-                   /usr/include/stdlib.h,
+                   stdlib.h,
                    [fptools_cv_func_unsetenv_return_type=void],
                    [fptools_cv_func_unsetenv_return_type=int])])
 case "$fptools_cv_func_unsetenv_return_type" in
