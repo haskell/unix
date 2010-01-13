@@ -1,5 +1,5 @@
 name:		unix
-version:	2.4.0.0
+version:	2.4.0.1
 license:	BSD3
 license-file:	LICENSE
 maintainer:	libraries@haskell.org
@@ -47,7 +47,7 @@ Library
         System.Posix.Signals.Exts
         System.Posix.Semaphore
         System.Posix.SharedMem
-    build-depends:	base >= 4.1 && < 4.3
+    build-depends:	base >= 4.2 && < 4.3
     extensions:	CPP, ForeignFunctionInterface, EmptyDataDecls
     include-dirs: 	include
     includes:       HsUnix.h execvpe.h
