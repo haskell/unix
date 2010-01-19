@@ -4,7 +4,7 @@
 -- Module      :  System.Posix.Temp
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org>
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -15,12 +15,12 @@
 
 module System.Posix.Temp (
 
-	mkstemp
+    mkstemp
 
 {- Not ported (yet?):
-	tmpfile: can we handle FILE*?
-	tmpnam: ISO C, should go in base?
-	tempname: dito
+    tmpfile: can we handle FILE*?
+    tmpnam: ISO C, should go in base?
+    tempname: dito
 -}
 
 ) where
