@@ -33,9 +33,10 @@ import System.Posix.Types
 import Foreign.C
 
 -- |'mkstemp' - make a unique filename and open it for
--- reading\/writing (only safe on GHC & Hugs)
-
-mkstemp :: String -> IO (String, Handle)
+-- reading\/writing (only safe on GHC & Hugs).
+-- The returned 'FilePath' is the (possibly relative) path of
+-- the created file.
+mkstemp :: String -> IO (FilePath, Handle)
 mkstemp template = do
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
   withCString template $ \ ptr -> do
