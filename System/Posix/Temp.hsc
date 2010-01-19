@@ -35,7 +35,7 @@ import Foreign.C
 -- |'mkstemp' - make a unique filename and open it for
 -- reading\/writing (only safe on GHC & Hugs).
 -- The returned 'FilePath' is the (possibly relative) path of
--- the created file.
+-- the created file, which is padded with 6 random characters.
 mkstemp :: String -> IO (FilePath, Handle)
 mkstemp template = do
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
@@ -45,7 +45,7 @@ mkstemp template = do
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
-  name <- mktemp template
+  name <- mktemp (template ++ "XXXXXX")
   h <- openFile name ReadWriteMode
   return (name, h)
 
