@@ -179,7 +179,7 @@ openFd :: FilePath
 openFd name how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
 				nonBlockFlag truncateFlag) = do
    withCString name $ \s -> do
-    fd <- throwErrnoPathIfMinus1 "openFd" name (c_open s all_flags mode_w)
+    fd <- throwErrnoPathIfMinus1Retry "openFd" name (c_open s all_flags mode_w)
     return (Fd fd)
   where
     all_flags  = creat .|. flags .|. open_mode
