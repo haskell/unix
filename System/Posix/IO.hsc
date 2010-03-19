@@ -238,7 +238,16 @@ fdToHandle :: Fd -> IO Handle
 
 #ifdef __GLASGOW_HASKELL__
 #if __GLASGOW_HASKELL__ >= 611
-handleToFd h = withHandle "handleToFd" h $ \ h_@Handle__{haType=_,..} -> do
+handleToFd h@(FileHandle _ m) = do
+  withHandle' "handleToFd" h m $ handleToFd' h
+handleToFd h@(DuplexHandle _ r w) = do
+  withHandle' "handleToFd" h r $ handleToFd' h
+  withHandle' "handleToFd" h w $ handleToFd' h
+  -- for a DuplexHandle, make sure we mark both sides as closed,
+  -- otherwise a finalizer will come along later and close the other
+  -- side. (#3914)
+
+handleToFd' h h_@Handle__{haType=_,..} = do
   case cast haDevice of
     Nothing -> ioError (ioeSetErrorString (mkIOError IllegalOperation
                                            "handleToFd" (Just h) Nothing) 
