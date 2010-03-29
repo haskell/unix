@@ -47,3 +47,5 @@ test('fileStatus',
 
 test('1185', [ expect_fail_for(['threaded2']) ], 
              compile_and_run, ['-package unix'])
+
+test('3816', normal, compile_and_run, ['-package unix'])
