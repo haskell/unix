@@ -222,7 +222,7 @@ getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not suppor
 getAllGroupEntries :: IO [GroupEntry]
 #ifdef HAVE_GETGRENT
 getAllGroupEntries =
-    withMVar lock $ \_ -> worker []
+    withMVar lock $ \_ -> bracket_ c_setgrent c_endgrent $ worker []
     where worker accum =
               do resetErrno
                  ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $ 
@@ -234,6 +234,10 @@ getAllGroupEntries =
 
 foreign import ccall unsafe "getgrent"
   c_getgrent :: IO (Ptr CGroup)
+foreign import ccall unsafe "setgrent"
+  c_setgrent :: IO ()
+foreign import ccall unsafe "endgrent"
+  c_endgrent :: IO ()
 #else
 getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
 #endif
