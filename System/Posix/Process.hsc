@@ -244,12 +244,11 @@ in case of an error, an exception is thrown.
 'forkProcess' comes with a giant warning: since any other running
 threads are not copied into the child process, it's easy to go wrong:
 e.g. by accessing some shared resource that was held by another thread
-in the parent.  Another example is the I\/O manager thread: since the
-I\/O manager isn't running in the child, attempting to do any
-Handle-based I\/O will deadlock.
+in the parent.
 
-Using 'forkProcess' in order to do 'executeFile' is likely to work.
-Anything else: you're on your own.
+GHC note: 'forkProcess' is not currently supported when using multiple
+processors (@+RTS -N@), although it is supported with @-threaded@ as
+long as only one processor is being used.
 -}
 
 forkProcess :: IO () -> IO ProcessID
