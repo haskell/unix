@@ -48,4 +48,9 @@ test('fileStatus',
 test('1185', [ expect_fail_for(['threaded2']) ], 
              compile_and_run, ['-package unix'])
 
+# This test fails for me on x86/Linux with a "does not exist" error.
+# Running with strace shows it is trying to talk to winbindd (part of
+# Samba), so I think the failure has nothing to do with GHC.  Also it
+# works on a different machine that doesn't have Samba installed.
+#  --SDM 18/05/2010
 test('3816', normal, compile_and_run, ['-package unix'])
