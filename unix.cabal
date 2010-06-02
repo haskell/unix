@@ -47,7 +47,7 @@ Library
         System.Posix.Signals.Exts
         System.Posix.Semaphore
         System.Posix.SharedMem
-    build-depends:	base >= 4.2 && < 4.3
+    build-depends:	base >= 4.2 && < 4.4
     extensions:	CPP, ForeignFunctionInterface, EmptyDataDecls
     include-dirs: 	include
     includes:       HsUnix.h execvpe.h
