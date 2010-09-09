@@ -91,7 +91,7 @@ import System.Posix.Types
 import System.IO.Unsafe
 import Data.Bits
 import System.Posix.Internals
-import Foreign
+import Foreign hiding (unsafePerformIO)
 import Foreign.C
 
 -- -----------------------------------------------------------------------------

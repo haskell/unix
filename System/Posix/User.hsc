@@ -48,7 +48,8 @@ module System.Posix.User (
 #include "HsUnix.h"
 
 import System.Posix.Types
-import Foreign
+import Foreign hiding (unsafePerformIO)
+import System.IO.Unsafe (unsafePerformIO)
 import Foreign.C
 import System.Posix.Internals	( CGroup, CPasswd )
 

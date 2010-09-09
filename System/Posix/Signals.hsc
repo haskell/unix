@@ -99,8 +99,9 @@ module System.Posix.Signals (
   -- siginterrupt
   ) where
 
-import Foreign
+import Foreign hiding (unsafePerformIO)
 import Foreign.C
+import System.IO.Unsafe (unsafePerformIO)
 import System.Posix.Types
 import System.Posix.Internals
 import System.Posix.Process
