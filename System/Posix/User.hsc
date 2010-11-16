@@ -462,7 +462,7 @@ throwErrorIfNonZero_ loc act = do
     rc <- act
     if (rc == 0) 
      then return ()
-     else ioError (errnoToIOError loc (Errno (fromIntegral rc)) Nothing Nothing)
+     else ioError (errnoToIOError loc (Errno rc) Nothing Nothing)
 
 -- Used when a function returns NULL to indicate either an error or
 -- EOF, depending on whether the global errno is nonzero.

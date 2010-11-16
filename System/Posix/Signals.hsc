@@ -276,7 +276,7 @@ fileSizeLimitExceeded = sigXFSZ
 --   with interrupt signal @int@.
 signalProcess :: Signal -> ProcessID -> IO ()
 signalProcess sig pid 
- = throwErrnoIfMinus1_ "signalProcess" (c_kill (fromIntegral pid) sig)
+ = throwErrnoIfMinus1_ "signalProcess" (c_kill pid sig)
 
 foreign import ccall unsafe "kill"
   c_kill :: CPid -> CInt -> IO CInt
@@ -286,7 +286,7 @@ foreign import ccall unsafe "kill"
 --  all processes in group @pgid@ with interrupt signal @int@.
 signalProcessGroup :: Signal -> ProcessGroupID -> IO ()
 signalProcessGroup sig pgid 
-  = throwErrnoIfMinus1_ "signalProcessGroup" (c_killpg (fromIntegral pgid) sig)
+  = throwErrnoIfMinus1_ "signalProcessGroup" (c_killpg pgid sig)
 
 foreign import ccall unsafe "killpg"
   c_killpg :: CPid -> CInt -> IO CInt

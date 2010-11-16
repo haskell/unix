@@ -259,7 +259,7 @@ handleToFd' h h_@Handle__{haType=_,..} = do
      -- state as a result. 
      flushWriteBuffer h_
      FD.release fd
-     return (Handle__{haType=ClosedHandle,..}, Fd (fromIntegral (FD.fdFD fd)))
+     return (Handle__{haType=ClosedHandle,..}, Fd (FD.fdFD fd))
 
 fdToHandle fd = FD.fdToHandle (fromIntegral fd)
 
@@ -434,7 +434,7 @@ fdRead _fd 0 = return ("", 0)
 fdRead fd nbytes = do
     allocaBytes (fromIntegral nbytes) $ \ buf -> do
     rc <- fdReadBuf fd buf nbytes
-    case fromIntegral rc of
+    case rc of
       0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
       n -> do
        s <- peekCStringLen (castPtr buf, fromIntegral n)
@@ -450,7 +450,7 @@ fdReadBuf _fd _buf 0 = return 0
 fdReadBuf fd buf nbytes = 
   fmap fromIntegral $
     throwErrnoIfMinus1Retry "fdReadBuf" $ 
-      c_safe_read (fromIntegral fd) (castPtr buf) (fromIntegral nbytes)
+      c_safe_read (fromIntegral fd) (castPtr buf) nbytes
 
 foreign import ccall safe "read"
    c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
@@ -459,9 +459,8 @@ foreign import ccall safe "read"
 -- the least-significant 8 bits of each character are written).
 fdWrite :: Fd -> String -> IO ByteCount
 fdWrite fd str = 
-  withCStringLen str $ \ (buf,len) -> do
-    rc <- fdWriteBuf fd (castPtr buf) (fromIntegral len)
-    return (fromIntegral rc)
+  withCStringLen str $ \ (buf,len) ->
+    fdWriteBuf fd (castPtr buf) (fromIntegral len)
 
 -- | Write data from memory to an 'Fd'.  This is exactly equivalent
 -- to the POSIX @write@ function.
@@ -472,7 +471,7 @@ fdWriteBuf :: Fd
 fdWriteBuf fd buf len =
   fmap fromIntegral $
     throwErrnoIfMinus1Retry "fdWriteBuf" $ 
-      c_safe_write (fromIntegral fd) (castPtr buf) (fromIntegral len)
+      c_safe_write (fromIntegral fd) (castPtr buf) len
 
 foreign import ccall safe "write" 
    c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize

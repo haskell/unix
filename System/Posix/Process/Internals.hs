@@ -34,12 +34,12 @@ decipherWaitStatus wstat =
         if c_WIFSIGNALED wstat /= 0
 	   then do
 		let termsig = c_WTERMSIG wstat
-		return (Terminated (fromIntegral termsig))
+                return (Terminated termsig)
 	   else do
 		if c_WIFSTOPPED wstat /= 0
 		   then do
 			let stopsig = c_WSTOPSIG wstat
-			return (Stopped (fromIntegral stopsig))
+                        return (Stopped stopsig)
 		   else do
 			ioError (mkIOError illegalOperationErrorType
 				   "waitStatus" Nothing Nothing)

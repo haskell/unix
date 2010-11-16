@@ -256,7 +256,7 @@ forkProcess action = do
   stable <- newStablePtr (runIO action)
   pid <- throwErrnoIfMinus1 "forkProcess" (forkProcessPrim stable)
   freeStablePtr stable
-  return $ fromIntegral pid
+  return pid
 
 foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CPid
 #endif /* __GLASGOW_HASKELL__ */
