@@ -71,7 +71,7 @@ module System.Posix.Signals (
 
   -- * Signal sets
   SignalSet,
-  emptySignalSet, fullSignalSet, 
+  emptySignalSet, fullSignalSet, reservedSignals,
   addSignal, deleteSignal, inSignalSet,
 
   -- * The process signal mask
@@ -495,6 +495,13 @@ fullSignalSet = unsafePerformIO $ do
   throwErrnoIfMinus1_ "fullSignalSet" (withForeignPtr fp $ c_sigfillset)
   return (SignalSet fp)
 
+-- | A set of signals reserved for use by the implementation.  In GHC, this will normally
+-- include either `sigVTALRM` or `sigALRM`.
+reservedSignals :: SignalSet
+reservedSignals = addSignal rtsTimerSignal emptySignalSet
+
+foreign import ccall rtsTimerSignal :: CInt
+
 infixr `addSignal`, `deleteSignal`
 addSignal :: Signal -> SignalSet -> SignalSet
 addSignal sig (SignalSet fp1) = unsafePerformIO $ do
@@ -565,9 +572,15 @@ getPendingSignals = do
 -- | @awaitSignal iset@ suspends execution until an interrupt is received.
 -- If @iset@ is @Just s@, @awaitSignal@ calls @sigsuspend@, installing
 -- @s@ as the new signal mask before suspending execution; otherwise, it
--- calls @pause@.  @awaitSignal@ returns on receipt of a signal.  If you
--- have installed any signal handlers with @installHandler@, it may be
--- wise to call @yield@ directly after @awaitSignal@ to ensure that the
+-- calls @sigsuspend@ with current signal mask. Note that RTS
+-- scheduler signal (either 'virtualTimerExpired' or 'realTimeAlarm') 
+-- could cause premature termination of this call. It might be necessary to block that
+-- signal before invocation of @awaitSignal@ with 'blockSignals' 'reservedSignals'.
+--
+-- @awaitSignal@ returns when signal was received and processed by a
+-- signal handler, or if the signal could not be caught. If you have
+-- installed any signal handlers with @installHandler@, it may be wise
+-- to call @yield@ directly after @awaitSignal@ to ensure that the
 -- signal handler runs as promptly as possible.
 awaitSignal :: Maybe SignalSet -> IO ()
 awaitSignal maybe_sigset = do
