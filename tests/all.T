@@ -7,9 +7,11 @@ test('signals001',  conf, compile_and_run, ['-package unix -cpp'])
 test('signals002',  compose(only_compiler_types(['ghc']), conf),
 	compile_and_run, ['-package unix'])
 test('fileexist01', conf, compile_and_run, ['-package unix'])
-test('forkprocess01', compose(only_compiler_types(['ghc']), 
-		      compose(expect_fail_for(['threaded2']), conf)),
-	compile_and_run, ['-package unix'])
+test('forkprocess01', [ only_compiler_types(['ghc']),
+                        expect_fail_for(['threaded2']),
+                        extra_ways(['threaded1_ls']), # test #4512
+                        conf ],
+        compile_and_run, ['-package unix'])
 
 #
 # user001 may fail due to this bug in glibc:
