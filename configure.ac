@@ -207,18 +207,9 @@ AC_SUBST([EXTRA_LIBS])
 # -{l,}pthread goo
 AC_CANONICAL_TARGET
 
-PTHREAD_CFLAGS=
-PTHREAD_LDFLAGS=
-PTHREAD_LIBS=
-case "$host_os" in
-openbsd*)
-	PTHREAD_CFLAGS=-pthread
-	PTHREAD_LDFLAGS=-pthread
-	;;
-esac
-AC_SUBST(PTHREAD_CFLAGS)
-AC_SUBST(PTHREAD_LDFLAGS)
-AC_SUBST(PTHREAD_LIBS)
+AC_SEARCH_LIBS(sem_close, pthread,
+    [EXTRA_LIBS="$EXTRA_LIBS $ac_lib"],
+    [AC_MSG_NOTICE([Not found])])
 
 AC_CONFIG_FILES([unix.buildinfo])
 

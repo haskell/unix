@@ -1,4 +1,2 @@
 buildable: @BUILD_PACKAGE_BOOL@
-cc-options: @PTHREAD_CFLAGS@
-ld-options: @PTHREAD_LDFLAGS@
-extra-libraries: @EXTRA_LIBS@ @PTHREAD_LIBS@
+extra-libraries: @EXTRA_LIBS@
