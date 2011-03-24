@@ -24,6 +24,8 @@
 --
 -----------------------------------------------------------------------------
 
+#include "HsUnix.h"
+
 module System.Posix.Files (
     -- * File modes
     -- FileMode exported by System.Posix.Types
@@ -83,8 +85,6 @@ module System.Posix.Files (
     -- * Find system-specific limits for a file
     PathVar(..), getPathVar, getFdPathVar,
   ) where
-
-#include "HsUnix.h"
 
 import System.Posix.Error
 import System.Posix.Types
