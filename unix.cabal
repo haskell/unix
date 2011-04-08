@@ -58,6 +58,6 @@ Library
     c-sources:	cbits/HsUnix.c cbits/execvpe.c cbits/dirUtils.c
 
 source-repository head
-    type:     darcs
-    location: http://darcs.haskell.org/packages/unix/
+    type:     git
+    location: http://darcs.haskell.org/packages/unix.git/
 
