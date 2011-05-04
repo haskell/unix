@@ -29,12 +29,13 @@ module System.Posix.Process (
     -- ** Process environment
     getProcessID,
     getParentProcessID,
-    getProcessGroupID,
 
     -- ** Process groups
-    createProcessGroup,
+    getProcessGroupID,
+    getProcessGroupIDOf,
+    createProcessGroupFor,
     joinProcessGroup,
-    setProcessGroupID,
+    setProcessGroupIDOf,
 
     -- ** Sessions
     createSession,
@@ -57,6 +58,10 @@ module System.Posix.Process (
     getProcessStatus,
     getAnyProcessStatus,
     getGroupProcessStatus,
+
+    -- ** Deprecated
+    createProcessGroup,
+    setProcessGroupID,
 
  ) where
 
@@ -118,11 +123,20 @@ getProcessGroupID = c_getpgrp
 foreign import ccall unsafe "getpgrp"
   c_getpgrp :: IO CPid
 
--- | @'createProcessGroup' pid@ calls @setpgid@ to make
+-- | @'getProcessGroupIDOf' pid@ calls @getpgid@ to obtain the
+--   'ProcessGroupID' for process @pid@.
+getProcessGroupIDOf :: ProcessID -> IO ProcessGroupID
+getProcessGroupIDOf pid =
+  throwErrnoIfMinus1 "getProcessGroupIDOf" (c_getpgid pid)
+
+foreign import ccall unsafe "getpgid"
+  c_getpgid :: CPid -> IO CPid
+
+-- | @'createProcessGroupFor' pid@ calls @setpgid@ to make
 --   process @pid@ a new process group leader.
-createProcessGroup :: ProcessID -> IO ProcessGroupID
-createProcessGroup pid = do
-  throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid pid 0)
+createProcessGroupFor :: ProcessID -> IO ProcessGroupID
+createProcessGroupFor pid = do
+  throwErrnoIfMinus1_ "createProcessGroupFor" (c_setpgid pid 0)
   return pid
 
 -- | @'joinProcessGroup' pgid@ calls @setpgid@ to set the
@@ -131,11 +145,11 @@ joinProcessGroup :: ProcessGroupID -> IO ()
 joinProcessGroup pgid =
   throwErrnoIfMinus1_ "joinProcessGroup" (c_setpgid 0 pgid)
 
--- | @'setProcessGroupID' pid pgid@ calls @setpgid@ to set the
---   'ProcessGroupID' for process @pid@ to @pgid@.
-setProcessGroupID :: ProcessID -> ProcessGroupID -> IO ()
-setProcessGroupID pid pgid =
-  throwErrnoIfMinus1_ "setProcessGroupID" (c_setpgid pid pgid)
+-- | @'setProcessGroupIDOf' pid pgid@ calls @setpgid@ to set the
+--   'ProcessGroupIDOf' for process @pid@ to @pgid@.
+setProcessGroupIDOf :: ProcessID -> ProcessGroupID -> IO ()
+setProcessGroupIDOf pid pgid =
+  throwErrnoIfMinus1_ "setProcessGroupIDOf" (c_setpgid pid pgid)
 
 foreign import ccall unsafe "setpgid"
   c_setpgid :: CPid -> CPid -> IO CInt
@@ -394,5 +408,29 @@ exitImmediately exitcode = c_exit (exitcode2Int exitcode)
 
 foreign import ccall unsafe "exit"
   c_exit :: CInt -> IO ()
+
+-- -----------------------------------------------------------------------------
+-- Deprecated or subject to change
+
+{-# DEPRECATED createProcessGroup "This function is subject to change in future versions." #-}
+-- | @'createProcessGroup' pid@ calls @setpgid@ to make
+--   process @pid@ a new process group leader.
+--   This function is currently deprecated,
+--   and might be changed to making the current
+--   process a new process group leader in future versions.
+createProcessGroup :: ProcessID -> IO ProcessGroupID
+createProcessGroup pid = do
+  throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid pid 0)
+  return pid
+
+{-# DEPRECATED setProcessGroupID "This function is subject to change in future versions." #-}
+-- | @'setProcessGroupID' pid pgid@ calls @setpgid@ to set the
+--   'ProcessGroupID' for process @pid@ to @pgid@.
+--   This function is currently deprecated,
+--   and might be changed to setting the 'ProcessGroupID'
+--   for the current process in future versions.
+setProcessGroupID :: ProcessID -> ProcessGroupID -> IO ()
+setProcessGroupID pid pgid =
+  throwErrnoIfMinus1_ "setProcessGroupID" (c_setpgid pid pgid)
 
 -- -----------------------------------------------------------------------------
