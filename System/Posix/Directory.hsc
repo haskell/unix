@@ -45,8 +45,10 @@ import Foreign.C
 --  @mode@.
 createDirectory :: FilePath -> FileMode -> IO ()
 createDirectory name mode =
-  withCString name $ \s -> 
-    throwErrnoPathIfMinus1_ "createDirectory" name (c_mkdir s mode)  
+  withCString name $ \s ->
+    throwErrnoPathIfMinus1Retry_ "createDirectory" name (c_mkdir s mode)
+    -- POSIX doesn't allow mkdir() to return EINTR, but it does on
+    -- OS X (#5184), so we need the Retry variant here.
 
 foreign import ccall unsafe "mkdir"
   c_mkdir :: CString -> CMode -> IO CInt
@@ -58,7 +60,7 @@ newtype DirStream = DirStream (Ptr CDir)
 openDirStream :: FilePath -> IO DirStream
 openDirStream name =
   withCString name $ \s -> do
-    dirp <- throwErrnoPathIfNull "openDirStream" name $ c_opendir s
+    dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
 foreign import ccall unsafe "__hsunix_opendir"
@@ -115,7 +117,7 @@ foreign import ccall unsafe "rewinddir"
 --   the directory stream @dp@.
 closeDirStream :: DirStream -> IO ()
 closeDirStream (DirStream dirp) = do
-  throwErrnoIfMinus1_ "closeDirStream" (c_closedir dirp)
+  throwErrnoIfMinus1Retry_ "closeDirStream" (c_closedir dirp)
 
 foreign import ccall unsafe "closedir"
    c_closedir :: Ptr CDir -> IO CInt
@@ -190,7 +192,7 @@ foreign import ccall unsafe "rmdir"
 
 changeWorkingDirectoryFd :: Fd -> IO ()
 changeWorkingDirectoryFd (Fd fd) = 
-  throwErrnoIfMinus1_ "changeWorkingDirectoryFd" (c_fchdir fd)
+  throwErrnoIfMinus1Retry_ "changeWorkingDirectoryFd" (c_fchdir fd)
 
 foreign import ccall unsafe "fchdir"
   c_fchdir :: CInt -> IO CInt
