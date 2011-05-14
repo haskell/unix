@@ -93,6 +93,26 @@ import Data.Bits
 import System.Posix.Internals
 import Foreign hiding (unsafePerformIO)
 import Foreign.C
+#if __GLASGOW_HASKELL__ > 700
+import System.Posix.Internals (withFilePath, peekFilePath)
+#elif __GLASGOW_HASKELL__ > 611
+import System.Posix.Internals (withFilePath)
+
+peekFilePath :: CString -> IO FilePath
+peekFilePath = peekCString
+
+peekFilePathLen :: CStringLen -> IO FilePath
+peekFilePathLen = peekCStringLen
+#else
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath = withCString
+
+peekFilePath :: CString -> IO FilePath
+peekFilePath = peekCString
+
+peekFilePathLen :: CStringLen -> IO FilePath
+peekFilePathLen = peekCStringLen
+#endif
 
 -- -----------------------------------------------------------------------------
 -- POSIX file modes
@@ -212,7 +232,7 @@ socketMode = (#const S_IFSOCK)
 -- Note: calls @chmod@.
 setFileMode :: FilePath -> FileMode -> IO ()
 setFileMode name m =
-  withCString name $ \s -> do
+  withFilePath name $ \s -> do
     throwErrnoPathIfMinus1_ "setFileMode" name (c_chmod s m)
 
 -- | @setFdMode fd mode@ acts like 'setFileMode' but uses a file descriptor
@@ -255,7 +275,7 @@ fileAccess name readOK writeOK execOK = access name flags
 -- Note: calls @access@.
 fileExist :: FilePath -> IO Bool
 fileExist name = 
-  withCString name $ \s -> do
+  withFilePath name $ \s -> do
     r <- c_access s (#const F_OK)
     if (r == 0)
 	then return True
@@ -266,7 +286,7 @@ fileExist name =
 
 access :: FilePath -> CMode -> IO Bool
 access name flags = 
-  withCString name $ \s -> do
+  withFilePath name $ \s -> do
     r <- c_access s (fromIntegral flags)
     if (r == 0)
 	then return True
@@ -370,7 +390,7 @@ getFileStatus :: FilePath -> IO FileStatus
 getFileStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
   withForeignPtr fp $ \p ->
-    withCString path $ \s -> 
+    withFilePath path $ \s -> 
       throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
@@ -393,7 +413,7 @@ getSymbolicLinkStatus :: FilePath -> IO FileStatus
 getSymbolicLinkStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
   withForeignPtr fp $ \p ->
-    withCString path $ \s -> 
+    withFilePath path $ \s -> 
       throwErrnoPathIfMinus1_ "getSymbolicLinkStatus" path (c_lstat s p)
   return (FileStatus fp)
 
@@ -409,7 +429,7 @@ foreign import ccall unsafe "__hsunix_lstat"
 -- Note: calls @mkfifo@.
 createNamedPipe :: FilePath -> FileMode -> IO ()
 createNamedPipe name mode = do
-  withCString name $ \s -> 
+  withFilePath name $ \s -> 
     throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
 
 -- | @createDevice path mode dev@ creates either a regular or a special file
@@ -422,7 +442,7 @@ createNamedPipe name mode = do
 -- Note: calls @mknod@.
 createDevice :: FilePath -> FileMode -> DeviceID -> IO ()
 createDevice path mode dev =
-  withCString path $ \s ->
+  withFilePath path $ \s ->
     throwErrnoPathIfMinus1_ "createDevice" path (c_mknod s mode dev)
 
 foreign import ccall unsafe "__hsunix_mknod" 
@@ -437,8 +457,8 @@ foreign import ccall unsafe "__hsunix_mknod"
 -- Note: calls @link@.
 createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
-  withCString name1 $ \s1 ->
-  withCString name2 $ \s2 ->
+  withFilePath name1 $ \s1 ->
+  withFilePath name2 $ \s2 ->
   throwErrnoPathIfMinus1_ "createLink" name1 (c_link s1 s2)
 
 -- | @removeLink path@ removes the link named @path@.
@@ -446,7 +466,7 @@ createLink name1 name2 =
 -- Note: calls @unlink@.
 removeLink :: FilePath -> IO ()
 removeLink name =
-  withCString name $ \s ->
+  withFilePath name $ \s ->
   throwErrnoPathIfMinus1_ "removeLink" name (c_unlink s)
 
 -- -----------------------------------------------------------------------------
@@ -461,8 +481,8 @@ removeLink name =
 -- Note: calls @symlink@.
 createSymbolicLink :: FilePath -> FilePath -> IO ()
 createSymbolicLink file1 file2 =
-  withCString file1 $ \s1 ->
-  withCString file2 $ \s2 ->
+  withFilePath file1 $ \s1 ->
+  withFilePath file2 $ \s2 ->
   throwErrnoPathIfMinus1_ "createSymbolicLink" file1 (c_symlink s1 s2)
 
 foreign import ccall unsafe "symlink"
@@ -483,10 +503,10 @@ foreign import ccall unsafe "symlink"
 readSymbolicLink :: FilePath -> IO FilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
-    withCString file $ \s -> do
+    withFilePath file $ \s -> do
       len <- throwErrnoPathIfMinus1 "readSymbolicLink" file $ 
 	c_readlink s buf (#const PATH_MAX)
-      peekCStringLen (buf,fromIntegral len)
+      peekFilePathLen (buf,fromIntegral len)
 
 foreign import ccall unsafe "readlink"
   c_readlink :: CString -> CString -> CSize -> IO CInt
@@ -499,8 +519,8 @@ foreign import ccall unsafe "readlink"
 -- Note: calls @rename@.
 rename :: FilePath -> FilePath -> IO ()
 rename name1 name2 =
-  withCString name1 $ \s1 ->
-  withCString name2 $ \s2 ->
+  withFilePath name1 $ \s1 ->
+  withFilePath name2 $ \s2 ->
   throwErrnoPathIfMinus1_ "rename" name1 (c_rename s1 s2)
 
 foreign import ccall unsafe "rename"
@@ -517,7 +537,7 @@ foreign import ccall unsafe "rename"
 -- Note: calls @chown@.
 setOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setOwnerAndGroup name uid gid = do
-  withCString name $ \s ->
+  withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "setOwnerAndGroup" name (c_chown s uid gid)
 
 foreign import ccall unsafe "chown"
@@ -541,7 +561,7 @@ foreign import ccall unsafe "fchown"
 -- Note: calls @lchown@.
 setSymbolicLinkOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
-  withCString name $ \s ->
+  withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "setSymbolicLinkOwnerAndGroup" name
 	(c_lchown s uid gid)
 
@@ -558,7 +578,7 @@ foreign import ccall unsafe "lchown"
 -- Note: calls @utime@.
 setFileTimes :: FilePath -> EpochTime -> EpochTime -> IO ()
 setFileTimes name atime mtime = do
-  withCString name $ \s ->
+  withFilePath name $ \s ->
    allocaBytes (#const sizeof(struct utimbuf)) $ \p -> do
      (#poke struct utimbuf, actime)  p atime
      (#poke struct utimbuf, modtime) p mtime
@@ -570,7 +590,7 @@ setFileTimes name atime mtime = do
 -- Note: calls @utime@.
 touchFile :: FilePath -> IO ()
 touchFile name = do
-  withCString name $ \s ->
+  withFilePath name $ \s ->
    throwErrnoPathIfMinus1_ "touchFile" name (c_utime s nullPtr)
 
 -- -----------------------------------------------------------------------------
@@ -582,7 +602,7 @@ touchFile name = do
 -- Note: calls @truncate@.
 setFileSize :: FilePath -> FileOffset -> IO ()
 setFileSize file off = 
-  withCString file $ \s ->
+  withFilePath file $ \s ->
     throwErrnoPathIfMinus1_ "setFileSize" file (c_truncate s off)
 
 foreign import ccall unsafe "truncate"
@@ -672,7 +692,7 @@ pathVarConst v = case v of
 -- Note: calls @pathconf@.
 getPathVar :: FilePath -> PathVar -> IO Limit
 getPathVar name v = do
-  withCString name $ \ nameP -> 
+  withFilePath name $ \ nameP -> 
     throwErrnoPathIfMinus1 "getPathVar" name $ 
       c_pathconf nameP (pathVarConst v)
 

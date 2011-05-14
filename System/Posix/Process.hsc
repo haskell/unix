@@ -63,7 +63,7 @@ module System.Posix.Process (
 #include "HsUnix.h"
 
 import Foreign.C.Error
-import Foreign.C.String ( CString, withCString )
+import Foreign.C.String
 import Foreign.C.Types ( CInt, CClock )
 import Foreign.Marshal.Alloc ( alloca, allocaBytes )
 import Foreign.Marshal.Array ( withArray0 )
@@ -78,6 +78,13 @@ import Control.Monad
 
 #ifdef __GLASGOW_HASKELL__
 import GHC.TopHandler	( runIO )
+#endif
+
+#if __GLASGOW_HASKELL__ > 611
+import System.Posix.Internals ( withFilePath )
+#else
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath = withCString
 #endif
 
 #ifdef __HUGS__
@@ -275,8 +282,8 @@ executeFile :: FilePath			    -- ^ Command
             -> Maybe [(String, String)]	    -- ^ Environment
             -> IO a
 executeFile path search args Nothing = do
-  withCString path $ \s ->
-    withMany withCString (path:args) $ \cstrs ->
+  withFilePath path $ \s ->
+    withMany withFilePath (path:args) $ \cstrs ->
       withArray0 nullPtr cstrs $ \arr -> do
 	pPrPr_disableITimers
 	if search 
@@ -285,11 +292,11 @@ executeFile path search args Nothing = do
         return undefined -- never reached
 
 executeFile path search args (Just env) = do
-  withCString path $ \s ->
-    withMany withCString (path:args) $ \cstrs ->
+  withFilePath path $ \s ->
+    withMany withFilePath (path:args) $ \cstrs ->
       withArray0 nullPtr cstrs $ \arg_arr ->
     let env' = map (\ (name, val) -> name ++ ('=' : val)) env in
-    withMany withCString env' $ \cenv ->
+    withMany withFilePath env' $ \cenv ->
       withArray0 nullPtr cenv $ \env_arr -> do
 	pPrPr_disableITimers
 	if search 

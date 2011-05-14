@@ -94,6 +94,13 @@ import Hugs.Prelude (IOException(..), IOErrorType(..))
 import qualified Hugs.IO (handleToFd, openFd)
 #endif
 
+#if __GLASGOW_HASKELL__ > 611
+import System.Posix.Internals ( withFilePath )
+#else
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath = withCString
+#endif
+
 #include "HsUnix.h"
 
 -- -----------------------------------------------------------------------------
@@ -178,7 +185,7 @@ openFd :: FilePath
        -> IO Fd
 openFd name how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
 				nonBlockFlag truncateFlag) = do
-   withCString name $ \s -> do
+   withFilePath name $ \s -> do
     fd <- throwErrnoPathIfMinus1Retry "openFd" name (c_open s all_flags mode_w)
     return (Fd fd)
   where
@@ -424,8 +431,8 @@ waitToSetLock (Fd fd) lock = do
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}
 
--- | Read data from an 'Fd' and convert it to a 'String'.  Throws an
--- exception if this is an invalid descriptor, or EOF has been
+-- | Read data from an 'Fd' and convert it to a 'String' using the locale encoding.
+-- Throws an exception if this is an invalid descriptor, or EOF has been
 -- reached.
 fdRead :: Fd
        -> ByteCount -- ^How many bytes to read
@@ -455,8 +462,7 @@ fdReadBuf fd buf nbytes =
 foreign import ccall safe "read"
    c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
 
--- | Write a 'String' to an 'Fd' (no character conversion is done,
--- the least-significant 8 bits of each character are written).
+-- | Write a 'String' to an 'Fd' using the locale encoding.
 fdWrite :: Fd -> String -> IO ByteCount
 fdWrite fd str = 
   withCStringLen str $ \ (buf,len) ->

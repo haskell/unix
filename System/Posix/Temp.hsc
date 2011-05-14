@@ -32,6 +32,21 @@ import System.Posix.IO
 import System.Posix.Types
 import Foreign.C
 
+#if __GLASGOW_HASKELL__ > 700
+import System.Posix.Internals (withFilePath, peekFilePath)
+#elif __GLASGOW_HASKELL__ > 611
+import System.Posix.Internals (withFilePath)
+
+peekFilePath :: CString -> IO FilePath
+peekFilePath = peekCString
+#else
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath = withCString
+
+peekFilePath :: CString -> IO FilePath
+peekFilePath = peekCString
+#endif
+
 -- |'mkstemp' - make a unique filename and open it for
 -- reading\/writing (only safe on GHC & Hugs).
 -- The returned 'FilePath' is the (possibly relative) path of
@@ -39,9 +54,9 @@ import Foreign.C
 mkstemp :: String -> IO (FilePath, Handle)
 mkstemp template = do
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
-  withCString template $ \ ptr -> do
+  withFilePath template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
-    name <- peekCString ptr
+    name <- peekFilePath ptr
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
@@ -54,9 +69,9 @@ mkstemp template = do
 
 mktemp :: String -> IO String
 mktemp template = do
-  withCString template $ \ ptr -> do
+  withFilePath template $ \ ptr -> do
     ptr <- throwErrnoIfNull "mktemp" (c_mktemp ptr)
-    peekCString ptr
+    peekFilePath ptr
 
 foreign import ccall unsafe "mktemp"
   c_mktemp :: CString -> IO CString

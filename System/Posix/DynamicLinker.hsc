@@ -51,11 +51,17 @@ import System.Posix.DynamicLinker.Prim
 import Control.Exception	( bracket )
 import Control.Monad	( liftM )
 import Foreign.Ptr	( Ptr, nullPtr, FunPtr, nullFunPtr )
-import Foreign.C.String	( withCString, peekCString )
+import Foreign.C.String
+#if __GLASGOW_HASKELL__ > 611
+import System.Posix.Internals ( withFilePath )
+#else
+withFilePath :: FilePath -> (CString -> IO a) -> IO a
+withFilePath = withCString
+#endif
 
-dlopen :: String -> [RTLDFlags] -> IO DL
+dlopen :: FilePath -> [RTLDFlags] -> IO DL
 dlopen path flags = do
-  withCString path $ \ p -> do
+  withFilePath path $ \ p -> do
     liftM DLHandle $ throwDLErrorIf "dlopen" (== nullPtr) $ c_dlopen p (packRTLDFlags flags)
 
 dlclose :: DL -> IO ()
@@ -70,7 +76,7 @@ dlerror = c_dlerror >>= peekCString
 
 dlsym :: DL -> String -> IO (FunPtr a)
 dlsym source symbol = do
-  withCString symbol $ \ s -> do
+  withCAString symbol $ \ s -> do
     throwDLErrorIf "dlsym" (== nullFunPtr) $ c_dlsym (packDL source) s
 
 withDL :: String -> [RTLDFlags] -> (DL -> IO a) -> IO a

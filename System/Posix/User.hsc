@@ -131,7 +131,7 @@ getLoginName :: IO String
 getLoginName =  do
     -- ToDo: use getlogin_r
     str <- throwErrnoIfNull "getLoginName" c_getlogin
-    peekCString str
+    peekCAString str
 
 foreign import ccall unsafe "getlogin"
   c_getlogin :: IO CString
@@ -225,7 +225,7 @@ getGroupEntryForName :: String -> IO GroupEntry
 getGroupEntryForName name = do
   allocaBytes (#const sizeof(struct group)) $ \pgr ->
     alloca $ \ ppgr ->
-      withCString name $ \ pstr -> do
+      withCAString name $ \ pstr -> do
 	throwErrorIfNonZero_ "getGroupEntryForName" $
 	  doubleAllocWhile isERANGE grBufSize $ \s b ->
 	    c_getgrnam_r pstr pgr b (fromIntegral s) ppgr
@@ -287,11 +287,11 @@ grBufSize = 1024
 
 unpackGroupEntry :: Ptr CGroup -> IO GroupEntry
 unpackGroupEntry ptr = do
-   name    <- (#peek struct group, gr_name) ptr >>= peekCString
-   passwd  <- (#peek struct group, gr_passwd) ptr >>= peekCString
+   name    <- (#peek struct group, gr_name) ptr >>= peekCAString
+   passwd  <- (#peek struct group, gr_passwd) ptr >>= peekCAString
    gid     <- (#peek struct group, gr_gid) ptr
    mem     <- (#peek struct group, gr_mem) ptr
-   members <- peekArray0 nullPtr mem >>= mapM peekCString
+   members <- peekArray0 nullPtr mem >>= mapM peekCAString
    return (GroupEntry name passwd gid members)
 
 -- -----------------------------------------------------------------------------
@@ -359,7 +359,7 @@ getUserEntryForName :: String -> IO UserEntry
 getUserEntryForName name = do
   allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
     alloca $ \ pppw ->
-      withCString name $ \ pstr -> do
+      withCAString name $ \ pstr -> do
 	throwErrorIfNonZero_ "getUserEntryForName" $
 	  doubleAllocWhile isERANGE pwBufSize $ \s b ->
 	    c_getpwnam_r pstr ppw b (fromIntegral s) pppw
@@ -377,7 +377,7 @@ foreign import ccall unsafe "__hsunix_getpwnam_r"
                -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWNAM
 getUserEntryForName name = do
-  withCString name $ \ pstr -> do
+  withCAString name $ \ pstr -> do
     withMVar lock $ \_ -> do
       ppw <- throwErrnoIfNull "getUserEntryForName" $ c_getpwnam pstr
       unpackUserEntry ppw
@@ -446,13 +446,13 @@ doubleAllocWhile p s m = do
 
 unpackUserEntry :: Ptr CPasswd -> IO UserEntry
 unpackUserEntry ptr = do
-   name   <- (#peek struct passwd, pw_name)   ptr >>= peekCString
-   passwd <- (#peek struct passwd, pw_passwd) ptr >>= peekCString
+   name   <- (#peek struct passwd, pw_name)   ptr >>= peekCAString
+   passwd <- (#peek struct passwd, pw_passwd) ptr >>= peekCAString
    uid    <- (#peek struct passwd, pw_uid)    ptr
    gid    <- (#peek struct passwd, pw_gid)    ptr
-   gecos  <- (#peek struct passwd, pw_gecos)  ptr >>= peekCString
-   dir    <- (#peek struct passwd, pw_dir)    ptr >>= peekCString
-   shell  <- (#peek struct passwd, pw_shell)  ptr >>= peekCString
+   gecos  <- (#peek struct passwd, pw_gecos)  ptr >>= peekCAString
+   dir    <- (#peek struct passwd, pw_dir)    ptr >>= peekCAString
+   shell  <- (#peek struct passwd, pw_shell)  ptr >>= peekCAString
    return (UserEntry name passwd uid gid gecos dir shell)
 
 -- Used when calling re-entrant system calls that signal their 'errno' 
