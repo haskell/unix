@@ -56,3 +56,6 @@ test('1185', [ expect_fail_for(['threaded2']) ],
 # works on a different machine that doesn't have Samba installed.
 #  --SDM 18/05/2010
 test('3816', normal, compile_and_run, ['-package unix'])
+
+test('processGroup001', normal, compile_and_run, ['-package unix'])
+test('processGroup002', normal, compile_and_run, ['-package unix'])
