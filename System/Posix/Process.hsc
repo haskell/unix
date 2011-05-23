@@ -132,6 +132,18 @@ getProcessGroupIDOf pid =
 foreign import ccall unsafe "getpgid"
   c_getpgid :: CPid -> IO CPid
 
+{-
+   To be added in the future, after the deprecation period for the
+   existing createProcessGroup has elapsed:
+
+-- | 'createProcessGroup' calls @setpgid(0,0)@ to make
+--   the current process a new process group leader.
+createProcessGroup :: IO ProcessGroupID
+createProcessGroup pid = do
+  throwErrnoIfMinus1_ "createProcessGroupFor" (c_setpgid 0 0)
+  return pid
+-}
+
 -- | @'createProcessGroupFor' pid@ calls @setpgid@ to make
 --   process @pid@ a new process group leader.
 createProcessGroupFor :: ProcessID -> IO ProcessGroupID
@@ -144,6 +156,17 @@ createProcessGroupFor pid = do
 joinProcessGroup :: ProcessGroupID -> IO ()
 joinProcessGroup pgid =
   throwErrnoIfMinus1_ "joinProcessGroup" (c_setpgid 0 pgid)
+
+{-
+   To be added in the future, after the deprecation period for the
+   existing setProcessGroupID has elapsed:
+
+-- | @'setProcessGroupID' pgid@ calls @setpgid@ to set the
+--   'ProcessGroupID' of the current process to @pgid@.
+setProcessGroupID :: ProcessGroupID -> IO ()
+setProcessGroupID pid pgid =
+  throwErrnoIfMinus1_ "setProcessGroupIDOf" (c_setpgid pid pgid)
+-}
 
 -- | @'setProcessGroupIDOf' pid pgid@ calls @setpgid@ to set the
 --   'ProcessGroupIDOf' for process @pid@ to @pgid@.
@@ -412,7 +435,7 @@ foreign import ccall unsafe "exit"
 -- -----------------------------------------------------------------------------
 -- Deprecated or subject to change
 
-{-# DEPRECATED createProcessGroup "This function is subject to change in future versions." #-}
+{-# DEPRECATED createProcessGroup "This function is scheduled to be replaced by something different in the future, we therefore recommend that you do not use this version and use createProcessGroupFor instead." #-}
 -- | @'createProcessGroup' pid@ calls @setpgid@ to make
 --   process @pid@ a new process group leader.
 --   This function is currently deprecated,
@@ -423,7 +446,7 @@ createProcessGroup pid = do
   throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid pid 0)
   return pid
 
-{-# DEPRECATED setProcessGroupID "This function is subject to change in future versions." #-}
+{-# DEPRECATED setProcessGroupID "This function is scheduled to be replaced by something different in the future, we therefore recommend that you do not use this version and use setProcessGroupIdOf instead." #-}
 -- | @'setProcessGroupID' pid pgid@ calls @setpgid@ to set the
 --   'ProcessGroupID' for process @pid@ to @pgid@.
 --   This function is currently deprecated,
