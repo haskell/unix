@@ -139,9 +139,10 @@ foreign import ccall unsafe "getpgid"
 -- | 'createProcessGroup' calls @setpgid(0,0)@ to make
 --   the current process a new process group leader.
 createProcessGroup :: IO ProcessGroupID
-createProcessGroup pid = do
-  throwErrnoIfMinus1_ "createProcessGroupFor" (c_setpgid 0 0)
-  return pid
+createProcessGroup = do
+  throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid 0 0)
+  pgid <- getProcessGroupID
+  return pgid
 -}
 
 -- | @'createProcessGroupFor' pid@ calls @setpgid@ to make
@@ -164,8 +165,8 @@ joinProcessGroup pgid =
 -- | @'setProcessGroupID' pgid@ calls @setpgid@ to set the
 --   'ProcessGroupID' of the current process to @pgid@.
 setProcessGroupID :: ProcessGroupID -> IO ()
-setProcessGroupID pid pgid =
-  throwErrnoIfMinus1_ "setProcessGroupIDOf" (c_setpgid pid pgid)
+setProcessGroupID pgid =
+  throwErrnoIfMinus1_ "setProcessGroupID" (c_setpgid 0 pgid)
 -}
 
 -- | @'setProcessGroupIDOf' pid pgid@ calls @setpgid@ to set the
