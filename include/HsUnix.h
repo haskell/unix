@@ -75,7 +75,9 @@
 #include <dirent.h>
 #endif
 
-#ifdef HAVE_LIBUTIL_H
+#if defined(HAVE_BSD_LIBUTIL_H)
+#include <bsd/libutil.h>
+#elif defined(HAVE_LIBUTIL_H)
 #include <libutil.h>
 #endif
 #ifdef HAVE_PTY_H

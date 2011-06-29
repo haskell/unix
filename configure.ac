@@ -23,7 +23,7 @@ AC_SYS_LARGEFILE
 AC_CHECK_HEADERS([dirent.h fcntl.h grp.h limits.h pwd.h signal.h string.h])
 AC_CHECK_HEADERS([sys/resource.h sys/stat.h sys/times.h sys/time.h])
 AC_CHECK_HEADERS([sys/utsname.h sys/wait.h])
-AC_CHECK_HEADERS([libutil.h pty.h utmp.h])
+AC_CHECK_HEADERS([bsd/libutil.h libutil.h pty.h utmp.h])
 AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
