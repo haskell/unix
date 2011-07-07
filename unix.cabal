@@ -47,7 +47,7 @@ Library
         System.Posix.Signals.Exts
         System.Posix.Semaphore
         System.Posix.SharedMem
-    build-depends:	base >= 4.2 && < 4.4
+    build-depends:	base >= 4.2 && < 4.5
     extensions: CPP, ForeignFunctionInterface, EmptyDataDecls
     if impl(ghc >= 7.1)
         extensions: NondecreasingIndentation
