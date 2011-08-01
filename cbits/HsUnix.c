@@ -24,10 +24,10 @@ void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
 #ifdef SIGINFO
-int __hsunix_SIGINFO()	{ return SIGINFO; }
+int __hsunix_SIGINFO(void)	{ return SIGINFO; }
 #endif
 #ifdef SIGWINCH
-int __hsunix_SIGWINCH()	{ return SIGWINCH; }
+int __hsunix_SIGWINCH(void)	{ return SIGWINCH; }
 #endif
 
 // lstat is a macro on some platforms, so we need a wrapper:
@@ -158,7 +158,7 @@ int __hsunix_unsetenv(const char *name)
  * (PATH_MAX is not defined on systems with unlimited path length,
  * e.g. the Hurd).
  */
-HsInt __hsunix_long_path_size() {
+HsInt __hsunix_long_path_size(void) {
 #ifdef PATH_MAX
     return PATH_MAX;
 #else
