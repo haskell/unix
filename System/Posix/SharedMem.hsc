@@ -1,6 +1,8 @@
+#if __GLASGOW_HASKELL__ >= 701
+{-# LANGUAGE Trustworthy #-}
+#endif
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.SharedMem

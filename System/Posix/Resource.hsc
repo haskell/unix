@@ -1,3 +1,6 @@
+#if __GLASGOW_HASKELL__ >= 701
+{-# LANGUAGE Trustworthy #-}
+#endif
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -w #-}
 -- The above warning supression flag is a temporary kludge.

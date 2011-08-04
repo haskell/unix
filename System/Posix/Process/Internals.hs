@@ -1,3 +1,6 @@
+#if __GLASGOW_HASKELL__ >= 701
+{-# LANGUAGE Trustworthy #-}
+#endif
 
 module System.Posix.Process.Internals (
        pPrPr_disableITimers, c_execvpe,
