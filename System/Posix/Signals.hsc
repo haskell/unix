@@ -1,8 +1,8 @@
+{-# LANGUAGE DeriveDataTypeable,PatternGuards #-}
+{-# OPTIONS_GHC -fno-cse #-} -- global variables
 #if __GLASGOW_HASKELL__ >= 701
 {-# LANGUAGE Trustworthy #-}
 #endif
-{-# LANGUAGE DeriveDataTypeable,PatternGuards #-}
-{-# OPTIONS_GHC -fno-cse #-} -- global variables
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Signals
