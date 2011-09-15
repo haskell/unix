@@ -31,11 +31,13 @@ module System.Posix.Error (
 import Foreign
 import Foreign.C
 
-throwErrnoPathIfMinus1Retry :: Num a => String -> FilePath -> IO a -> IO a
+throwErrnoPathIfMinus1Retry :: (Eq a, Num a)
+                            => String -> FilePath -> IO a -> IO a
 throwErrnoPathIfMinus1Retry loc path f =
   throwErrnoPathIfRetry (== -1) loc path f
 
-throwErrnoPathIfMinus1Retry_ :: Num a => String -> FilePath -> IO a -> IO ()
+throwErrnoPathIfMinus1Retry_ :: (Eq a, Num a)
+                             => String -> FilePath -> IO a -> IO ()
 throwErrnoPathIfMinus1Retry_ loc path f =
   void $ throwErrnoPathIfRetry (== -1) loc path f
 
