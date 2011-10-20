@@ -29,7 +29,7 @@ module System.Posix.Env (
 #include "HsUnix.h"
 
 import Foreign.C.Error	( throwErrnoIfMinus1_ )
-import Foreign.C.Types	( CInt )
+import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Marshal.Array
 import Foreign.Ptr

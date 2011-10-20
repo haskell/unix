@@ -30,7 +30,7 @@ module System.Posix.Signals.Exts (
 
   ) where
 
-import Foreign.C ( CInt )
+import Foreign.C
 import System.Posix.Signals
 
 #ifdef __HUGS__

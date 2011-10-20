@@ -72,7 +72,7 @@ module System.Posix.Process (
 
 import Foreign.C.Error
 import Foreign.C.String
-import Foreign.C.Types ( CInt, CClock )
+import Foreign.C.Types
 import Foreign.Marshal.Alloc ( alloca, allocaBytes )
 import Foreign.Marshal.Array ( withArray0 )
 import Foreign.Marshal.Utils ( withMany )

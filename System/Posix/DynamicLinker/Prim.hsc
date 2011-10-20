@@ -39,7 +39,7 @@ where
 
 import Data.Bits	( (.|.) )
 import Foreign.Ptr	( Ptr, FunPtr, nullPtr )
-import Foreign.C.Types	( CInt )
+import Foreign.C.Types
 import Foreign.C.String	( CString )
 
 -- RTLD_NEXT madness

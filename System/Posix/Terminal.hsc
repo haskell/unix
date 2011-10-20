@@ -81,7 +81,7 @@ import Foreign.C.Error ( errnoToIOError, throwErrnoIfMinus1,
 import Foreign.C.Error ( eNOSYS )
 #endif
 import Foreign.C.String ( CString, peekCString, withCString )
-import Foreign.C.Types ( CInt )
+import Foreign.C.Types
 import Foreign.ForeignPtr ( ForeignPtr, withForeignPtr, mallocForeignPtrBytes )
 import Foreign.Marshal.Alloc ( alloca )
 import Foreign.Marshal.Utils ( copyBytes )
