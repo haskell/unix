@@ -6,7 +6,7 @@
 
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.Directory
+-- Module      :  System.Posix.Directory.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -18,7 +18,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Posix.Directory (
+module System.Posix.Directory.ByteString (
    -- * Creating and removing directories
    createDirectory, removeDirectory,
 
@@ -39,32 +39,19 @@ module System.Posix.Directory (
   ) where
 
 import System.IO.Error
-import System.Posix.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C
 
+import Data.ByteString.Char8 as BC
+
 import System.Posix.Directory.Common
+import System.Posix.ByteString.FilePath
 
-#if __GLASGOW_HASKELL__ > 700
-import System.Posix.Internals (withFilePath, peekFilePath)
-#elif __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals (withFilePath)
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-#endif
-
--- | @createDirectory dir mode@ calls @mkdir@ to 
+-- | @createDirectory dir mode@ calls @mkdir@ to
 --   create a new directory, @dir@, with permissions based on
 --  @mode@.
-createDirectory :: FilePath -> FileMode -> IO ()
+createDirectory :: RawFilePath -> FileMode -> IO ()
 createDirectory name mode =
   withFilePath name $ \s -> 
     throwErrnoPathIfMinus1Retry_ "createDirectory" name (c_mkdir s mode)  
@@ -76,7 +63,7 @@ foreign import ccall unsafe "mkdir"
 
 -- | @openDirStream dir@ calls @opendir@ to obtain a
 --   directory stream for @dir@.
-openDirStream :: FilePath -> IO DirStream
+openDirStream :: RawFilePath -> IO DirStream
 openDirStream name =
   withFilePath name $ \s -> do
     dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
@@ -89,7 +76,7 @@ foreign import ccall unsafe "__hsunix_opendir"
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@, and returns the @d_name@ member of that
 --  structure.
-readDirStream :: DirStream -> IO FilePath
+readDirStream :: DirStream -> IO RawFilePath
 readDirStream (DirStream dirp) =
   alloca $ \ptr_dEnt  -> loop ptr_dEnt
  where
@@ -99,7 +86,7 @@ readDirStream (DirStream dirp) =
     if (r == 0)
 	 then do dEnt <- peek ptr_dEnt
 		 if (dEnt == nullPtr)
-		    then return []
+                    then return BC.empty
 		    else do
 	 	     entry <- (d_name dEnt >>= peekFilePath)
 		     c_freeDirEnt dEnt
@@ -108,7 +95,7 @@ readDirStream (DirStream dirp) =
 		 if (errno == eINTR) then loop ptr_dEnt else do
 		 let (Errno eo) = errno
 		 if (eo == 0)
-		    then return []
+                    then return BC.empty
 		    else throwErrno "readDirStream"
 
 -- traversing directories
@@ -124,7 +111,7 @@ foreign import ccall unsafe "__hscore_d_name"
 
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
 --   of the current working directory.
-getWorkingDirectory :: IO FilePath
+getWorkingDirectory :: IO RawFilePath
 getWorkingDirectory = do
   p <- mallocBytes long_path_size
   go p long_path_size
@@ -149,18 +136,18 @@ foreign import ccall unsafe "__hsunix_long_path_size"
 
 -- | @changeWorkingDirectory dir@ calls @chdir@ to change
 --   the current working directory to @dir@.
-changeWorkingDirectory :: FilePath -> IO ()
+changeWorkingDirectory :: RawFilePath -> IO ()
 changeWorkingDirectory path =
-  modifyIOError (`ioeSetFileName` path) $
+  modifyIOError (`ioeSetFileName` (BC.unpack path)) $
     withFilePath path $ \s -> 
        throwErrnoIfMinus1Retry_ "changeWorkingDirectory" (c_chdir s)
 
 foreign import ccall unsafe "chdir"
    c_chdir :: CString -> IO CInt
 
-removeDirectory :: FilePath -> IO ()
+removeDirectory :: RawFilePath -> IO ()
 removeDirectory path =
-  modifyIOError (`ioeSetFileName` path) $
+  modifyIOError (`ioeSetFileName` BC.unpack path) $
     withFilePath path $ \s ->
        throwErrnoIfMinus1Retry_ "removeDirectory" (c_rmdir s)
 

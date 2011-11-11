@@ -4,7 +4,7 @@
 #endif
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.Process
+-- Module      :  System.Posix.Process.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -17,7 +17,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Posix.Process (
+module System.Posix.Process.ByteString (
     -- * Processes
 
     -- ** Forking and executing
@@ -71,16 +71,21 @@ module System.Posix.Process (
 #include "HsUnix.h"
 
 import Foreign
-import Foreign.C
 import System.Posix.Process.Internals
 import System.Posix.Process.Common
 
-#if __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals ( withFilePath )
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
+import Foreign.C hiding (
+     throwErrnoPath,
+     throwErrnoPathIf,
+     throwErrnoPathIf_,
+     throwErrnoPathIfNull,
+     throwErrnoPathIfMinus1,
+     throwErrnoPathIfMinus1_ )
+
+import Data.ByteString (ByteString)
+import qualified Data.ByteString.Char8 as BC
+
+import System.Posix.ByteString.FilePath
 
 #ifdef __HUGS__
 {-# CFILES cbits/HsUnix.c  #-}
@@ -94,10 +99,10 @@ withFilePath = withCString
 --   the command is passed to @execv*@ as @arg[0]@;
 --   the argument list passed to 'executeFile' therefore 
 --   begins with @arg[1]@.
-executeFile :: FilePath			    -- ^ Command
+executeFile :: RawFilePath                          -- ^ Command
             -> Bool			    -- ^ Search PATH?
-            -> [String]			    -- ^ Arguments
-            -> Maybe [(String, String)]	    -- ^ Environment
+            -> [ByteString]                 -- ^ Arguments
+            -> Maybe [(ByteString, ByteString)]     -- ^ Environment
             -> IO a
 executeFile path search args Nothing = do
   withFilePath path $ \s ->
@@ -113,7 +118,7 @@ executeFile path search args (Just env) = do
   withFilePath path $ \s ->
     withMany withFilePath (path:args) $ \cstrs ->
       withArray0 nullPtr cstrs $ \arg_arr ->
-    let env' = map (\ (name, val) -> name ++ ('=' : val)) env in
+    let env' = map (\ (name, val) -> name `BC.append` ('=' `BC.cons` val)) env in
     withMany withFilePath env' $ \cenv ->
       withArray0 nullPtr cenv $ \env_arr -> do
 	pPrPr_disableITimers

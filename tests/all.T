@@ -26,6 +26,7 @@ if config.platform == 'i386-unknown-freebsd':
 test('queryfdoption01', compose(omit_ways(['ghci']), compose(only_compiler_types(['ghc']), conf)),
 	compile_and_run, ['-package unix'])
 test('getEnvironment01', conf, compile_and_run, ['-package unix'])
+test('getEnvironment02', conf, compile_and_run, ['-package unix'])
 test('getGroupEntryForName', compose(conf, exit_code(1)), compile_and_run,
      ['-package unix'])
 test('getUserEntryForName', compose(conf, exit_code(1)), compile_and_run,
@@ -42,6 +43,11 @@ else:
 test('fdReadBuf001', only_threaded_ways, compile_and_run, ['-package unix'])
 
 test('fileStatus',
+     extra_clean(['dir', 'regular', 'link-dir', 'link-regular']),
+     compile_and_run,
+     ['-package unix'])
+
+test('fileStatusByteString',
      extra_clean(['dir', 'regular', 'link-dir', 'link-regular']),
      compile_and_run,
      ['-package unix'])

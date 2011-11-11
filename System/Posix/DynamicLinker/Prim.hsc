@@ -30,7 +30,7 @@ module System.Posix.DynamicLinker.Prim (
   packRTLDFlags,
   RTLDFlags(..),
   packDL,
-  DL(..)
+  DL(..),
  )
 
 where

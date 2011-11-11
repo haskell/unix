@@ -3,7 +3,7 @@
 #endif
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.DynamicLinker
+-- Module      :  System.Posix.DynamicLinker.ByteString
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -14,7 +14,7 @@
 -- Dynamic linker support through dlopen()
 -----------------------------------------------------------------------------
 
-module System.Posix.DynamicLinker (
+module System.Posix.DynamicLinker.ByteString (
 
     module System.Posix.DynamicLinker.Prim,
     dlopen,
@@ -56,20 +56,15 @@ import System.Posix.DynamicLinker.Prim
 import Control.Exception        ( bracket )
 import Control.Monad	( liftM )
 import Foreign
-#if __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals ( withFilePath )
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
+import System.Posix.ByteString.FilePath
 
-dlopen :: FilePath -> [RTLDFlags] -> IO DL
+dlopen :: RawFilePath -> [RTLDFlags] -> IO DL
 dlopen path flags = do
   withFilePath path $ \ p -> do
     liftM DLHandle $ throwDLErrorIf "dlopen" (== nullPtr) $ c_dlopen p (packRTLDFlags flags)
 
-withDL :: String -> [RTLDFlags] -> (DL -> IO a) -> IO a
+withDL :: RawFilePath -> [RTLDFlags] -> (DL -> IO a) -> IO a
 withDL file flags f = bracket (dlopen file flags) (dlclose) f
 
-withDL_ :: String -> [RTLDFlags] -> (DL -> IO a) -> IO ()
+withDL_ :: RawFilePath -> [RTLDFlags] -> (DL -> IO a) -> IO ()
 withDL_ file flags f = withDL file flags f >> return ()

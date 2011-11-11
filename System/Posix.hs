@@ -30,7 +30,10 @@ module System.Posix (
   module System.Posix.User,
   module System.Posix.Resource,
   module System.Posix.Semaphore,
-  module System.Posix.SharedMem
+  module System.Posix.SharedMem,
+  module System.Posix.DynamicLinker,
+-- XXX 'Module' type clashes with GHC
+--  module System.Posix.DynamicLinker.Module
  ) where
 
 import System.Posix.Types
@@ -48,6 +51,9 @@ import System.Posix.User
 import System.Posix.Resource
 import System.Posix.Semaphore
 import System.Posix.SharedMem
+-- XXX: bad planning, we have two constructors called "Default"
+import System.Posix.DynamicLinker hiding (Default)
+--import System.Posix.DynamicLinker.Module
 
 {- TODO
 

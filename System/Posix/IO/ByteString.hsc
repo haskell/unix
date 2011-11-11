@@ -6,7 +6,7 @@
 #endif
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.IO
+-- Module      :  System.Posix.IO.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -23,7 +23,7 @@
 
 #include "HsUnix.h"
 
-module System.Posix.IO (
+module System.Posix.IO.ByteString (
     -- * Input \/ Output
 
     -- ** Standard file descriptors
@@ -69,19 +69,21 @@ module System.Posix.IO (
   ) where
 
 import System.Posix.Types
-import System.Posix.Error
 import System.Posix.IO.Common
+import Foreign.C hiding (
+     throwErrnoPath,
+     throwErrnoPathIf,
+     throwErrnoPathIf_,
+     throwErrnoPathIfNull,
+     throwErrnoPathIfMinus1,
+     throwErrnoPathIfMinus1_ )
 
-#if __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals ( withFilePath )
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
+import System.Posix.ByteString.FilePath
+
 
 -- |Open and optionally create this file.  See 'System.Posix.Files'
 -- for information on how to use the 'FileMode' type.
-openFd :: FilePath
+openFd :: RawFilePath
        -> OpenMode
        -> Maybe FileMode -- ^Just x => creates the file with the given modes, Nothing => the file must exist.
        -> OpenFileFlags
@@ -95,6 +97,6 @@ openFd name how maybe_mode flags = do
 -- 'openFd'.  See 'System.Posix.Files' for information on how to use
 -- the 'FileMode' type.
 
-createFile :: FilePath -> FileMode -> IO Fd
+createFile :: RawFilePath -> FileMode -> IO Fd
 createFile name mode
   = openFd name WriteOnly (Just mode) defaultFileFlags{ trunc=True } 

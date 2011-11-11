@@ -1,11 +1,9 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #if __GLASGOW_HASKELL__ >= 701
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.Files
+-- Module      :  System.Posix.Files.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -29,7 +27,7 @@
 
 #include "HsUnix.h"
 
-module System.Posix.Files (
+module System.Posix.Files.ByteString (
     -- * File modes
     -- FileMode exported by System.Posix.Types
     unionFileModes, intersectFileModes,
@@ -89,35 +87,19 @@ module System.Posix.Files (
     PathVar(..), getPathVar, getFdPathVar,
   ) where
 
-
-import Foreign
-import Foreign.C
-
-import System.Posix.Error
 import System.Posix.Types
-import System.Posix.Internals
+import System.Posix.Internals hiding (withFilePath, peekFilePathLen)
+import Foreign
+import Foreign.C hiding (
+     throwErrnoPath,
+     throwErrnoPathIf,
+     throwErrnoPathIf_,
+     throwErrnoPathIfNull,
+     throwErrnoPathIfMinus1,
+     throwErrnoPathIfMinus1_ )
+
 import System.Posix.Files.Common
-
-#if __GLASGOW_HASKELL__ > 700
-import System.Posix.Internals (withFilePath, peekFilePath)
-#elif __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals (withFilePath)
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-
-peekFilePathLen :: CStringLen -> IO FilePath
-peekFilePathLen = peekCStringLen
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-
-peekFilePathLen :: CStringLen -> IO FilePath
-peekFilePathLen = peekCStringLen
-#endif
+import System.Posix.ByteString.FilePath
 
 -- -----------------------------------------------------------------------------
 -- chmod()
@@ -128,7 +110,7 @@ peekFilePathLen = peekCStringLen
 -- of the file's owner.
 --
 -- Note: calls @chmod@.
-setFileMode :: FilePath -> FileMode -> IO ()
+setFileMode :: RawFilePath -> FileMode -> IO ()
 setFileMode name m =
   withFilePath name $ \s -> do
     throwErrnoPathIfMinus1_ "setFileMode" name (c_chmod s m)
@@ -141,7 +123,7 @@ setFileMode name m =
 -- check a permission set the corresponding argument to 'True'.
 --
 -- Note: calls @access@.
-fileAccess :: FilePath -> Bool -> Bool -> Bool -> IO Bool
+fileAccess :: RawFilePath -> Bool -> Bool -> Bool -> IO Bool
 fileAccess name readOK writeOK execOK = access name flags
   where
    flags   = read_f .|. write_f .|. exec_f
@@ -152,7 +134,7 @@ fileAccess name readOK writeOK execOK = access name flags
 -- | Checks for the existence of the file.
 --
 -- Note: calls @access@.
-fileExist :: FilePath -> IO Bool
+fileExist :: RawFilePath -> IO Bool
 fileExist name = 
   withFilePath name $ \s -> do
     r <- c_access s (#const F_OK)
@@ -163,7 +145,7 @@ fileExist name =
 		   then return False
 		   else throwErrnoPath "fileExist" name
 
-access :: FilePath -> CMode -> IO Bool
+access :: RawFilePath -> CMode -> IO Bool
 access name flags = 
   withFilePath name $ \s -> do
     r <- c_access s (fromIntegral flags)
@@ -179,7 +161,7 @@ access name flags =
 -- size, access times, etc.) for the file @path@.
 --
 -- Note: calls @stat@.
-getFileStatus :: FilePath -> IO FileStatus
+getFileStatus :: RawFilePath -> IO FileStatus
 getFileStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
   withForeignPtr fp $ \p ->
@@ -187,12 +169,12 @@ getFileStatus path = do
       throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
--- | Acts as 'getFileStatus' except when the 'FilePath' refers to a symbolic
+-- | Acts as 'getFileStatus' except when the 'RawFilePath' refers to a symbolic
 -- link. In that case the @FileStatus@ information of the symbolic link itself
 -- is returned instead of that of the file it points to.
 --
 -- Note: calls @lstat@.
-getSymbolicLinkStatus :: FilePath -> IO FileStatus
+getSymbolicLinkStatus :: RawFilePath -> IO FileStatus
 getSymbolicLinkStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
   withForeignPtr fp $ \p ->
@@ -210,7 +192,7 @@ foreign import ccall unsafe "__hsunix_lstat"
 -- have permission to create the pipe.
 --
 -- Note: calls @mkfifo@.
-createNamedPipe :: FilePath -> FileMode -> IO ()
+createNamedPipe :: RawFilePath -> FileMode -> IO ()
 createNamedPipe name mode = do
   withFilePath name $ \s -> 
     throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
@@ -223,7 +205,7 @@ createNamedPipe name mode = do
 -- the file.
 --
 -- Note: calls @mknod@.
-createDevice :: FilePath -> FileMode -> DeviceID -> IO ()
+createDevice :: RawFilePath -> FileMode -> DeviceID -> IO ()
 createDevice path mode dev =
   withFilePath path $ \s ->
     throwErrnoPathIfMinus1_ "createDevice" path (c_mknod s mode dev)
@@ -238,7 +220,7 @@ foreign import ccall unsafe "__hsunix_mknod"
 -- @old@.
 --
 -- Note: calls @link@.
-createLink :: FilePath -> FilePath -> IO ()
+createLink :: RawFilePath -> RawFilePath -> IO ()
 createLink name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
@@ -247,7 +229,7 @@ createLink name1 name2 =
 -- | @removeLink path@ removes the link named @path@.
 --
 -- Note: calls @unlink@.
-removeLink :: FilePath -> IO ()
+removeLink :: RawFilePath -> IO ()
 removeLink name =
   withFilePath name $ \s ->
   throwErrnoPathIfMinus1_ "removeLink" name (c_unlink s)
@@ -262,7 +244,7 @@ removeLink name =
 -- had been substituted into the path being followed to find a file or directory.
 --
 -- Note: calls @symlink@.
-createSymbolicLink :: FilePath -> FilePath -> IO ()
+createSymbolicLink :: RawFilePath -> RawFilePath -> IO ()
 createSymbolicLink file1 file2 =
   withFilePath file1 $ \s1 ->
   withFilePath file2 $ \s2 ->
@@ -280,10 +262,10 @@ foreign import ccall unsafe "symlink"
 #define PATH_MAX 4096
 #endif
 
--- | Reads the @FilePath@ pointed to by the symbolic link and returns it.
+-- | Reads the @RawFilePath@ pointed to by the symbolic link and returns it.
 --
 -- Note: calls @readlink@.
-readSymbolicLink :: FilePath -> IO FilePath
+readSymbolicLink :: RawFilePath -> IO RawFilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
     withFilePath file $ \s -> do
@@ -300,7 +282,7 @@ foreign import ccall unsafe "readlink"
 -- | @rename old new@ renames a file or directory from @old@ to @new@.
 --
 -- Note: calls @rename@.
-rename :: FilePath -> FilePath -> IO ()
+rename :: RawFilePath -> RawFilePath -> IO ()
 rename name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
@@ -318,7 +300,7 @@ foreign import ccall unsafe "rename"
 -- If @uid@ or @gid@ is specified as -1, then that ID is not changed.
 --
 -- Note: calls @chown@.
-setOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
+setOwnerAndGroup :: RawFilePath -> UserID -> GroupID -> IO ()
 setOwnerAndGroup name uid gid = do
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "setOwnerAndGroup" name (c_chown s uid gid)
@@ -331,7 +313,7 @@ foreign import ccall unsafe "chown"
 -- changes permissions on the link itself).
 --
 -- Note: calls @lchown@.
-setSymbolicLinkOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
+setSymbolicLinkOwnerAndGroup :: RawFilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "setSymbolicLinkOwnerAndGroup" name
@@ -348,7 +330,7 @@ foreign import ccall unsafe "lchown"
 -- associated with file @path@ to @atime@ and @mtime@, respectively.
 --
 -- Note: calls @utime@.
-setFileTimes :: FilePath -> EpochTime -> EpochTime -> IO ()
+setFileTimes :: RawFilePath -> EpochTime -> EpochTime -> IO ()
 setFileTimes name atime mtime = do
   withFilePath name $ \s ->
    allocaBytes (#const sizeof(struct utimbuf)) $ \p -> do
@@ -360,7 +342,7 @@ setFileTimes name atime mtime = do
 -- file @path@ to the current time.
 --
 -- Note: calls @utime@.
-touchFile :: FilePath -> IO ()
+touchFile :: RawFilePath -> IO ()
 touchFile name = do
   withFilePath name $ \s ->
    throwErrnoPathIfMinus1_ "touchFile" name (c_utime s nullPtr)
@@ -372,7 +354,7 @@ touchFile name = do
 -- than the given length before this operation was performed the extra is lost.
 --
 -- Note: calls @truncate@.
-setFileSize :: FilePath -> FileOffset -> IO ()
+setFileSize :: RawFilePath -> FileOffset -> IO ()
 setFileSize file off = 
   withFilePath file $ \s ->
     throwErrnoPathIfMinus1_ "setFileSize" file (c_truncate s off)
@@ -390,7 +372,7 @@ foreign import ccall unsafe "truncate"
 -- is undefined, but not failure.
 --
 -- Note: calls @pathconf@.
-getPathVar :: FilePath -> PathVar -> IO Limit
+getPathVar :: RawFilePath -> PathVar -> IO Limit
 getPathVar name v = do
   withFilePath name $ \ nameP -> 
     throwErrnoPathIfMinus1 "getPathVar" name $ 

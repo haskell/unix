@@ -5,7 +5,7 @@
 #endif
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.Terminal
+-- Module      :  System.Posix.Terminal.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -17,7 +17,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Posix.Terminal (
+module System.Posix.Terminal.ByteString (
   -- * Terminal support
 
   -- ** Terminal attributes
@@ -74,39 +74,28 @@ module System.Posix.Terminal (
 #include "HsUnix.h"
 
 import Foreign
-import Foreign.C
-import System.Posix.Terminal.Common
 import System.Posix.Types
+import System.Posix.Terminal.Common
 
-#if __GLASGOW_HASKELL__ > 700
-import System.Posix.Internals (withFilePath, peekFilePath)
-#elif __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals (withFilePath)
+import Foreign.C hiding (
+     throwErrnoPath,
+     throwErrnoPathIf,
+     throwErrnoPathIf_,
+     throwErrnoPathIfNull,
+     throwErrnoPathIfMinus1,
+     throwErrnoPathIfMinus1_ )
 
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
+import System.Posix.ByteString.FilePath
 
-peekFilePathLen :: CStringLen -> IO FilePath
-peekFilePathLen = peekCStringLen
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-
-peekFilePathLen :: CStringLen -> IO FilePath
-peekFilePathLen = peekCStringLen
-#endif
 
 -- | @getTerminalName fd@ calls @ttyname@ to obtain a name associated
 --   with the terminal for @Fd@ @fd@. If @fd@ is associated
 --   with a terminal, @getTerminalName@ returns the name of the
 --   terminal.
-getTerminalName :: Fd -> IO FilePath
+getTerminalName :: Fd -> IO RawFilePath
 getTerminalName (Fd fd) = do
   s <- throwErrnoIfNull "getTerminalName" (c_ttyname fd)
-  peekFilePath s  
+  peekFilePath s
 
 foreign import ccall unsafe "ttyname"
   c_ttyname :: CInt -> IO CString
@@ -116,7 +105,7 @@ foreign import ccall unsafe "ttyname"
 --   controlling terminal exists,
 --   @getControllingTerminalName@ returns the name of the
 --   controlling terminal.
-getControllingTerminalName :: IO FilePath
+getControllingTerminalName :: IO RawFilePath
 getControllingTerminalName = do
   s <- throwErrnoIfNull "getControllingTerminalName" (c_ctermid nullPtr)
   peekFilePath s
@@ -127,7 +116,7 @@ foreign import ccall unsafe "ctermid"
 -- | @getSlaveTerminalName@ calls @ptsname@ to obtain the name of the
 -- slave terminal associated with a pseudoterminal pair.  The file
 -- descriptor to pass in must be that of the master.
-getSlaveTerminalName :: Fd -> IO FilePath
+getSlaveTerminalName :: Fd -> IO RawFilePath
 
 #ifdef HAVE_PTSNAME
 getSlaveTerminalName (Fd fd) = do

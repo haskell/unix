@@ -4,7 +4,7 @@
 #endif
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.DynamicLinker.Module
+-- Module      :  System.Posix.DynamicLinker.Module.ByteString
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 -- 
@@ -18,7 +18,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Posix.DynamicLinker.Module (
+module System.Posix.DynamicLinker.Module.ByteString (
 
 --  Usage:
 --  ******
@@ -59,69 +59,19 @@ where
 
 #include "HsUnix.h"
 
-import System.Posix.DynamicLinker
+import System.Posix.DynamicLinker.Module hiding (moduleOpen)
+import System.Posix.DynamicLinker.Prim
 import System.Posix.DynamicLinker.Common
-import Foreign.Ptr      ( Ptr, nullPtr, FunPtr )
-#if __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals ( withFilePath )
-#else
-import Foreign.C.String	( withCString )
 
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
-
-unModule              :: Module -> (Ptr ())
-unModule (Module adr)  = adr
+import Foreign
+import System.Posix.ByteString.FilePath
 
 -- Opens a module (EXPORTED)
 --
 
-moduleOpen :: String -> [RTLDFlags] -> IO Module
+moduleOpen :: RawFilePath -> [RTLDFlags] -> IO Module
 moduleOpen file flags = do
   modPtr <- withFilePath file $ \ modAddr -> c_dlopen modAddr (packRTLDFlags flags)
   if (modPtr == nullPtr)
       then moduleError >>= \ err -> ioError (userError ("dlopen: " ++ err))
       else return $ Module modPtr
-
--- Gets a symbol pointer from a module (EXPORTED)
---
-moduleSymbol :: Module -> String -> IO (FunPtr a)
-moduleSymbol file sym = dlsym (DLHandle (unModule file)) sym
-
--- Closes a module (EXPORTED)
--- 
-moduleClose     :: Module -> IO ()
-moduleClose file  = dlclose (DLHandle (unModule file))
-
--- Gets a string describing the last module error (EXPORTED)
--- 
-moduleError :: IO String
-moduleError  = dlerror
-
-
--- Convenience function, cares for module open- & closing
--- additionally returns status of `moduleClose' (EXPORTED)
--- 
-withModule :: Maybe String 
-           -> String 
-	   -> [RTLDFlags]
-           -> (Module -> IO a) 
-	   -> IO a
-withModule mdir file flags p = do
-  let modPath = case mdir of
-                  Nothing -> file
-	          Just dir  -> dir ++ if ((head (reverse dir)) == '/')
-                                       then file
-				       else ('/':file)
-  modu <- moduleOpen modPath flags
-  result <- p modu
-  moduleClose modu
-  return result
-
-withModule_ :: Maybe String 
-            -> String 
-	    -> [RTLDFlags]
-            -> (Module -> IO a) 
-	    -> IO ()
-withModule_ dir file flags p = withModule dir file flags p >>= \ _ -> return ()
