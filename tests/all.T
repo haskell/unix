@@ -59,3 +59,4 @@ test('3816', normal, compile_and_run, ['-package unix'])
 
 test('processGroup001', normal, compile_and_run, ['-package unix'])
 test('processGroup002', normal, compile_and_run, ['-package unix'])
+test('executeFile001', normal, compile_and_run, ['-package unix'])
