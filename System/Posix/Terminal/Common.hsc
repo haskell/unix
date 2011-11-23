@@ -26,6 +26,7 @@ module System.Posix.Terminal.Common (
   TerminalState(..),
   setTerminalAttributes,
 
+  CTermios,
   TerminalMode(..),
   withoutMode,
   withMode,
@@ -63,9 +64,6 @@ module System.Posix.Terminal.Common (
 
   -- ** Testing a file descriptor
   queryTerminal,
-
-  -- ** Pseudoterminal operations
-  openPseudoTerminal,
   ) where
 
 #include "HsUnix.h"
@@ -503,63 +501,6 @@ queryTerminal (Fd fd) = do
 
 foreign import ccall unsafe "isatty"
   c_isatty :: CInt -> IO CInt
-
--- | @openPseudoTerminal@ creates a pseudoterminal (pty) pair, and
--- returns the newly created pair as a (@master@, @slave@) tuple.
-openPseudoTerminal :: IO (Fd, Fd)
-
-#ifdef HAVE_OPENPTY
-openPseudoTerminal =
-  alloca $ \p_master ->
-    alloca $ \p_slave -> do
-      throwErrnoIfMinus1_ "openPty"
-          (c_openpty p_master p_slave nullPtr nullPtr nullPtr)
-      master <- peek p_master
-      slave <- peek p_slave
-      return (Fd master, Fd slave)
-
-foreign import ccall unsafe "openpty"
-  c_openpty :: Ptr CInt -> Ptr CInt -> CString -> Ptr CTermios -> Ptr a
-            -> IO CInt
-#else
-openPseudoTerminal = do
-  (Fd master) <- openFd "/dev/ptmx" ReadWrite Nothing
-                        defaultFileFlags{noctty=True}
-  throwErrnoIfMinus1_ "openPseudoTerminal" (c_grantpt master)
-  throwErrnoIfMinus1_ "openPseudoTerminal" (c_unlockpt master)
-  slaveName <- getSlaveTerminalName (Fd master)
-  slave <- openFd slaveName ReadWrite Nothing defaultFileFlags{noctty=True}
-  pushModule slave "ptem"
-  pushModule slave "ldterm"
-# ifndef __hpux
-  pushModule slave "ttcompat"
-# endif /* __hpux */
-  return (Fd master, slave)
-
--- Push a STREAMS module, for System V systems.
-pushModule :: Fd -> String -> IO ()
-pushModule (Fd fd) name =
-  withCString name $ \p_name ->
-    throwErrnoIfMinus1_ "openPseudoTerminal"
-                        (c_push_module fd p_name)
-
-foreign import ccall unsafe "__hsunix_push_module"
-  c_push_module :: CInt -> CString -> IO CInt
-
-#ifdef HAVE_PTSNAME
-foreign import ccall unsafe "__hsunix_grantpt"
-  c_grantpt :: CInt -> IO CInt
-
-foreign import ccall unsafe "__hsunix_unlockpt"
-  c_unlockpt :: CInt -> IO CInt
-#else
-c_grantpt :: CInt -> IO CInt
-c_grantpt _ = return (fromIntegral 0)
-
-c_unlockpt :: CInt -> IO CInt
-c_unlockpt _ = return (fromIntegral 0)
-#endif /* HAVE_PTSNAME */
-#endif /* !HAVE_OPENPTY */
 
 -- -----------------------------------------------------------------------------
 -- Local utility functions
