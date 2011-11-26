@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable,PatternGuards #-}
+{-# LANGUAGE DeriveDataTypeable, PatternGuards, CApiFFI #-}
 {-# OPTIONS_GHC -fno-cse #-} -- global variables
 #if __GLASGOW_HASKELL__ >= 701
 {-# LANGUAGE Trustworthy #-}
@@ -612,13 +612,13 @@ foreign import ccall unsafe "sigfillset"
 foreign import ccall unsafe "sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
 #else
-foreign import ccall unsafe "__hscore_sigdelset"
+foreign import capi unsafe "HsBase.h sigdelset"
   c_sigdelset   :: Ptr CSigset -> CInt -> IO CInt
 
-foreign import ccall unsafe "__hscore_sigfillset"
+foreign import capi unsafe "HsBase.h sigfillset"
   c_sigfillset  :: Ptr CSigset -> IO CInt
 
-foreign import ccall unsafe "__hscore_sigismember"
+foreign import capi unsafe "HsBase.h sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
 #endif /* __HUGS__ */
 
