@@ -597,8 +597,8 @@ awaitSignal maybe_sigset = do
   -- (-1) with errno set to EINTR.
   -- XXX My manpage says it can also return EFAULT. And why is ignoring
   -- EINTR the right thing to do?
- 
-foreign import ccall unsafe "sigsuspend"
+
+foreign import capi unsafe "HsUnix.h sigsuspend"
   c_sigsuspend :: Ptr CSigset -> IO CInt
 #endif
 
@@ -612,16 +612,16 @@ foreign import ccall unsafe "sigfillset"
 foreign import ccall unsafe "sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
 #else
-foreign import capi unsafe "HsBase.h sigdelset"
+foreign import capi unsafe "HsUnix.h sigdelset"
   c_sigdelset   :: Ptr CSigset -> CInt -> IO CInt
 
-foreign import capi unsafe "HsBase.h sigfillset"
+foreign import capi unsafe "HsUnix.h sigfillset"
   c_sigfillset  :: Ptr CSigset -> IO CInt
 
-foreign import capi unsafe "HsBase.h sigismember"
+foreign import capi unsafe "HsUnix.h sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
 #endif /* __HUGS__ */
 
-foreign import ccall unsafe "sigpending"
+foreign import capi unsafe "HsUnix.h sigpending"
   c_sigpending :: Ptr CSigset -> IO CInt
 

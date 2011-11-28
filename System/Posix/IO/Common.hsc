@@ -206,7 +206,7 @@ foreign import ccall unsafe "__hscore_open"
 closeFd :: Fd -> IO ()
 closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
 
-foreign import ccall unsafe "HsBase.h close"
+foreign import ccall unsafe "HsUnix.h close"
    c_close :: CInt -> IO CInt
 
 -- -----------------------------------------------------------------------------
@@ -318,10 +318,10 @@ setFdOption (Fd fd) opt val = do
 	      _    		-> ((#const F_GETFL),(#const F_SETFL))
   opt_val = fdOption2Int opt
 
-foreign import ccall unsafe "HsBase.h fcntl_read"
+foreign import ccall unsafe "HsUnix.h fcntl_read"
    c_fcntl_read  :: CInt -> CInt -> IO CInt
 
-foreign import ccall unsafe "HsBase.h fcntl_write"
+foreign import ccall unsafe "HsUnix.h fcntl_write"
    c_fcntl_write :: CInt -> CInt -> CLong -> IO CInt
 
 -- -----------------------------------------------------------------------------
@@ -359,7 +359,7 @@ getLock (Fd fd) lock =
 
 type CFLock     = ()
 
-foreign import ccall unsafe "HsBase.h fcntl_lock"
+foreign import ccall unsafe "HsUnix.h fcntl_lock"
    c_fcntl_lock  :: CInt -> CInt -> Ptr CFLock -> IO CInt
 
 allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
