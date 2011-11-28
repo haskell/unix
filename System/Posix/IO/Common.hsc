@@ -297,7 +297,7 @@ fdOption2Int SynchronousWrites = (#const O_SYNC)
 -- | May throw an exception if this is an invalid descriptor.
 queryFdOption :: Fd -> FdOption -> IO Bool
 queryFdOption (Fd fd) opt = do
-  r <- throwErrnoIfMinus1 "queryFdOption" (c_fcntl_read fd flag)
+  r <- throwErrnoIfMinus1 "queryFdOption" (Base.c_fcntl_read fd flag)
   return ((r .&. fdOption2Int opt) /= 0)
  where
   flag    = case opt of
@@ -307,22 +307,16 @@ queryFdOption (Fd fd) opt = do
 -- | May throw an exception if this is an invalid descriptor.
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
 setFdOption (Fd fd) opt val = do
-  r <- throwErrnoIfMinus1 "setFdOption" (c_fcntl_read fd getflag)
+  r <- throwErrnoIfMinus1 "setFdOption" (Base.c_fcntl_read fd getflag)
   let r' | val       = r .|. opt_val
 	 | otherwise = r .&. (complement opt_val)
   throwErrnoIfMinus1_ "setFdOption"
-                      (c_fcntl_write fd setflag (fromIntegral r'))
+                      (Base.c_fcntl_write fd setflag (fromIntegral r'))
  where
   (getflag,setflag)= case opt of
 	      CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD)) 
 	      _    		-> ((#const F_GETFL),(#const F_SETFL))
   opt_val = fdOption2Int opt
-
-foreign import ccall unsafe "HsUnix.h fcntl_read"
-   c_fcntl_read  :: CInt -> CInt -> IO CInt
-
-foreign import ccall unsafe "HsUnix.h fcntl_write"
-   c_fcntl_write :: CInt -> CInt -> CLong -> IO CInt
 
 -- -----------------------------------------------------------------------------
 -- Seeking 
@@ -350,7 +344,7 @@ type FileLock = (LockRequest, SeekMode, FileOffset, FileOffset)
 getLock :: Fd -> FileLock -> IO (Maybe (ProcessID, FileLock))
 getLock (Fd fd) lock =
   allocaLock lock $ \p_flock -> do
-    throwErrnoIfMinus1_ "getLock" (c_fcntl_lock fd (#const F_GETLK) p_flock)
+    throwErrnoIfMinus1_ "getLock" (Base.c_fcntl_lock fd (#const F_GETLK) p_flock)
     result <- bytes2ProcessIDAndLock p_flock
     return (maybeResult result)
   where
@@ -358,9 +352,6 @@ getLock (Fd fd) lock =
     maybeResult x = Just x
 
 type CFLock     = ()
-
-foreign import ccall unsafe "HsUnix.h fcntl_lock"
-   c_fcntl_lock  :: CInt -> CInt -> Ptr CFLock -> IO CInt
 
 allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
 allocaLock (lockreq, mode, start, len) io = 
@@ -401,14 +392,14 @@ bytes2ProcessIDAndLock p = do
 setLock :: Fd -> FileLock -> IO ()
 setLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
-    throwErrnoIfMinus1_ "setLock" (c_fcntl_lock fd (#const F_SETLK) p_flock)
+    throwErrnoIfMinus1_ "setLock" (Base.c_fcntl_lock fd (#const F_SETLK) p_flock)
 
 -- | May throw an exception if this is an invalid descriptor.
 waitToSetLock :: Fd -> FileLock -> IO ()
 waitToSetLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
     throwErrnoIfMinus1_ "waitToSetLock" 
-	(c_fcntl_lock fd (#const F_SETLKW) p_flock)
+        (Base.c_fcntl_lock fd (#const F_SETLKW) p_flock)
 
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}
