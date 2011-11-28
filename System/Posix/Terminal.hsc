@@ -77,6 +77,7 @@ import Foreign
 import Foreign.C
 import System.Posix.Terminal.Common
 import System.Posix.Types
+import System.Posix.IO
 
 #if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)

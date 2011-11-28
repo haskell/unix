@@ -76,6 +76,8 @@ module System.Posix.Terminal.ByteString (
 import Foreign
 import System.Posix.Types
 import System.Posix.Terminal.Common
+import System.Posix.IO.ByteString
+import Data.ByteString.Char8 as B
 
 import Foreign.C hiding (
      throwErrnoPath,
@@ -153,7 +155,7 @@ foreign import ccall unsafe "openpty"
             -> IO CInt
 #else
 openPseudoTerminal = do
-  (Fd master) <- openFd "/dev/ptmx" ReadWrite Nothing
+  (Fd master) <- openFd (B.pack "/dev/ptmx") ReadWrite Nothing
                         defaultFileFlags{noctty=True}
   throwErrnoIfMinus1_ "openPseudoTerminal" (c_grantpt master)
   throwErrnoIfMinus1_ "openPseudoTerminal" (c_unlockpt master)
