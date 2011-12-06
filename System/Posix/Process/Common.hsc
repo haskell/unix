@@ -282,10 +282,6 @@ in case of an error, an exception is thrown.
 threads are not copied into the child process, it's easy to go wrong:
 e.g. by accessing some shared resource that was held by another thread
 in the parent.
-
-GHC note: 'forkProcess' is not currently supported when using multiple
-processors (@+RTS -N@), although it is supported with @-threaded@ as
-long as only one processor is being used.
 -}
 
 forkProcess :: IO () -> IO ProcessID
