@@ -47,7 +47,6 @@ Library
         System.Posix.DynamicLinker.Module
         System.Posix.DynamicLinker.Module.ByteString
         System.Posix.DynamicLinker.Prim
-        System.Posix.DynamicLinker.Common
         System.Posix.DynamicLinker.ByteString
         System.Posix.DynamicLinker
 
@@ -72,6 +71,7 @@ Library
 
     other-modules:
         System.Posix.Directory.Common
+        System.Posix.DynamicLinker.Common
         System.Posix.Files.Common
         System.Posix.IO.Common
         System.Posix.Process.Common
