@@ -19,6 +19,7 @@
 module System.Posix.Temp (
 
     mkstemp
+  , mkdtemp
 
 {- Not ported (yet?):
     tmpfile: can we handle FILE*?
@@ -33,6 +34,7 @@ module System.Posix.Temp (
 import System.IO
 import System.Posix.IO
 import System.Posix.Types
+import System.Posix.Directory (createDirectory)
 import Foreign.C
 
 #if __GLASGOW_HASKELL__ > 700
@@ -55,7 +57,8 @@ peekFilePath = peekCString
 -- The returned 'FilePath' is the (possibly relative) path of
 -- the created file, which is padded with 6 random characters.
 mkstemp :: String -> IO (FilePath, Handle)
-mkstemp template = do
+mkstemp template' = do
+  let template = template' ++ "XXXXXX"
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
   withFilePath template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
@@ -63,13 +66,32 @@ mkstemp template = do
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
-  name <- mktemp (template ++ "XXXXXX")
+  name <- mktemp template
   h <- openFile name ReadWriteMode
   return (name, h)
+#endif
 
+-- |'mkdtemp' - make a unique directory (only safe on GHC & Hugs).
+-- The returned 'FilePath' is the path of the created directory,
+-- which is padded with 6 random characters.
+mkdtemp :: String -> IO FilePath
+mkdtemp template' = do
+  let template = template' ++ "XXXXXX"
+#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+  withFilePath template $ \ ptr -> do
+    throwErrnoIfNull "mkdtemp" (c_mkdtemp ptr)
+    name <- peekFilePath ptr
+    return name
+#else
+  name <- mktemp template
+  h <- createDirectory name (toEnum 0o700)
+  return name
+#endif
+
+#if !defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)
 -- |'mktemp' - make a unique file name
+-- It is required that the template have six trailing \'X\'s.
 -- This function should be considered deprecated
-
 mktemp :: String -> IO String
 mktemp template = do
   withFilePath template $ \ ptr -> do
@@ -83,3 +105,5 @@ foreign import ccall unsafe "mktemp"
 foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
   c_mkstemp :: CString -> IO CInt
 
+foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
+  c_mkdtemp :: CString -> IO CString
