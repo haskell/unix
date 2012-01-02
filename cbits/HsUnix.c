@@ -132,6 +132,9 @@ int __hsunix_push_module(int fd, const char *module)
 int __hscore_mkstemp(char *filetemplate) {
     return (mkstemp(filetemplate));
 }
+char *__hscore_mkdtemp(char *filetemplate) {
+    return (mkdtemp(filetemplate));
+}
 #endif
 
 #if !defined(__MINGW32__) && !defined(irix_HOST_OS)
