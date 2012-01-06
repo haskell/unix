@@ -132,13 +132,20 @@ int __hsunix_push_module(int fd, const char *module)
 int __hscore_mkstemp(char *filetemplate) {
     return (mkstemp(filetemplate));
 }
-char *__hscore_mkdtemp(char *filetemplate) {
-    return (mkdtemp(filetemplate));
-}
+#endif
+
+#if HAVE_MKSTEMPS
 int __hscore_mkstemps(char *filetemplate, int suffixlen) {
     return (mkstemps(filetemplate, suffixlen));
 }
 #endif
+
+#if HAVE_MKDTEMP
+char *__hscore_mkdtemp(char *filetemplate) {
+    return (mkdtemp(filetemplate));
+}
+#endif
+
 
 #if !defined(__MINGW32__) && !defined(irix_HOST_OS)
 int __hscore_getrlimit(int resource, struct rlimit *rlim) {

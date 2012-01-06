@@ -6,9 +6,10 @@
 -- |
 -- Module      :  System.Posix.Temp
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org>
+--                    Deian Stefan <deian@cs.stanford.edu>
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 --
--- Maintainer  :  libraries@haskell.org
+-- Maintainer  :  libraries@haskell.org, vs@foldr.org, deian@cs.stanford.edu
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
@@ -22,6 +23,7 @@ module System.Posix.Temp (
 
 #include "HsUnix.h"
 
+import Control.Exception (throwIO)
 import System.IO
 import System.Posix.IO
 import System.Posix.Types
@@ -70,6 +72,10 @@ mkstemp template' = do
 #endif
 
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
+  c_mkstemp :: CString -> IO CInt
+#endif
+
 -- |'mkstemps' - make a unique filename with a given prefix and suffix 
 -- and open it for reading\/writing (only safe on GHC & Hugs).
 -- The returned 'FilePath' is the (possibly relative) path of
@@ -77,6 +83,7 @@ mkstemp template' = do
 -- the prefix and suffix.
 mkstemps :: String -> String -> IO (FilePath, Handle)
 mkstemps prefix suffix = do
+#if HAVE_MKSTEMPS
   let template = prefix ++ "XXXXXX" ++ suffix
       lenOfsuf :: CInt
       lenOfsuf = fromIntegral $ length suffix
@@ -85,7 +92,11 @@ mkstemps prefix suffix = do
     name <- peekFilePath ptr
     h <- fdToHandle (Fd fd)
     return (name, h)
+#else
+  throwIO . userError $ "mkstemps: System does not have a mkstemp C function." 
+#endif
 
+#if HAVE_MKSTEMPS
 foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
   c_mkstemps :: CString -> CInt -> IO CInt
 #endif
@@ -99,7 +110,7 @@ foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
 mkdtemp :: String -> IO FilePath
 mkdtemp template' = do
   let template = template' ++ "XXXXXX"
-#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+#if HAVE_MKDTEMP
   withFilePath template $ \ ptr -> do
     _ <- throwErrnoIfNull "mkdtemp" (c_mkdtemp ptr)
     name <- peekFilePath ptr
@@ -108,7 +119,14 @@ mkdtemp template' = do
   name <- mktemp template
   h <- createDirectory name (toEnum 0o700)
   return name
+#endif
 
+#if HAVE_MKDTEMP
+foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
+  c_mkdtemp :: CString -> IO CString
+#endif
+
+#if (!defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)) || !HAVE_MKDTEMP
 -- | Make a unique file name It is required that the template have six trailing
 -- \'X\'s. This function should be considered deprecated.
 {-# WARNING mktemp "This function is unsafe; use mkstemp instead" #-}
@@ -121,10 +139,4 @@ mktemp template = do
 foreign import ccall unsafe "mktemp"
   c_mktemp :: CString -> IO CString
 #endif
-
-foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
-  c_mkstemp :: CString -> IO CInt
-
-foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
-  c_mkdtemp :: CString -> IO CString
 

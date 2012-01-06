@@ -34,6 +34,9 @@ AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
 AC_CHECK_FUNCS([readdir_r])
 
+# Additional temp functions
+AC_CHECK_FUNCS([mkstemps mkdtemp])
+
 # Avoid adding rt if absent or unneeded
 AC_CHECK_LIB(rt, shm_open, [EXTRA_LIBS="$EXTRA_LIBS rt" CFLAGS="$CFLAGS -lrt"])
 
