@@ -175,6 +175,7 @@ int __hsunix_push_module(int fd, const char *module);
 
 #if !defined(__MINGW32__)
 int __hscore_mkstemp(char *filetemplate);
+int __hscore_mkstemps(char *filetemplate, int suffixlen);
 char *__hscore_mkdtemp(char *filetemplate);
 #endif
 

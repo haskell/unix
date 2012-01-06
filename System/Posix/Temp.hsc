@@ -17,7 +17,7 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Temp (
-        mkstemp, mkdtemp
+        mkstemp, mkstemps, mkdtemp
     ) where
 
 #include "HsUnix.h"
@@ -67,6 +67,27 @@ mkstemp template' = do
   name <- mktemp template
   h <- openFile name ReadWriteMode
   return (name, h)
+#endif
+
+#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+-- |'mkstemps' - make a unique filename with a given prefix and suffix 
+-- and open it for reading\/writing (only safe on GHC & Hugs).
+-- The returned 'FilePath' is the (possibly relative) path of
+-- the created file, which contains  6 random characters in between
+-- the prefix and suffix.
+mkstemps :: String -> String -> IO (FilePath, Handle)
+mkstemps prefix suffix = do
+  let template = prefix ++ "XXXXXX" ++ suffix
+      lenOfsuf :: CInt
+      lenOfsuf = fromIntegral $ length suffix
+  withFilePath template $ \ ptr -> do
+    fd <- throwErrnoIfMinus1 "mkstemps" (c_mkstemps ptr lenOfsuf)
+    name <- peekFilePath ptr
+    h <- fdToHandle (Fd fd)
+    return (name, h)
+
+foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
+  c_mkstemps :: CString -> CInt -> IO CInt
 #endif
 
 -- | Make a unique directory. The returned 'FilePath' is the path of the

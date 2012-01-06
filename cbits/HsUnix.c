@@ -135,6 +135,9 @@ int __hscore_mkstemp(char *filetemplate) {
 char *__hscore_mkdtemp(char *filetemplate) {
     return (mkdtemp(filetemplate));
 }
+int __hscore_mkstemps(char *filetemplate, int suffixlen) {
+    return (mkstemps(filetemplate, suffixlen));
+}
 #endif
 
 #if !defined(__MINGW32__) && !defined(irix_HOST_OS)
