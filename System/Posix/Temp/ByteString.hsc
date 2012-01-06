@@ -8,44 +8,26 @@
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org>
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 --
--- Maintainer  :  vs@foldr.org
+-- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- POSIX environment support
+-- POSIX temporary file and directory creation functions.
 --
 -----------------------------------------------------------------------------
 
 module System.Posix.Temp.ByteString (
-
-    mkstemp
-  , mkdtemp
-
-{- Not ported (yet?):
-    tmpfile: can we handle FILE*?
-    tmpnam: ISO C, should go in base?
-    tempname: dito
--}
-
-) where
+        mkstemp, mkdtemp
+    ) where
 
 #include "HsUnix.h"
 
-import System.IO        (
-     Handle,
-     openFile,
-     IOMode(..) )
+import System.IO ( Handle, openFile, IOMode(..) )
 import System.Posix.IO
 import System.Posix.Types
 import System.Posix.Directory (createDirectory)
 
-import Foreign.C hiding (
-     throwErrnoPath,
-     throwErrnoPathIf,
-     throwErrnoPathIf_,
-     throwErrnoPathIfNull,
-     throwErrnoPathIfMinus1,
-     throwErrnoPathIfMinus1_ )
+import Foreign.C
 
 import System.Posix.ByteString.FilePath
 
@@ -54,10 +36,13 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 
 
--- |'mkstemp' - make a unique filename and open it for
--- reading\/writing (only safe on GHC & Hugs).
--- The returned 'RawFilePath' is the (possibly relative) path of
--- the created file, which is padded with 6 random characters.
+-- | Make a unique filename and open it for reading\/writing. The returned
+-- 'RawFilePath' is the (possibly relative) path of the created file, which is
+-- padded with 6 random characters. The argument is the desired prefix of the
+-- filepath of the temporary file to be created.
+--
+-- If you aren't using GHC or Hugs then this function simply wraps mktemp and
+-- so shouldn't be considered safe.
 mkstemp :: ByteString -> IO (RawFilePath, Handle)
 mkstemp template' = do
   let template = template' `B.append` (BC.pack "XXXXXX")
@@ -73,9 +58,12 @@ mkstemp template' = do
   return (name, h)
 #endif
 
--- |'mkdtemp' - make a unique directory (only safe on GHC & Hugs).
--- The returned 'FilePath' is the path of the created directory,
--- which is padded with 6 random characters.
+-- | Make a unique directory. The returned 'RawFilePath' is the path of the
+-- created directory, which is padded with 6 random characters. The argument is
+-- the desired prefix of the filepath of the temporary directory to be created.
+--
+-- If you aren't using GHC or Hugs then this function simply wraps mktemp and
+-- so shouldn't be considered safe.
 mkdtemp :: ByteString -> IO RawFilePath
 mkdtemp template' = do
   let template = template' `B.append` (BC.pack "XXXXXX")
@@ -88,12 +76,10 @@ mkdtemp template' = do
   name <- mktemp template
   h <- createDirectory (BC.unpack name) (toEnum 0o700)
   return name
-#endif
 
-#if !defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)
--- |'mktemp' - make a unique file name
--- It is required that the template have six trailing \'X\'s.
--- This function should be considered deprecated
+-- | Make a unique file name It is required that the template have six trailing
+-- \'X\'s. This function should be considered deprecated.
+{-# WARNING mktemp "This function is unsafe; use mkstemp instead" #-}
 mktemp :: ByteString -> IO RawFilePath
 mktemp template = do
   withFilePath template $ \ ptr -> do
@@ -109,3 +95,4 @@ foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
 
 foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
   c_mkdtemp :: CString -> IO CString
+
