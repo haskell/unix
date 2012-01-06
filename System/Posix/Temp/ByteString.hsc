@@ -22,10 +22,12 @@ module System.Posix.Temp.ByteString (
 
 #include "HsUnix.h"
 
-import System.IO ( Handle, openFile, IOMode(..) )
+import System.IO
 import System.Posix.IO
 import System.Posix.Types
+#if !defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)
 import System.Posix.Directory (createDirectory)
+#endif
 
 import Foreign.C
 
@@ -69,7 +71,7 @@ mkdtemp template' = do
   let template = template' `B.append` (BC.pack "XXXXXX")
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
   withFilePath template $ \ ptr -> do
-    throwErrnoIfNull "mkdtemp" (c_mkdtemp ptr)
+    _ <- throwErrnoIfNull "mkdtemp" (c_mkdtemp ptr)
     name <- peekFilePath ptr
     return name
 #else

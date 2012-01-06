@@ -25,7 +25,9 @@ module System.Posix.Temp (
 import System.IO
 import System.Posix.IO
 import System.Posix.Types
+#if !defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)
 import System.Posix.Directory (createDirectory)
+#endif
 import Foreign.C
 
 #if __GLASGOW_HASKELL__ > 700
@@ -78,7 +80,7 @@ mkdtemp template' = do
   let template = template' ++ "XXXXXX"
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
   withFilePath template $ \ ptr -> do
-    throwErrnoIfNull "mkdtemp" (c_mkdtemp ptr)
+    _ <- throwErrnoIfNull "mkdtemp" (c_mkdtemp ptr)
     name <- peekFilePath ptr
     return name
 #else
