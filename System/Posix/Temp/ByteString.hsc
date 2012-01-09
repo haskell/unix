@@ -23,23 +23,27 @@ module System.Posix.Temp.ByteString (
 
 #include "HsUnix.h"
 
+#if !HAVE_MKSTEMPS
 import Control.Exception (throwIO)
-
-import System.IO
-import System.Posix.IO
-import System.Posix.Types
-#if !defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)
-import System.Posix.Directory (createDirectory)
 #endif
-
-import Foreign.C
-
-import System.Posix.ByteString.FilePath
-
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 
+import Foreign.C
+
+import System.IO
+import System.Posix.ByteString.FilePath
+#if !HAVE_MKDTEMP
+import System.Posix.Directory (createDirectory)
+#endif
+import System.Posix.IO
+import System.Posix.Types
+
+#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
+  c_mkstemp :: CString -> IO CInt
+#endif
 
 -- | Make a unique filename and open it for reading\/writing. The returned
 -- 'RawFilePath' is the (possibly relative) path of the created file, which is
@@ -63,9 +67,9 @@ mkstemp template' = do
   return (name, h)
 #endif
 
-#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
-foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
-  c_mkstemp :: CString -> IO CInt
+#if HAVE_MKSTEMPS
+foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
+  c_mkstemps :: CString -> CInt -> IO CInt
 #endif
 
 -- |'mkstemps' - make a unique filename with a given prefix and suffix 
@@ -77,8 +81,7 @@ mkstemps :: ByteString -> ByteString -> IO (RawFilePath, Handle)
 mkstemps prefix suffix = do
 #if HAVE_MKSTEMPS
   let template = prefix `B.append` (BC.pack "XXXXXX") `B.append` suffix
-      lenOfsuf :: CInt
-      lenOfsuf = fromIntegral $ B.length suffix
+      lenOfsuf = (fromIntegral $ B.length suffix) :: CInt
   withFilePath template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemps" (c_mkstemps ptr lenOfsuf)
     name <- peekFilePath ptr
@@ -88,9 +91,9 @@ mkstemps prefix suffix = do
   throwIO . userError $ "mkstemps: System does not have a mkstemp C function." 
 #endif
 
-#if HAVE_MKSTEMPS
-foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
-  c_mkstemps :: CString -> CInt -> IO CInt
+#if HAVE_MKDTEMP
+foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
+  c_mkdtemp :: CString -> IO CString
 #endif
 
 -- | Make a unique directory. The returned 'RawFilePath' is the path of the
@@ -113,12 +116,11 @@ mkdtemp template' = do
   return name
 #endif
 
-#if HAVE_MKDTEMP
-foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
-  c_mkdtemp :: CString -> IO CString
-#endif
-
 #if (!defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)) || !HAVE_MKDTEMP
+
+foreign import ccall unsafe "mktemp"
+  c_mktemp :: CString -> IO CString
+
 -- | Make a unique file name It is required that the template have six trailing
 -- \'X\'s. This function should be considered deprecated.
 {-# WARNING mktemp "This function is unsafe; use mkstemp instead" #-}
@@ -127,8 +129,5 @@ mktemp template = do
   withFilePath template $ \ ptr -> do
     ptr <- throwErrnoIfNull "mktemp" (c_mktemp ptr)
     peekFilePath ptr
-
-foreign import ccall unsafe "mktemp"
-  c_mktemp :: CString -> IO CString
 #endif
 
