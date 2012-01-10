@@ -23,9 +23,6 @@ module System.Posix.Temp (
 
 #include "HsUnix.h"
 
-#if !HAVE_MKSTEMPS
-import Control.Exception (throwIO)
-#endif
 import Foreign.C
 import System.IO
 #if !HAVE_MKDTEMP
@@ -93,8 +90,8 @@ foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
 -- If you are using as system that doesn't support the mkstemps glibc function
 -- (supported in glibc > 2.11) then this function simply throws an error.
 mkstemps :: String -> String -> IO (FilePath, Handle)
-mkstemps prefix suffix = do
 #if HAVE_MKSTEMPS
+mkstemps prefix suffix = do
   let template = prefix ++ "XXXXXX" ++ suffix
       lenOfsuf = (fromIntegral $ length suffix) :: CInt
   withFilePath template $ \ ptr -> do
@@ -103,7 +100,7 @@ mkstemps prefix suffix = do
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
-  throwIO . userError $ "mkstemps: System does not have a mkstemp C function." 
+mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform" 
 #endif
 
 #if HAVE_MKDTEMP

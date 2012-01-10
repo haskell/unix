@@ -23,9 +23,6 @@ module System.Posix.Temp.ByteString (
 
 #include "HsUnix.h"
 
-#if !HAVE_MKSTEMPS
-import Control.Exception (throwIO)
-#endif
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
@@ -78,8 +75,8 @@ foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
 -- the created file, which contains  6 random characters in between
 -- the prefix and suffix.
 mkstemps :: ByteString -> ByteString -> IO (RawFilePath, Handle)
-mkstemps prefix suffix = do
 #if HAVE_MKSTEMPS
+mkstemps prefix suffix = do
   let template = prefix `B.append` (BC.pack "XXXXXX") `B.append` suffix
       lenOfsuf = (fromIntegral $ B.length suffix) :: CInt
   withFilePath template $ \ ptr -> do
@@ -88,7 +85,7 @@ mkstemps prefix suffix = do
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
-  throwIO . userError $ "mkstemps: System does not have a mkstemp C function." 
+mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform" 
 #endif
 
 #if HAVE_MKDTEMP
