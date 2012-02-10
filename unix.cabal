@@ -77,7 +77,7 @@ Library
         System.Posix.Process.Common
         System.Posix.Terminal.Common
 
-    build-depends:      base >= 4.2 && < 4.5,
+    build-depends:      base >= 4.2 && < 4.6,
                         bytestring >= 0.9.2.0 && < 0.10
     extensions: CPP, ForeignFunctionInterface, EmptyDataDecls
     if impl(ghc >= 7.1)
