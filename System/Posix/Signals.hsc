@@ -612,13 +612,13 @@ foreign import ccall unsafe "sigfillset"
 foreign import ccall unsafe "sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
 #else
-foreign import ccall unsafe "__hscore_sigdelset"
+foreign import capi unsafe "signal.h sigdelset"
   c_sigdelset   :: Ptr CSigset -> CInt -> IO CInt
 
-foreign import ccall unsafe "__hscore_sigfillset"
+foreign import capi unsafe "signal.h sigfillset"
   c_sigfillset  :: Ptr CSigset -> IO CInt
 
-foreign import ccall unsafe "__hscore_sigismember"
+foreign import capi unsafe "signal.h sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
 #endif /* __HUGS__ */
 
