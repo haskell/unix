@@ -93,6 +93,9 @@
 #include <signal.h>
 #endif
 
+/* in Signals.c */
+extern HsInt nocldstop;
+
 extern char **environ;
 
 int __hsunix_wifexited   (int stat);
