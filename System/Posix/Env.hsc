@@ -17,25 +17,25 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Env (
-	getEnv
-	, getEnvDefault
-	, getEnvironmentPrim
-	, getEnvironment
-	, putEnv
-	, setEnv
-	, unsetEnv
+      getEnv
+    , getEnvDefault
+    , getEnvironmentPrim
+    , getEnvironment
+    , putEnv
+    , setEnv
+    , unsetEnv
 ) where
 
 #include "HsUnix.h"
 
-import Foreign.C.Error	( throwErrnoIfMinus1_ )
+import Foreign.C.Error (throwErrnoIfMinus1_)
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.Storable
-import Control.Monad	( liftM )
-import Data.Maybe	( fromMaybe )
+import Control.Monad (liftM)
+import Data.Maybe (fromMaybe)
 #if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)
 #elif __GLASGOW_HASKELL__ > 611
@@ -140,7 +140,7 @@ setEnv key value ovrwrt = do
   withFilePath key $ \ keyP ->
     withFilePath value $ \ valueP ->
       throwErrnoIfMinus1_ "setenv" $
-	c_setenv keyP valueP (fromIntegral (fromEnum ovrwrt))
+        c_setenv keyP valueP (fromIntegral (fromEnum ovrwrt))
 
 foreign import ccall unsafe "setenv"
    c_setenv :: CString -> CString -> CInt -> IO CInt
