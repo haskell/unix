@@ -318,12 +318,15 @@ foreign import ccall safe "waitpid"
   c_waitpid :: CPid -> Ptr CInt -> CInt -> IO CPid
 
 -- | @'getGroupProcessStatus' blk stopped pgid@ calls @waitpid@,
---   returning @'Just' (pid, tc)@, the 'ProcessID' and
---   'ProcessStatus' for any process in group @pgid@ if one is
---   available, 'Nothing' otherwise.  If @blk@ is 'False', then
---   @WNOHANG@ is set in the options for @waitpid@, otherwise not.
---   If @stopped@ is 'True', then @WUNTRACED@ is set in the
---   options for @waitpid@, otherwise not.
+--   returning @'Just' (pid, tc)@, the 'ProcessID' and 'ProcessStatus'
+--   for any process in group @pgid@ if one is available, or 'Nothing'
+--   if there are child processes but none have exited.  If there are
+--   no child processes, then 'getGroupProcessStatus' raises an
+--   'isDoesNotExistError' exception.
+--
+--   If @blk@ is 'False', then @WNOHANG@ is set in the options for
+--   @waitpid@, otherwise not.  If @stopped@ is 'True', then
+--   @WUNTRACED@ is set in the options for @waitpid@, otherwise not.
 getGroupProcessStatus :: Bool
                       -> Bool
                       -> ProcessGroupID
@@ -336,10 +339,15 @@ getGroupProcessStatus block stopped pgid =
       0  -> return Nothing
       _  -> do ps <- readWaitStatus wstatp
 	       return (Just (pid, ps))
+
 -- | @'getAnyProcessStatus' blk stopped@ calls @waitpid@, returning
 --   @'Just' (pid, tc)@, the 'ProcessID' and 'ProcessStatus' for any
---   child process if one is available, 'Nothing' otherwise.  If
---   @blk@ is 'False', then @WNOHANG@ is set in the options for
+--   child process if a child process has exited, or 'Nothing' if
+--   there are child processes but none have exited.  If there are no
+--   child processes, then 'getAnyProcessStatus' raises an
+--   'isDoesNotExistError' exception.
+--
+--   If @blk@ is 'False', then @WNOHANG@ is set in the options for
 --   @waitpid@, otherwise not.  If @stopped@ is 'True', then
 --   @WUNTRACED@ is set in the options for @waitpid@, otherwise not.
 getAnyProcessStatus :: Bool -> Bool -> IO (Maybe (ProcessID, ProcessStatus))
