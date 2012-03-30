@@ -21,9 +21,11 @@ module System.Posix.Env (
     , getEnvDefault
     , getEnvironmentPrim
     , getEnvironment
+    , setEnvironment
     , putEnv
     , setEnv
     , unsetEnv
+    , clearEnv
 ) where
 
 #include "HsUnix.h"
@@ -34,7 +36,7 @@ import Foreign.C.String
 import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.Storable
-import Control.Monad (liftM)
+import Control.Monad (liftM, forM_, void)
 import Data.Maybe (fromMaybe)
 #if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)
@@ -73,8 +75,12 @@ foreign import ccall unsafe "getenv"
 getEnvironmentPrim :: IO [String]
 getEnvironmentPrim = do
   c_environ <- getCEnviron
-  arr <- peekArray0 nullPtr c_environ
-  mapM peekFilePath arr
+  -- environ can be NULL
+  if c_environ == nullPtr
+    then return []
+    else do
+      arr <- peekArray0 nullPtr c_environ
+      mapM peekFilePath arr
 
 getCEnviron :: IO (Ptr CString)
 #if darwin_HOST_OS
@@ -101,6 +107,15 @@ getEnvironment = do
  where
    dropEq (x,'=':ys) = (x,ys)
    dropEq (x,_)      = error $ "getEnvironment: insane variable " ++ x
+
+-- |'setEnvironment' resets the entire environment to the given list of
+-- @(key,value)@ pairs.
+
+setEnvironment :: [(String,String)] -> IO ()
+setEnvironment env = do
+  clearEnv
+  forM_ env $ \(key,value) ->
+    setEnv key value True {-overwrite-}
 
 -- |The 'unsetEnv' function deletes all instances of the variable name
 -- from the environment.
@@ -152,3 +167,10 @@ setEnv key value False = do
     Just _  -> return ()
     Nothing -> putEnv (key++"="++value)
 #endif
+
+-- |The 'clearEnv' function clears the environment of all name-value pairs.
+clearEnv :: IO ()
+clearEnv = void c_clearenv
+
+foreign import ccall unsafe "clearenv"
+  c_clearenv :: IO Int
