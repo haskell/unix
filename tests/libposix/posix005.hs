@@ -4,8 +4,8 @@ import System.Posix.Env
 
 main = do
     hSetBuffering stdout NoBuffering
-    term <- getEnvVar "TERM"
-    putStrLn term
+    term <- getEnv "TERM"
+    maybe (return ()) putStrLn term
     setEnvironment [("one","1"),("two","2")]
     getEnvironment >>= print
     setEnv "foo" "bar" True
@@ -16,6 +16,6 @@ main = do
     getEnvironment >>= print
     unsetEnv "foo"
     getEnvironment >>= print
-    setEnvironment []
+    clearEnv
     getEnvironment >>= print
 
