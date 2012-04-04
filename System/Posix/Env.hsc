@@ -36,7 +36,7 @@ import Foreign.C.String
 import Foreign.Marshal.Array
 import Foreign.Ptr
 import Foreign.Storable
-import Control.Monad (liftM, forM_, void)
+import Control.Monad
 import Data.Maybe (fromMaybe)
 #if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)
@@ -83,6 +83,7 @@ getEnvironmentPrim = do
       mapM peekFilePath arr
 
 getCEnviron :: IO (Ptr CString)
+
 #if darwin_HOST_OS
 -- You should not access _environ directly on Darwin in a bundle/shared library.
 -- See #2458 and http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man7/environ.7.html
@@ -170,7 +171,15 @@ setEnv key value False = do
 
 -- |The 'clearEnv' function clears the environment of all name-value pairs.
 clearEnv :: IO ()
+#if HAVE_CLEARENV
 clearEnv = void c_clearenv
 
 foreign import ccall unsafe "clearenv"
   c_clearenv :: IO Int
+#else
+-- Fallback to 'environ[0] = NULL'.
+clearEnv = do
+  c_environ <- getCEnviron
+  unless (c_environ == nullPtr) $
+    poke c_environ nullPtr
+#endif

@@ -28,7 +28,7 @@ AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
 AC_CHECK_FUNCS([getpwent getgrent])
-AC_CHECK_FUNCS([lchown setenv sysconf unsetenv])
+AC_CHECK_FUNCS([lchown setenv sysconf unsetenv clearenv])
 AC_CHECK_FUNCS([nanosleep])
 AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
