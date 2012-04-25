@@ -29,7 +29,7 @@ module System.Posix.ByteString.FilePath (
      throwErrnoPathIfMinus1_
   ) where
 
-import Foreign
+import Foreign hiding ( void )
 import Foreign.C hiding (
      throwErrnoPath,
      throwErrnoPathIf,
@@ -38,6 +38,7 @@ import Foreign.C hiding (
      throwErrnoPathIfMinus1,
      throwErrnoPathIfMinus1_ )
 
+import Control.Monad
 import Data.ByteString
 import Data.ByteString.Char8 as BC
 import Prelude hiding (FilePath)

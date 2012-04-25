@@ -28,8 +28,9 @@ module System.Posix.Error (
         throwErrnoPathIfMinus1Retry_
   ) where
 
-import Foreign
+import Foreign hiding (void)
 import Foreign.C
+import Control.Monad
 
 throwErrnoPathIfMinus1Retry :: (Eq a, Num a)
                             => String -> FilePath -> IO a -> IO a
