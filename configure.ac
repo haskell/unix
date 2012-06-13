@@ -34,6 +34,22 @@ AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
 AC_CHECK_FUNCS([readdir_r])
 
+AC_CHECK_MEMBERS([struct stat.st_atim])
+AC_CHECK_MEMBERS([struct stat.st_mtim])
+AC_CHECK_MEMBERS([struct stat.st_ctim])
+AC_CHECK_MEMBERS([struct stat.st_atimespec])
+AC_CHECK_MEMBERS([struct stat.st_mtimespec])
+AC_CHECK_MEMBERS([struct stat.st_ctimespec])
+AC_CHECK_MEMBERS([struct stat.st_atimensec])
+AC_CHECK_MEMBERS([struct stat.st_mtimensec])
+AC_CHECK_MEMBERS([struct stat.st_ctimensec])
+AC_CHECK_MEMBERS([struct stat.st_atime_n])
+AC_CHECK_MEMBERS([struct stat.st_mtime_n])
+AC_CHECK_MEMBERS([struct stat.st_ctime_n])
+AC_CHECK_MEMBERS([struct stat.st_uatime])
+AC_CHECK_MEMBERS([struct stat.st_umtime])
+AC_CHECK_MEMBERS([struct stat.st_uctime])
+
 # Additional temp functions
 AC_CHECK_FUNCS([mkstemps mkdtemp])
 

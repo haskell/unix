@@ -82,7 +82,7 @@ getStatus f = do
 
   return (fs, ls)
 
--- Yay for 17-element tuples!
+-- Yay for 20-element tuples!
 statusElements fs = (,)
   (deviceID fs
   ,fileMode fs
@@ -92,8 +92,11 @@ statusElements fs = (,)
   ,specialDeviceID fs
   ,fileSize fs
   ,accessTime fs
+  ,accessTimeHiRes fs
   ,modificationTime fs
+  ,modificationTimeHiRes fs
   ,statusChangeTime fs
+  ,statusChangeTimeHiRes fs
   )
   (isBlockDevice fs
   ,isCharacterDevice fs

@@ -57,6 +57,7 @@ module System.Posix.Files (
     deviceID, fileID, fileMode, linkCount, fileOwner, fileGroup,
     specialDeviceID, fileSize, accessTime, modificationTime,
     statusChangeTime,
+    accessTimeHiRes, modificationTimeHiRes, statusChangeTimeHiRes,
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
