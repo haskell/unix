@@ -95,18 +95,28 @@ foreign import ccall unsafe "uname"
 -- | Sleep for the specified duration (in seconds).  Returns the time remaining
 -- (if the sleep was interrupted by a signal, for example).
 --
--- GHC Note: the comment for 'usleep' also applies here.
+-- /GHC Note/: 'Control.Concurrent.threadDelay' is a better choice.  Since GHC
+-- uses signals for its internal clock, a call to 'sleep' will usually be
+-- interrupted immediately.  That makes 'sleep' unusable in a program compiled
+-- with GHC, unless the RTS timer is disabled (with @+RTS -V0@).  Furthermore,
+-- without the @-threaded@ option, 'sleep' will block all other user threads.
+-- Even with the @-threaded@ option, 'sleep' requires a full OS thread to
+-- itself.  'Control.Concurrent.threadDelay' has none of these shortcomings.
 --
 sleep :: Int -> IO Int
 sleep 0 = return 0
 sleep secs = do r <- c_sleep (fromIntegral secs); return (fromIntegral r)
+
+#ifdef __GLASGOW_HASKELL__
+{-# WARNING sleep "This function has several shortcomings (see documentation). Please consider using Control.Concurrent.threadDelay instead." #-}
+#endif
 
 foreign import ccall safe "sleep"
   c_sleep :: CUInt -> IO CUInt
 
 -- | Sleep for the specified duration (in microseconds).
 --
--- GHC Note: 'Control.Concurrent.threadDelay' is a better choice.
+-- /GHC Note/: 'Control.Concurrent.threadDelay' is a better choice.
 -- Without the @-threaded@ option, 'usleep' will block all other user
 -- threads.  Even with the @-threaded@ option, 'usleep' requires a
 -- full OS thread to itself.  'Control.Concurrent.threadDelay' has
@@ -134,6 +144,7 @@ foreign import ccall safe "usleep"
 
 -- | Sleep for the specified duration (in nanoseconds)
 --
+-- /GHC Note/: the comment for 'usleep' also applies here.
 nanosleep :: Integer -> IO ()
 #ifndef HAVE_NANOSLEEP
 nanosleep = error "nanosleep: not available on this platform"
