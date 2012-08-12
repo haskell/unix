@@ -55,6 +55,7 @@ module System.Posix.Files.Common (
     specialDeviceID, fileSize, accessTime, modificationTime,
     statusChangeTime,
     accessTimeHiRes, modificationTimeHiRes, statusChangeTimeHiRes,
+    setFdTimesHiRes, touchFd,
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
@@ -66,6 +67,19 @@ module System.Posix.Files.Common (
 
     -- * Find system-specific limits for a file
     PathVar(..), getFdPathVar, pathVarConst,
+
+    -- * Low level types and functions
+#ifdef HAVE_UTIMENSAT
+    CTimeSpec(..),
+    toCTimeSpec,
+    c_utimensat,
+#endif
+    CTimeVal(..),
+    toCTimeVal,
+    c_utimes,
+#ifdef HAVE_LUTIMES
+    c_lutimes,
+#endif
   ) where
 
 import System.Posix.Error
@@ -378,6 +392,105 @@ getFdStatus (Fd fd) = do
   withForeignPtr fp $ \p ->
     throwErrnoIfMinus1_ "getFdStatus" (c_fstat fd p)
   return (FileStatus fp)
+
+-- -----------------------------------------------------------------------------
+-- Setting file times
+
+#if HAVE_UTIMENSAT || HAVE_FUTIMENS
+data CTimeSpec = CTimeSpec EpochTime CLong
+
+instance Storable CTimeSpec where
+    sizeOf    _ = #size struct timespec
+    alignment _ = alignment (undefined :: CInt)
+    poke p (CTimeSpec sec nsec) = do
+        (#poke struct timespec, tv_sec ) p sec
+        (#poke struct timespec, tv_nsec) p nsec
+    peek p = do
+        sec  <- #{peek struct timespec, tv_sec } p
+        nsec <- #{peek struct timespec, tv_nsec} p
+        return $ CTimeSpec sec nsec
+
+toCTimeSpec :: POSIXTime -> CTimeSpec
+toCTimeSpec t = CTimeSpec (CTime sec) (truncate $ 10^9 * frac)
+  where
+    (sec, frac) = if (frac' < 0) then (sec' - 1, frac' + 1) else (sec', frac')
+    (sec', frac') = properFraction $ toRational t
+#endif
+
+#ifdef HAVE_UTIMENSAT
+foreign import ccall unsafe "utimensat"
+    c_utimensat :: CInt -> CString -> Ptr CTimeSpec -> CInt -> IO CInt
+#endif
+
+#if HAVE_FUTIMENS
+foreign import ccall unsafe "futimens"
+    c_futimens :: CInt -> Ptr CTimeSpec -> IO CInt
+#endif
+
+data CTimeVal = CTimeVal CLong CLong
+
+instance Storable CTimeVal where
+    sizeOf    _ = #size struct timeval
+    alignment _ = alignment (undefined :: CInt)
+    poke p (CTimeVal sec usec) = do
+        (#poke struct timeval, tv_sec ) p sec
+        (#poke struct timeval, tv_usec) p usec
+    peek p = do
+        sec  <- #{peek struct timeval, tv_sec } p
+        usec <- #{peek struct timeval, tv_usec} p
+        return $ CTimeVal sec usec
+
+toCTimeVal :: POSIXTime -> CTimeVal
+toCTimeVal t = CTimeVal sec (truncate $ 10^6 * frac)
+  where
+    (sec, frac) = if (frac' < 0) then (sec' - 1, frac' + 1) else (sec', frac')
+    (sec', frac') = properFraction $ toRational t
+
+foreign import ccall unsafe "utimes"
+    c_utimes :: CString -> Ptr CTimeVal -> IO CInt
+
+#ifdef HAVE_LUTIMES
+foreign import ccall unsafe "lutimes"
+    c_lutimes :: CString -> Ptr CTimeVal -> IO CInt
+#endif
+
+#if HAVE_FUTIMES
+foreign import ccall unsafe "futimes"
+    c_futimes :: CInt -> Ptr CTimeVal -> IO CInt
+#endif
+
+-- | Like 'setFileTimesHiRes' but uses a file descriptor instead of a path.
+-- This operation is not supported on all platforms. On these platforms,
+-- this function will raise an exception.
+--
+-- Note: calls @futimens@ or @futimes@.
+setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()
+#if HAVE_FUTIMENS
+setFdTimesHiRes (Fd fd) atime mtime =
+  withArray [toCTimeSpec atime, toCTimeSpec mtime] $ \times ->
+    throwErrnoIfMinus1_ "setFdTimesHiRes" (c_futimens fd times)
+#elif HAVE_FUTIMES
+setFdTimesHiRes (Fd fd) atime mtime =
+  withArray [toCTimeVal atime, toCTimeVal mtime] $ \times ->
+    throwErrnoIfMinus1_ "setFdTimesHiRes" (c_futimes fd times)
+#else
+setFdTimesHiRes =
+  error "setSymbolicLinkTimesHiRes: not available on this platform"
+#endif
+
+-- | Like 'touchFile' but uses a file descriptor instead of a path.
+-- This operation is not supported on all platforms. On these platforms,
+-- this function will raise an exception.
+--
+-- Note: calls @futimes@.
+touchFd :: Fd -> IO ()
+#if HAVE_FUTIMES
+touchFd (Fd fd) =
+  throwErrnoIfMinus1_ "touchFd" (c_futimes fd nullPtr)
+#else
+touchFd =
+  error "touchFd: not available on this platform"
+#endif
 
 -- -----------------------------------------------------------------------------
 -- fchown()

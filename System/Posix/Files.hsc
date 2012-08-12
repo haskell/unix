@@ -81,7 +81,9 @@ module System.Posix.Files (
 #endif
 
     -- * Changing file timestamps
-    setFileTimes, touchFile,
+    setFileTimes, setFileTimesHiRes,
+    setFdTimesHiRes, setSymbolicLinkTimesHiRes,
+    touchFile, touchFd, touchSymbolicLink,
 
     -- * Setting file sizes
     setFileSize, setFdSize,
@@ -119,6 +121,8 @@ peekFilePath = peekCString
 peekFilePathLen :: CStringLen -> IO FilePath
 peekFilePathLen = peekCStringLen
 #endif
+
+import Data.Time.Clock.POSIX
 
 -- -----------------------------------------------------------------------------
 -- chmod()
@@ -343,7 +347,7 @@ foreign import ccall unsafe "lchown"
 #endif
 
 -- -----------------------------------------------------------------------------
--- utime()
+-- Setting file times
 
 -- | @setFileTimes path atime mtime@ sets the access and modification times
 -- associated with file @path@ to @atime@ and @mtime@, respectively.
@@ -357,6 +361,46 @@ setFileTimes name atime mtime = do
      (#poke struct utimbuf, modtime) p mtime
      throwErrnoPathIfMinus1_ "setFileTimes" name (c_utime s p)
 
+-- | Like 'setFileTimes' but timestamps can have sub-second resolution.
+--
+-- Note: calls @utimensat@ or @utimes@.
+setFileTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()
+#ifdef HAVE_UTIMENSAT
+setFileTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    withArray [toCTimeSpec atime, toCTimeSpec mtime] $ \times ->
+      throwErrnoPathIfMinus1_ "setFileTimesHiRes" name $
+        c_utimensat (#const AT_FDCWD) s times 0
+#else
+setFileTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    withArray [toCTimeVal atime, toCTimeVal mtime] $ \times ->
+      throwErrnoPathIfMinus1_ "setFileTimesHiRes" name (c_utimes s times)
+#endif
+
+-- | Like 'setFileTimesHiRes' but does not follow symbolic links.
+-- This operation is not supported on all platforms. On these platforms,
+-- this function will raise an exception.
+--
+-- Note: calls @utimensat@ or @lutimes@.
+setSymbolicLinkTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()
+#if HAVE_UTIMENSAT
+setSymbolicLinkTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    withArray [toCTimeSpec atime, toCTimeSpec mtime] $ \times ->
+      throwErrnoPathIfMinus1_ "setSymbolicLinkTimesHiRes" name $
+        c_utimensat (#const AT_FDCWD) s times (#const AT_SYMLINK_NOFOLLOW)
+#elif HAVE_LUTIMES
+setSymbolicLinkTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    withArray [toCTimeVal atime, toCTimeVal mtime] $ \times ->
+      throwErrnoPathIfMinus1_ "setSymbolicLinkTimesHiRes" name $
+        c_lutimes s times
+#else
+setSymbolicLinkTimesHiRes =
+  error "setSymbolicLinkTimesHiRes: not available on this platform"
+#endif
+
 -- | @touchFile path@ sets the access and modification times associated with
 -- file @path@ to the current time.
 --
@@ -365,6 +409,21 @@ touchFile :: FilePath -> IO ()
 touchFile name = do
   withFilePath name $ \s ->
    throwErrnoPathIfMinus1_ "touchFile" name (c_utime s nullPtr)
+
+-- | Like 'touchFile' but does not follow symbolic links.
+-- This operation is not supported on all platforms. On these platforms,
+-- this function will raise an exception.
+--
+-- Note: calls @lutimes@.
+touchSymbolicLink :: FilePath -> IO ()
+#if HAVE_LUTIMES
+touchSymbolicLink name =
+  withFilePath name $ \s ->
+    throwErrnoPathIfMinus1_ "touchSymbolicLink" name (c_lutimes s nullPtr)
+#else
+touchSymbolicLink =
+  error "touchSymbolicLink: not available on this platform"
+#endif
 
 -- -----------------------------------------------------------------------------
 -- Setting file sizes

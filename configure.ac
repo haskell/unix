@@ -50,6 +50,10 @@ AC_CHECK_MEMBERS([struct stat.st_uatime])
 AC_CHECK_MEMBERS([struct stat.st_umtime])
 AC_CHECK_MEMBERS([struct stat.st_uctime])
 
+# Functions for changing file timestamps
+AC_CHECK_FUNCS([utimensat futimens])
+AC_CHECK_FUNCS([lutimes futimes])
+
 # Additional temp functions
 AC_CHECK_FUNCS([mkstemps mkdtemp])
 
