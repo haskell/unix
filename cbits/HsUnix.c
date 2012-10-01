@@ -14,6 +14,7 @@ int __hsunix_wifsignaled (int stat) { return WIFSIGNALED(stat); }
 int __hsunix_wtermsig    (int stat) { return WTERMSIG(stat); }
 int __hsunix_wifstopped  (int stat) { return WIFSTOPPED(stat); }
 int __hsunix_wstopsig    (int stat) { return WSTOPSIG(stat); }
+int __hsunix_wcoredump   (int stat) { return WCOREDUMP(stat); }
 
 #ifdef HAVE_RTLDNEXT
 void *__hsunix_rtldNext (void) {return RTLD_NEXT;} 
