@@ -38,6 +38,10 @@ import Foreign.Ptr
 import Foreign.Storable
 import Control.Monad
 import Data.Maybe (fromMaybe)
+#ifdef __GLASGOW_HASKELL__
+import GHC.IO.Encoding (getFileSystemEncoding)
+import qualified GHC.Foreign as GHC
+#endif
 #if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)
 #elif __GLASGOW_HASKELL__ > 611
@@ -51,6 +55,13 @@ withFilePath = withCString
 
 peekFilePath :: CString -> IO FilePath
 peekFilePath = peekCString
+#endif
+
+newFilePath :: String -> IO CString
+#ifdef __GLASGOW_HASKELL__
+newFilePath s = getFileSystemEncoding >>= (`GHC.newCString` s)
+#else
+newFilePath = newCString
 #endif
 
 -- |'getEnv' looks up a variable in the environment.
@@ -137,7 +148,11 @@ unsetEnv name = putEnv (name ++ "=")
 -- and is equivalent to @setEnv(key,value,True{-overwrite-})@.
 
 putEnv :: String -> IO ()
-putEnv keyvalue = withFilePath keyvalue $ \s ->
+putEnv keyvalue = newFilePath keyvalue >>= \s ->
+  -- IMPORTANT: Do not free `s` after calling putenv!
+  --
+  -- According to SUSv2, the string passed to putenv becomes part of the
+  -- enviroment.
   throwErrnoIfMinus1_ "putenv" (c_putenv s)
 
 foreign import ccall unsafe "putenv"
