@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-#if __GLASGOW_HASKELL__ >= 701
+#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
 
@@ -45,21 +45,7 @@ import Foreign
 import Foreign.C
 
 import System.Posix.Directory.Common
-
-#if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)
-#elif __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals (withFilePath)
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-#endif
 
 -- | @createDirectory dir mode@ calls @mkdir@ to 
 --   create a new directory, @dir@, with permissions based on

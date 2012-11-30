@@ -1,10 +1,6 @@
 import System.Posix.Signals
 
-#if __GLASGOW_HASKELL__ >= 603
 #include "ghcconfig.h"
-#else
-#include "config.h"
-#endif
 
 main = do
   print (testMembers emptySignalSet)

@@ -1,7 +1,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 {-# OPTIONS_GHC -XRecordWildCards #-}
-#if __GLASGOW_HASKELL__ >= 701
+#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -72,7 +72,6 @@ import Foreign.C
 import Data.Bits
 
 #ifdef __GLASGOW_HASKELL__
-#if __GLASGOW_HASKELL__ >= 611
 import GHC.IO.Handle
 import GHC.IO.Handle.Internals
 import GHC.IO.Handle.Types
@@ -80,11 +79,6 @@ import qualified GHC.IO.FD as FD
 import qualified GHC.IO.Handle.FD as FD
 import GHC.IO.Exception
 import Data.Typeable (cast)
-#else
-import GHC.IOBase
-import GHC.Handle hiding (fdToHandle)
-import qualified GHC.Handle
-#endif
 #endif
 
 #ifdef __HUGS__
@@ -226,7 +220,6 @@ handleToFd :: Handle -> IO Fd
 fdToHandle :: Fd -> IO Handle
 
 #ifdef __GLASGOW_HASKELL__
-#if __GLASGOW_HASKELL__ >= 611
 handleToFd h@(FileHandle _ m) = do
   withHandle' "handleToFd" h m $ handleToFd' h
 handleToFd h@(DuplexHandle _ r w) = do
@@ -251,23 +244,6 @@ handleToFd' h h_@Handle__{haType=_,..} = do
      return (Handle__{haType=ClosedHandle,..}, Fd (FD.fdFD fd))
 
 fdToHandle fd = FD.fdToHandle (fromIntegral fd)
-
-#else
-
-handleToFd h = withHandle "handleToFd" h $ \ h_ -> do
-  -- converting a Handle into an Fd effectively means
-  -- letting go of the Handle; it is put into a closed
-  -- state as a result. 
-  let fd = haFD h_
-  flushWriteBufferOnly h_
-  unlockFile (fromIntegral fd)
-    -- setting the Handle's fd to (-1) as well as its 'type'
-    -- to closed, is enough to disable the finalizer that
-    -- eventually is run on the Handle.
-  return (h_{haFD= (-1),haType=ClosedHandle}, Fd (fromIntegral fd))
-
-fdToHandle fd = GHC.Handle.fdToHandle (fromIntegral fd)
-#endif
 #endif
 
 #ifdef __HUGS__

@@ -1,5 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-#if __GLASGOW_HASKELL__ >= 701
+#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -62,14 +62,7 @@ where
 import System.Posix.DynamicLinker
 import System.Posix.DynamicLinker.Common
 import Foreign.Ptr      ( Ptr, nullPtr, FunPtr )
-#if __GLASGOW_HASKELL__ > 611
 import System.Posix.Internals ( withFilePath )
-#else
-import Foreign.C.String	( withCString )
-
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
 
 unModule              :: Module -> (Ptr ())
 unModule (Module adr)  = adr

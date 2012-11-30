@@ -1,4 +1,4 @@
-#if __GLASGOW_HASKELL__ >= 701
+#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -56,12 +56,7 @@ import System.Posix.DynamicLinker.Prim
 import Control.Exception        ( bracket )
 import Control.Monad	( liftM )
 import Foreign
-#if __GLASGOW_HASKELL__ > 611
 import System.Posix.Internals ( withFilePath )
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
 
 dlopen :: FilePath -> [RTLDFlags] -> IO DL
 dlopen path flags = do

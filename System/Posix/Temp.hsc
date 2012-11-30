@@ -1,5 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-#if __GLASGOW_HASKELL__ >= 701
+#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -30,23 +30,7 @@ import System.Posix.Directory (createDirectory)
 #endif
 import System.Posix.IO
 import System.Posix.Types
-
-#if __GLASGOW_HASKELL__ > 700
 import System.Posix.Internals (withFilePath, peekFilePath)
-
-#elif __GLASGOW_HASKELL__ > 611
-import System.Posix.Internals (withFilePath)
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-
-peekFilePath :: CString -> IO FilePath
-peekFilePath = peekCString
-#endif
 
 #if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
 foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"

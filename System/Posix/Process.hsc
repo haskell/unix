@@ -1,5 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
-#if __GLASGOW_HASKELL__ >= 701
+#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -74,13 +74,7 @@ import Foreign
 import Foreign.C
 import System.Posix.Process.Internals
 import System.Posix.Process.Common
-
-#if __GLASGOW_HASKELL__ > 611
 import System.Posix.Internals ( withFilePath )
-#else
-withFilePath :: FilePath -> (CString -> IO a) -> IO a
-withFilePath = withCString
-#endif
 
 #ifdef __HUGS__
 {-# CFILES cbits/HsUnix.c  #-}
