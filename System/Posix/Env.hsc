@@ -38,7 +38,7 @@ import Foreign.Ptr
 import Foreign.Storable
 import Control.Monad
 import Data.Maybe (fromMaybe)
-import System.Posix.Internals (withFilePath, peekFilePath)
+import System.Posix.Internals
 
 -- |'getEnv' looks up a variable in the environment.
 
@@ -124,8 +124,11 @@ unsetEnv name = putEnv (name ++ "=")
 -- and is equivalent to @setEnv(key,value,True{-overwrite-})@.
 
 putEnv :: String -> IO ()
-putEnv keyvalue = withFilePath keyvalue $ \s ->
-  throwErrnoIfMinus1_ "putenv" (c_putenv s)
+putEnv keyvalue = do s <- newFilePath keyvalue
+                     -- Do not free `s` after calling putenv.
+                     -- According to SUSv2, the string passed to putenv
+                     -- becomes part of the enviroment. #7342
+                     throwErrnoIfMinus1_ "putenv" (c_putenv s)
 
 foreign import ccall unsafe "putenv"
    c_putenv :: CString -> IO CInt
