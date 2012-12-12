@@ -10,6 +10,7 @@
 #endif
 
 #if !(defined(_MSC_VER) || defined(__MINGW32__) || defined(_WIN32)) /* to the end */
+#ifndef __QNXNTO__
 
 /* Evidently non-Posix. */
 /* #include "PosixSource.h" */
@@ -157,6 +158,7 @@ execvpe(char *name, char *const argv[], char **envp)
 	free(buf);
     return (-1);
 }
+#endif
 
 
 /* Copied verbatim from ghc/lib/std/cbits/system.c. */
