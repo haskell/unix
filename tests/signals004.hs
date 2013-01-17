@@ -1,4 +1,5 @@
 import Control.Concurrent
+import System.Info
 import System.Posix
 import Control.Monad
 
@@ -8,7 +9,11 @@ import Control.Monad
 installers = 50
 -- too many signals overflows the IO manager's pipe buffer, this seems
 -- to be the most we can get away with:
-sigs = 400
+sigs = if os == "darwin"
+       then 30 -- Otherwise we get "lost signal due to full pipe: 30"
+               -- errors after the timeout kills the hung process
+               -- for the threaded{1,2} ways
+       else 400
 
 main = do
   c <- newChan
