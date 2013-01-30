@@ -29,8 +29,12 @@ module System.Posix.Directory.ByteString (
    rewindDirStream,   
    closeDirStream,
    DirStreamOffset,
+#ifdef HAVE_TELLDIR
    tellDirStream,
+#endif
+#ifdef HAVE_SEEKDIR
    seekDirStream,
+#endif
 
    -- * The working dirctory
    getWorkingDirectory,
