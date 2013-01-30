@@ -50,6 +50,8 @@ AC_CHECK_MEMBERS([struct stat.st_uatime])
 AC_CHECK_MEMBERS([struct stat.st_umtime])
 AC_CHECK_MEMBERS([struct stat.st_uctime])
 
+AC_CHECK_MEMBER([struct passwd.pw_gecos], [], [AC_DEFINE([HAVE_NO_PASSWD_PW_GECOS],[],[Ignore the pw_gecos member of passwd where it does not exist])], [[#include <pwd.h>]])
+
 # Functions for changing file timestamps
 AC_CHECK_FUNCS([utimensat futimens])
 AC_CHECK_FUNCS([lutimes futimes])

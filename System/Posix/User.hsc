@@ -453,7 +453,11 @@ unpackUserEntry ptr = do
    passwd <- (#peek struct passwd, pw_passwd) ptr >>= peekCAString
    uid    <- (#peek struct passwd, pw_uid)    ptr
    gid    <- (#peek struct passwd, pw_gid)    ptr
+#ifdef HAVE_NO_PASSWD_PW_GECOS
+   gecos  <- return ""  -- pw_gecos does not exist on android
+#else
    gecos  <- (#peek struct passwd, pw_gecos)  ptr >>= peekCAString
+#endif
    dir    <- (#peek struct passwd, pw_dir)    ptr >>= peekCAString
    shell  <- (#peek struct passwd, pw_shell)  ptr >>= peekCAString
    return (UserEntry name passwd uid gid gecos dir shell)
