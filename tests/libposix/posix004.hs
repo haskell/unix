@@ -13,7 +13,7 @@ test1 = do
     forkProcess $ raiseSignal floatingPointException
     Just (pid, tc) <- getAnyProcessStatus True False
     case tc of
-        Terminated sig | sig == floatingPointException -> return ()
+        Terminated sig _ | sig == floatingPointException -> return ()
         _ -> error "unexpected termination cause"
 
 test2 = do
@@ -38,7 +38,7 @@ test4 = do
             signalProcess killProcess pid
             Just (pid, tc) <- getAnyProcessStatus True True
             case tc of
-                Terminated sig | sig == killProcess -> return ()
+                Terminated sig _ | sig == killProcess -> return ()
                 _ -> error "unexpected termination cause (5)"
         _ -> error "unexpected termination cause (4)"
 
