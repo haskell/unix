@@ -1,26 +1,23 @@
-if config.platform == 'i386-unknown-mingw32':
-   conf = skip
-else:
-   conf = normal
 
-test('signals001',  conf, compile_and_run, ['-package unix -cpp'])
-test('signals002',  compose(only_compiler_types(['ghc']), conf),
+test('signals001',  normal, compile_and_run, ['-package unix -cpp'])
+test('signals002',  only_compiler_types(['ghc']),
 	compile_and_run, ['-package unix'])
-test('fileexist01', conf, compile_and_run, ['-package unix'])
+test('fileexist01', normal, compile_and_run, ['-package unix'])
 test('forkprocess01', [ only_compiler_types(['ghc']),
-                        extra_ways(['threaded1_ls']), # test #4512
-                        conf ],
+                        extra_ways(['threaded1_ls']) ], # test #4512
         compile_and_run, ['-package unix'])
 
 #
 # user001 may fail due to this bug in glibc:
 #   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=466647
 #
-test('user001', conf, compile_and_run, ['-package unix'])
-test('resourceLimit', conf, compile_and_run, ['-package unix'])
+test('user001', normal, compile_and_run, ['-package unix'])
+test('resourceLimit', normal, compile_and_run, ['-package unix'])
 
 if config.platform == 'i386-unknown-freebsd':
         conf = expect_fail
+else:
+        conf = normal
 
 test('queryfdoption01', compose(omit_ways(['ghci']), compose(only_compiler_types(['ghc']), conf)),
 	compile_and_run, ['-package unix'])
