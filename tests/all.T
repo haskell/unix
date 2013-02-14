@@ -14,18 +14,15 @@ test('forkprocess01', [ only_compiler_types(['ghc']),
 test('user001', normal, compile_and_run, ['-package unix'])
 test('resourceLimit', normal, compile_and_run, ['-package unix'])
 
-if config.platform == 'i386-unknown-freebsd':
-        conf = expect_fail
-else:
-        conf = normal
+x86FreeBsdFail = when(platform('i386-unknown-freebsd'), expect_fail)
 
-test('queryfdoption01', compose(omit_ways(['ghci']), compose(only_compiler_types(['ghc']), conf)),
+test('queryfdoption01', compose(omit_ways(['ghci']), compose(only_compiler_types(['ghc']), x86FreeBsdFail)),
 	compile_and_run, ['-package unix'])
-test('getEnvironment01', conf, compile_and_run, ['-package unix'])
-test('getEnvironment02', conf, compile_and_run, ['-package unix'])
-test('getGroupEntryForName', compose(conf, exit_code(1)), compile_and_run,
+test('getEnvironment01', x86FreeBsdFail, compile_and_run, ['-package unix'])
+test('getEnvironment02', x86FreeBsdFail, compile_and_run, ['-package unix'])
+test('getGroupEntryForName', compose(x86FreeBsdFail, exit_code(1)), compile_and_run,
      ['-package unix'])
-test('getUserEntryForName', compose(conf, exit_code(1)), compile_and_run,
+test('getUserEntryForName', compose(x86FreeBsdFail, exit_code(1)), compile_and_run,
      ['-package unix'])
 
 
