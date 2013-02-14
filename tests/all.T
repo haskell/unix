@@ -16,13 +16,14 @@ test('resourceLimit', normal, compile_and_run, ['-package unix'])
 
 x86FreeBsdFail = when(platform('i386-unknown-freebsd'), expect_fail)
 
-test('queryfdoption01', compose(omit_ways(['ghci']), compose(only_compiler_types(['ghc']), x86FreeBsdFail)),
+test('queryfdoption01',
+    [omit_ways(['ghci']), only_compiler_types(['ghc']), x86FreeBsdFail],
 	compile_and_run, ['-package unix'])
 test('getEnvironment01', x86FreeBsdFail, compile_and_run, ['-package unix'])
 test('getEnvironment02', x86FreeBsdFail, compile_and_run, ['-package unix'])
-test('getGroupEntryForName', compose(x86FreeBsdFail, exit_code(1)), compile_and_run,
+test('getGroupEntryForName', [x86FreeBsdFail, exit_code(1)], compile_and_run,
      ['-package unix'])
-test('getUserEntryForName', compose(x86FreeBsdFail, exit_code(1)), compile_and_run,
+test('getUserEntryForName', [x86FreeBsdFail, exit_code(1)], compile_and_run,
      ['-package unix'])
 
 
