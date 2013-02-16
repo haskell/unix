@@ -102,7 +102,7 @@ module System.Posix.Signals (
   -- siginterrupt
   ) where
 
-import Foreign hiding (unsafePerformIO)
+import Foreign
 import Foreign.C
 import System.IO.Unsafe (unsafePerformIO)
 import System.Posix.Types

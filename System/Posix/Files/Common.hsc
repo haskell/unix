@@ -89,7 +89,7 @@ import Data.Bits
 import Data.Time.Clock.POSIX
 import Data.Ratio
 import System.Posix.Internals
-import Foreign hiding (unsafePerformIO)
+import Foreign
 import Foreign.C
 
 -- -----------------------------------------------------------------------------
