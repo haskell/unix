@@ -229,7 +229,6 @@ fi
 
 # Avoid adding dl if absent or unneeded
 AC_CHECK_LIB(dl, dlopen, [EXTRA_LIBS="$EXTRA_LIBS dl"])
-AC_SUBST([EXTRA_LIBS])
 
 # -{l,}pthread goo
 AC_CANONICAL_TARGET
@@ -238,6 +237,7 @@ AC_SEARCH_LIBS(sem_close, pthread,
     [EXTRA_LIBS="$EXTRA_LIBS $ac_lib"],
     [AC_MSG_NOTICE([Not found])])
 
+AC_SUBST([EXTRA_LIBS])
 AC_CONFIG_FILES([unix.buildinfo])
 
 AC_OUTPUT
