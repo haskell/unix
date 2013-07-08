@@ -59,3 +59,5 @@ test('T3816', normal, compile_and_run, ['-package unix'])
 test('processGroup001', normal, compile_and_run, ['-package unix'])
 test('processGroup002', normal, compile_and_run, ['-package unix'])
 test('executeFile001', omit_ways(prof_ways), compile_and_run, ['-package unix'])
+
+test('T8108', normal, compile_and_run, ['-package unix'])

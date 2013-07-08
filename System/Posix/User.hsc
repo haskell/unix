@@ -197,21 +197,16 @@ data GroupEntry =
   groupMembers :: [String]      -- ^ A list of zero or more usernames that are members (gr_mem)
  } deriving (Show, Read, Eq)
 
--- | @getGroupEntryForID gid@ calls @getgrgid@ to obtain
+-- | @getGroupEntryForID gid@ calls @getgrgid_r@ to obtain
 --   the @GroupEntry@ information associated with @GroupID@
---   @gid@.
+--   @gid@. This operation may fail with 'isDoesNotExistError'
+--   if no such group exists.
 getGroupEntryForID :: GroupID -> IO GroupEntry
 #ifdef HAVE_GETGRGID_R
-getGroupEntryForID gid = do
+getGroupEntryForID gid =
   allocaBytes (#const sizeof(struct group)) $ \pgr ->
-    alloca $ \ ppgr -> do
-      throwErrorIfNonZero_ "getGroupEntryForID" $
-	   doubleAllocWhile isERANGE grBufSize $ \s b ->
-	     c_getgrgid_r gid pgr b (fromIntegral s) ppgr
-      _ <- throwErrnoIfNull "getGroupEntryForID" $
-	   peekElemOff ppgr 0
-      unpackGroupEntry pgr
-
+   doubleAllocWhileERANGE "getGroupEntryForID" "group" grBufSize unpackGroupEntry $
+     c_getgrgid_r gid pgr
 
 foreign import ccall unsafe "getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
@@ -220,26 +215,17 @@ foreign import ccall unsafe "getgrgid_r"
 getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 #endif
 
--- | @getGroupEntryForName name@ calls @getgrnam@ to obtain
+-- | @getGroupEntryForName name@ calls @getgrnam_r@ to obtain
 --   the @GroupEntry@ information associated with the group called
---   @name@.
+--   @name@. This operation may fail with 'isDoesNotExistError'
+--   if no such group exists.
 getGroupEntryForName :: String -> IO GroupEntry
 #ifdef HAVE_GETGRNAM_R
-getGroupEntryForName name = do
+getGroupEntryForName name =
   allocaBytes (#const sizeof(struct group)) $ \pgr ->
-    alloca $ \ ppgr ->
-      withCAString name $ \ pstr -> do
-	throwErrorIfNonZero_ "getGroupEntryForName" $
-	  doubleAllocWhile isERANGE grBufSize $ \s b ->
-	    c_getgrnam_r pstr pgr b (fromIntegral s) ppgr
-	r <- peekElemOff ppgr 0
-	when (r == nullPtr) $
-	  ioError $ flip ioeSetErrorString "no group name"
-		  $ mkIOError doesNotExistErrorType
-			      "getGroupEntryForName"
-			      Nothing
-			      (Just name)
-	unpackGroupEntry pgr
+    withCAString name $ \ pstr ->
+      doubleAllocWhileERANGE "getGroupEntryForName" "group" grBufSize unpackGroupEntry $
+        c_getgrnam_r pstr pgr
 
 foreign import ccall unsafe "getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
@@ -324,20 +310,16 @@ lock = unsafePerformIO $ newMVar ()
 {-# NOINLINE lock #-}
 #endif
 
--- | @getUserEntryForID gid@ calls @getpwuid@ to obtain
+-- | @getUserEntryForID gid@ calls @getpwuid_r@ to obtain
 --   the @UserEntry@ information associated with @UserID@
---   @uid@.
+--   @uid@. This operation may fail with 'isDoesNotExistError'
+--   if no such user exists.
 getUserEntryForID :: UserID -> IO UserEntry
 #ifdef HAVE_GETPWUID_R
-getUserEntryForID uid = do
+getUserEntryForID uid =
   allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
-    alloca $ \ pppw -> do
-      throwErrorIfNonZero_ "getUserEntryForID" $
-	   doubleAllocWhile isERANGE pwBufSize $ \s b ->
-	     c_getpwuid_r uid ppw b (fromIntegral s) pppw
-      _ <- throwErrnoIfNull "getUserEntryForID" $
-	   peekElemOff pppw 0
-      unpackUserEntry ppw
+    doubleAllocWhileERANGE "getUserEntryForID" "user" pwBufSize unpackUserEntry $
+      c_getpwuid_r uid ppw
 
 foreign import ccall unsafe "__hsunix_getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd -> 
@@ -354,26 +336,17 @@ foreign import ccall unsafe "getpwuid"
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 #endif
 
--- | @getUserEntryForName name@ calls @getpwnam@ to obtain
+-- | @getUserEntryForName name@ calls @getpwnam_r@ to obtain
 --   the @UserEntry@ information associated with the user login
---   @name@.
+--   @name@. This operation may fail with 'isDoesNotExistError'
+--   if no such user exists.
 getUserEntryForName :: String -> IO UserEntry
 #if HAVE_GETPWNAM_R
-getUserEntryForName name = do
+getUserEntryForName name =
   allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
-    alloca $ \ pppw ->
-      withCAString name $ \ pstr -> do
-	throwErrorIfNonZero_ "getUserEntryForName" $
-	  doubleAllocWhile isERANGE pwBufSize $ \s b ->
-	    c_getpwnam_r pstr ppw b (fromIntegral s) pppw
-	r <- peekElemOff pppw 0
-	when (r == nullPtr) $
-	  ioError $ flip ioeSetErrorString "no user name"
-		  $ mkIOError doesNotExistErrorType
-			      "getUserEntryForName"
-			      Nothing
-			      (Just name)
-	unpackUserEntry ppw
+    withCAString name $ \ pstr ->
+      doubleAllocWhileERANGE "getUserEntryForName" "user" pwBufSize unpackUserEntry $
+        c_getpwnam_r pstr ppw
 
 foreign import ccall unsafe "__hsunix_getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
@@ -439,13 +412,41 @@ sysconfWithDefault def sc =
                          return $ if v == (-1) then def else v
 #endif
 
-isERANGE :: Integral a => a -> Bool
-isERANGE = (== eRANGE) . Errno . fromIntegral
-
-doubleAllocWhile :: (a -> Bool) -> Int -> (Int -> Ptr b -> IO a) -> IO a
-doubleAllocWhile p s m = do
-  r <- allocaBytes s (m s)
-  if p r then doubleAllocWhile p (2 * s) m else return r
+-- The following function is used by the getgr*_r, c_getpw*_r
+-- families of functions. These functions return their result
+-- in a struct that contains strings and they need a buffer
+-- that they can use to store those strings. We have to be
+-- careful to unpack the struct containing the result before
+-- the buffer is deallocated.
+doubleAllocWhileERANGE
+  :: String
+  -> String -- entry type: "user" or "group"
+  -> Int
+  -> (Ptr r -> IO a)
+  -> (Ptr b -> CSize -> Ptr (Ptr r) -> IO CInt)
+  -> IO a
+doubleAllocWhileERANGE loc enttype initlen unpack action =
+  alloca $ go initlen
+ where
+  go len res = do
+    r <- allocaBytes len $ \buf -> do
+           rc <- action buf (fromIntegral len) res
+           if rc /= 0
+             then return (Left rc)
+             else do p <- peek res
+                     when (p == nullPtr) $ notFoundErr
+                     fmap Right (unpack p)
+    case r of
+      Right x -> return x
+      Left rc | Errno rc == eRANGE ->
+        -- ERANGE means this is not an error
+        -- we just have to try again with a larger buffer
+        go (2 * len) res
+      Left rc ->
+        ioError (errnoToIOError loc (Errno rc) Nothing Nothing)
+  notFoundErr =
+    ioError $ flip ioeSetErrorString ("no such " ++ enttype)
+            $ mkIOError doesNotExistErrorType loc Nothing Nothing
 
 unpackUserEntry :: Ptr CPasswd -> IO UserEntry
 unpackUserEntry ptr = do
@@ -461,15 +462,6 @@ unpackUserEntry ptr = do
    dir    <- (#peek struct passwd, pw_dir)    ptr >>= peekCAString
    shell  <- (#peek struct passwd, pw_shell)  ptr >>= peekCAString
    return (UserEntry name passwd uid gid gecos dir shell)
-
--- Used when calling re-entrant system calls that signal their 'errno' 
--- directly through the return value.
-throwErrorIfNonZero_ :: String -> IO CInt -> IO ()
-throwErrorIfNonZero_ loc act = do
-    rc <- act
-    if (rc == 0) 
-     then return ()
-     else ioError (errnoToIOError loc (Errno rc) Nothing Nothing)
 
 -- Used when a function returns NULL to indicate either an error or
 -- EOF, depending on whether the global errno is nonzero.
