@@ -10,6 +10,10 @@ main = do test1
           putStrLn "I'm happy."
 
 test1 = do
+    -- Force SIGFPE exceptions to not be ignored.  Under some
+    -- circumstances this test will be run with SIGFPE
+    -- ignored, see #7399
+    installHandler sigFPE Default Nothing
     forkProcess $ raiseSignal floatingPointException
     Just (pid, tc) <- getAnyProcessStatus True False
     case tc of
