@@ -69,6 +69,7 @@ module System.Posix.Signals (
 #ifdef __GLASGOW_HASKELL__
   -- * Handling signals
   Handler(Default,Ignore,Catch,CatchOnce,CatchInfo,CatchInfoOnce),
+  SignalInfo(..), SignalSpecificInfo(..),
   installHandler,
 #endif
 
