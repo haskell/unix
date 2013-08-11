@@ -9,3 +9,8 @@ ghc.mk
 include/HsUnixConfig.h
 include/HsUnixConfig.h.in
 unix.buildinfo
+tests/.hpc.*
+tests/*.eventlog
+tests/*.genscript
+tests/*.o
+tests/*.hi
