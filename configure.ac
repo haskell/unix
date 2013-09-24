@@ -62,10 +62,9 @@ AC_CHECK_FUNCS([lutimes futimes])
 AC_CHECK_FUNCS([mkstemps mkdtemp])
 
 # Avoid adding rt if absent or unneeded
-AC_CHECK_LIB(rt, shm_open, [EXTRA_LIBS="$EXTRA_LIBS rt" CFLAGS="$CFLAGS -lrt"])
-
-# needs -lrt on linux
-AC_CHECK_FUNCS([shm_open shm_unlink])
+# shm_open needs -lrt on linux
+AC_SEARCH_LIBS(shm_open, rt, [AC_CHECK_FUNCS([shm_open shm_unlink])])
+AS_IF([test "x$ac_cv_search_shm_open" = x-lrt], [EXTRA_LIBS="$EXTRA_LIBS rt"])
 
 FP_CHECK_CONSTS([SIGABRT SIGALRM SIGBUS SIGCHLD SIGCONT SIGFPE SIGHUP SIGILL SIGINT SIGKILL SIGPIPE SIGQUIT SIGSEGV SIGSTOP SIGTERM SIGTSTP SIGTTIN SIGTTOU SIGUSR1 SIGUSR2 SIGPOLL SIGPROF SIGSYS SIGTRAP SIGURG SIGVTALRM SIGXCPU SIGXFSZ SIG_BLOCK SIG_SETMASK SIG_UNBLOCK], [
 #if HAVE_SIGNAL_H
