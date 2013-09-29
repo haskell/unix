@@ -62,10 +62,8 @@ import Control.Concurrent.MVar  ( MVar, newMVar, withMVar )
 #ifdef HAVE_GETPWENT
 import Control.Exception
 #endif
-#if defined(HAVE_GETGRNAM_R) || defined(HAVE_GETPWNAM_R)
 import Control.Monad
 import System.IO.Error
-#endif
 
 -- -----------------------------------------------------------------------------
 -- user environemnt
