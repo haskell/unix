@@ -18,6 +18,8 @@
 --
 -----------------------------------------------------------------------------
 
+#include "HsUnix.h"
+
 module System.Posix.Directory (
    -- * Creating and removing directories
    createDirectory, removeDirectory,

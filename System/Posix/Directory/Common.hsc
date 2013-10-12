@@ -18,6 +18,8 @@
 --
 -----------------------------------------------------------------------------
 
+#include "HsUnix.h"
+
 module System.Posix.Directory.Common (
        DirStream(..), CDir, CDirent, DirStreamOffset(..),
        rewindDirStream,

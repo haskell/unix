@@ -18,6 +18,8 @@
 --
 -----------------------------------------------------------------------------
 
+#include "HsUnix.h"
+
 module System.Posix.Directory.ByteString (
    -- * Creating and removing directories
    createDirectory, removeDirectory,
