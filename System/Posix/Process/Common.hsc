@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface, InterruptibleFFI #-}
+{-# LANGUAGE InterruptibleFFI #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif

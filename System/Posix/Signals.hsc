@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, PatternGuards, CApiFFI #-}
+{-# LANGUAGE CApiFFI, CPP, DeriveDataTypeable, NondecreasingIndentation #-}
 {-# OPTIONS_GHC -fno-cse #-} -- global variables
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}

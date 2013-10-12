@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -51,9 +50,11 @@ module System.Posix.User (
 #include "HsUnix.h"
 
 import System.Posix.Types
-import Foreign
 import System.IO.Unsafe (unsafePerformIO)
 import Foreign.C
+import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import System.Posix.Internals	( CGroup, CPasswd )
 
 #if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)

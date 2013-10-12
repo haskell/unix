@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -w #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}

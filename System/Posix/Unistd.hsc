@@ -1,4 +1,4 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE NondecreasingIndentation #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports -fno-warn-unused-binds #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}

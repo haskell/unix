@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}

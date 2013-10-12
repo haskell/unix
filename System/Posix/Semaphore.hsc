@@ -1,4 +1,3 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif

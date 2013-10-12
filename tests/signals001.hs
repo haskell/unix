@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 import System.Posix.Signals
 
 #include "ghcconfig.h"

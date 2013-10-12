@@ -1,6 +1,5 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE NondecreasingIndentation, RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
-{-# OPTIONS_GHC -XRecordWildCards #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
