@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Resource
 -- Copyright   :  (c) The University of Glasgow 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -68,7 +68,7 @@ getResourceLimit res = do
       c_getrlimit (packResource res) p_rlimit
     soft <- (#peek struct rlimit, rlim_cur) p_rlimit
     hard <- (#peek struct rlimit, rlim_max) p_rlimit
-    return (ResourceLimits { 
+    return (ResourceLimits {
 		softLimit = unpackRLimit soft,
 		hardLimit = unpackRLimit hard
 	   })
@@ -125,7 +125,7 @@ main = do
  zipWithM_ (\r n -> setResourceLimit r ResourceLimits{
 					hardLimit = ResourceLimit n,
 					softLimit = ResourceLimit n })
-	allResources [1..]	
+	allResources [1..]
  showAll
  mapM_ (\r -> setResourceLimit r ResourceLimits{
 					hardLimit = ResourceLimit 1,
@@ -134,20 +134,20 @@ main = do
    -- should fail
 
 
-showAll = 
+showAll =
   mapM_ (\r -> getResourceLimit r >>= (putStrLn . showRLims)) allResources
 
 allResources =
     [ResourceCoreFileSize, ResourceCPUTime, ResourceDataSize,
 	ResourceFileSize, ResourceOpenFiles, ResourceStackSize
 #ifdef RLIMIT_AS
-	, ResourceTotalMemory 
+	, ResourceTotalMemory
 #endif
 	]
 
 showRLims ResourceLimits{hardLimit=h,softLimit=s}
   = "hard: " ++ showRLim h ++ ", soft: " ++ showRLim s
- 
+
 showRLim ResourceLimitInfinity = "infinity"
 showRLim ResourceLimitUnknown  = "unknown"
 showRLim (ResourceLimit other)  = show other
