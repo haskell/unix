@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -76,9 +75,11 @@ import Foreign
 import Foreign.C
 import System.Posix.Terminal.Common
 import System.Posix.Types
+#ifndef HAVE_OPENPTY
 import System.Posix.IO
+#endif
 
-import System.Posix.Internals (withFilePath, peekFilePath)
+import System.Posix.Internals (peekFilePath)
 
 -- | @getTerminalName fd@ calls @ttyname@ to obtain a name associated
 --   with the terminal for @Fd@ @fd@. If @fd@ is associated

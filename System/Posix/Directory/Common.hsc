@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -32,8 +31,6 @@ module System.Posix.Directory.Common (
        changeWorkingDirectoryFd,
   ) where
 
-import System.IO.Error
-import System.Posix.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C

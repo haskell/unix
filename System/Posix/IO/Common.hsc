@@ -1,5 +1,4 @@
 {-# LANGUAGE NondecreasingIndentation, RecordWildCards #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -63,15 +62,12 @@ module System.Posix.IO.Common (
 import System.IO
 import System.IO.Error
 import System.Posix.Types
-import System.Posix.Error
 import qualified System.Posix.Internals as Base
 
 import Foreign
 import Foreign.C
-import Data.Bits
 
 #ifdef __GLASGOW_HASKELL__
-import GHC.IO.Handle
 import GHC.IO.Handle.Internals
 import GHC.IO.Handle.Types
 import qualified GHC.IO.FD as FD

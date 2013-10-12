@@ -117,6 +117,8 @@ library
         System.Posix.Process.Common
         System.Posix.Terminal.Common
 
+    ghc-options: -Wall
+
     include-dirs: 	include
     includes:       HsUnix.h execvpe.h
     install-includes:

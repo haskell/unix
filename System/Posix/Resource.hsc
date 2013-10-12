@@ -1,12 +1,6 @@
-{-# OPTIONS_GHC -w #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
--- The above warning supression flag is a temporary kludge.
--- While working on this module you are encouraged to remove it and fix
--- any warnings in the module. See
---     http://hackage.haskell.org/trac/ghc/wiki/WorkingConventions#Warnings
--- for details
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Resource
@@ -70,7 +64,7 @@ foreign import ccall unsafe "HsUnix.h __hscore_setrlimit"
 getResourceLimit :: Resource -> IO ResourceLimits
 getResourceLimit res = do
   allocaBytes (#const sizeof(struct rlimit)) $ \p_rlimit -> do
-    throwErrnoIfMinus1 "getResourceLimit" $
+    throwErrnoIfMinus1_ "getResourceLimit" $
       c_getrlimit (packResource res) p_rlimit
     soft <- (#peek struct rlimit, rlim_cur) p_rlimit
     hard <- (#peek struct rlimit, rlim_max) p_rlimit
@@ -84,7 +78,7 @@ setResourceLimit res ResourceLimits{softLimit=soft,hardLimit=hard} = do
   allocaBytes (#const sizeof(struct rlimit)) $ \p_rlimit -> do
     (#poke struct rlimit, rlim_cur) p_rlimit (packRLimit soft True)
     (#poke struct rlimit, rlim_max) p_rlimit (packRLimit hard False)
-    throwErrnoIfMinus1 "setResourceLimit" $
+    throwErrnoIfMinus1_ "setResourceLimit" $
 	c_setrlimit (packResource res) p_rlimit
     return ()
 
@@ -101,16 +95,20 @@ packResource ResourceTotalMemory   = (#const RLIMIT_AS)
 
 unpackRLimit :: CRLim -> ResourceLimit
 unpackRLimit (#const RLIM_INFINITY)  = ResourceLimitInfinity
-#ifdef RLIM_SAVED_MAX
+#if defined(RLIM_SAVED_MAX) && (RLIM_SAVED_MAX != RLIM_INFINITY)
 unpackRLimit (#const RLIM_SAVED_MAX) = ResourceLimitUnknown
+#endif
+#if defined(RLIM_SAVED_CUR) && (RLIM_SAVED_CUR != RLIM_INFINITY)
 unpackRLimit (#const RLIM_SAVED_CUR) = ResourceLimitUnknown
 #endif
 unpackRLimit other = ResourceLimit (fromIntegral other)
 
 packRLimit :: ResourceLimit -> Bool -> CRLim
 packRLimit ResourceLimitInfinity _     = (#const RLIM_INFINITY)
-#ifdef RLIM_SAVED_MAX
+#ifdef RLIM_SAVED_CUR
 packRLimit ResourceLimitUnknown  True  = (#const RLIM_SAVED_CUR)
+#endif
+#ifdef RLIM_SAVED_MAX
 packRLimit ResourceLimitUnknown  False = (#const RLIM_SAVED_MAX)
 #endif
 packRLimit (ResourceLimit other) _     = fromIntegral other

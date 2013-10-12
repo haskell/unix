@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -69,22 +68,13 @@ module System.Posix.Terminal.Common (
 
 import Data.Bits
 import Data.Char
-import Foreign.C.Error ( errnoToIOError, throwErrnoIfMinus1,
-                         throwErrnoIfMinus1_, throwErrnoIfNull )
-#ifndef HAVE_PTSNAME
-import Foreign.C.Error ( eNOSYS )
-#endif
-import Foreign.C.String ( CString, peekCString, withCString )
+import Foreign.C.Error ( throwErrnoIfMinus1, throwErrnoIfMinus1_ )
 import Foreign.C.Types
 import Foreign.ForeignPtr ( ForeignPtr, withForeignPtr, mallocForeignPtrBytes )
-import Foreign.Marshal.Alloc ( alloca )
 import Foreign.Marshal.Utils ( copyBytes )
-import Foreign.Ptr ( Ptr, nullPtr, plusPtr )
+import Foreign.Ptr ( Ptr, plusPtr )
 import Foreign.Storable ( Storable(..) )
-import System.IO.Error ( ioError )
 import System.IO.Unsafe ( unsafePerformIO )
-import System.Posix.IO ( OpenFileFlags(..), OpenMode(..), defaultFileFlags,
-                         openFd )
 import System.Posix.Types
 
 -- -----------------------------------------------------------------------------

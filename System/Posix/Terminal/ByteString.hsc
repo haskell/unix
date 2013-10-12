@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -75,8 +74,10 @@ module System.Posix.Terminal.ByteString (
 import Foreign
 import System.Posix.Types
 import System.Posix.Terminal.Common
-import System.Posix.IO.ByteString
-import Data.ByteString.Char8 as B
+#ifndef HAVE_OPENPTY
+import System.Posix.IO.ByteString (defaultFileFlags, openFd, noctty, OpenMode(ReadWrite))
+import Data.ByteString.Char8 as B ( pack, )
+#endif
 
 import Foreign.C hiding (
      throwErrnoPath,
@@ -185,9 +186,9 @@ foreign import ccall unsafe "__hsunix_unlockpt"
   c_unlockpt :: CInt -> IO CInt
 #else
 c_grantpt :: CInt -> IO CInt
-c_grantpt _ = return (fromIntegral 0)
+c_grantpt _ = return (fromIntegral (0::Int))
 
 c_unlockpt :: CInt -> IO CInt
-c_unlockpt _ = return (fromIntegral 0)
+c_unlockpt _ = return (fromIntegral (0::Int))
 #endif /* HAVE_PTSNAME */
 #endif /* !HAVE_OPENPTY */

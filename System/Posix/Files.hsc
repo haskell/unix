@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -95,12 +94,9 @@ module System.Posix.Files (
 import Foreign
 import Foreign.C
 
-import System.Posix.Error
 import System.Posix.Types
-import System.Posix.Internals
 import System.Posix.Files.Common
-
-import System.Posix.Internals (withFilePath, peekFilePath)
+import System.Posix.Internals
 
 import Data.Time.Clock.POSIX
 

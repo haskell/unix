@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -81,17 +80,22 @@ module System.Posix.Files.Common (
 #endif
   ) where
 
-import System.Posix.Error
 import System.Posix.Types
 import System.IO.Unsafe
 import Data.Bits
+#if defined(HAVE_STRUCT_STAT_ST_CTIM) || \
+    defined(HAVE_STRUCT_STAT_ST_MTIM) || \
+    defined(HAVE_STRUCT_STAT_ST_ATIM)
 import Data.Int
-import Data.Time.Clock.POSIX
 import Data.Ratio
+#endif
+import Data.Time.Clock.POSIX
 import System.Posix.Internals
 import Foreign.C
 import Foreign.ForeignPtr
-import Foreign.Marshal
+#if defined(HAVE_FUTIMES) || defined(HAVE_FUTIMENS)
+import Foreign.Marshal (withArray)
+#endif
 import Foreign.Ptr
 import Foreign.Storable
 
