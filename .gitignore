@@ -4,6 +4,7 @@ autom4te.cache/
 config.log
 config.status
 configure
+dist/
 dist-install/
 ghc.mk
 include/HsUnixConfig.h
@@ -14,3 +15,4 @@ tests/*.eventlog
 tests/*.genscript
 tests/*.o
 tests/*.hi
+*~
