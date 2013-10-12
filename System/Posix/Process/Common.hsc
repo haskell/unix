@@ -313,11 +313,6 @@ getProcessStatus block stopped pid =
       _  -> do ps <- readWaitStatus wstatp
 	       return (Just ps)
 
-#if __GLASGOW_HASKELL__ < 701
--- not available prior to 7.1
-#define interruptible safe
-#endif
-
 -- safe/interruptible, because this call might block
 foreign import ccall interruptible "waitpid"
   c_waitpid :: CPid -> Ptr CInt -> CInt -> IO CPid

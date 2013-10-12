@@ -103,8 +103,12 @@ module System.Posix.Signals (
   -- siginterrupt
   ) where
 
-import Foreign
+import Data.Word
 import Foreign.C
+import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Ptr
+import Foreign.Storable
 import System.IO.Unsafe (unsafePerformIO)
 import System.Posix.Types
 import System.Posix.Internals

@@ -85,11 +85,15 @@ import System.Posix.Error
 import System.Posix.Types
 import System.IO.Unsafe
 import Data.Bits
+import Data.Int
 import Data.Time.Clock.POSIX
 import Data.Ratio
 import System.Posix.Internals
-import Foreign
 import Foreign.C
+import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Ptr
+import Foreign.Storable
 
 -- -----------------------------------------------------------------------------
 -- POSIX file modes

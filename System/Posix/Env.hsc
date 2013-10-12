@@ -39,6 +39,12 @@ import Control.Monad
 import Data.Maybe (fromMaybe)
 import System.Posix.Internals
 
+#if !MIN_VERSION_base(4,7,0)
+-- needed for backported local 'newFilePath' binding in 'putEnv'
+import GHC.IO.Encoding (getFileSystemEncoding)
+import qualified GHC.Foreign as GHC (newCString)
+#endif
+
 -- |'getEnv' looks up a variable in the environment.
 
 getEnv :: String -> IO (Maybe String)
@@ -128,6 +134,11 @@ putEnv keyvalue = do s <- newFilePath keyvalue
                      -- According to SUSv2, the string passed to putenv
                      -- becomes part of the enviroment. #7342
                      throwErrnoIfMinus1_ "putenv" (c_putenv s)
+#if !MIN_VERSION_base(4,7,0)
+    where
+      newFilePath :: FilePath -> IO CString
+      newFilePath fp = getFileSystemEncoding >>= \enc -> GHC.newCString enc fp
+#endif
 
 foreign import ccall unsafe "putenv"
    c_putenv :: CString -> IO CInt
