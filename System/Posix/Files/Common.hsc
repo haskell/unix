@@ -463,6 +463,8 @@ foreign import ccall unsafe "futimes"
 -- this function will raise an exception.
 --
 -- Note: calls @futimens@ or @futimes@.
+--
+-- /Since: 2.7.0.0/
 setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()
 #if HAVE_FUTIMENS
 setFdTimesHiRes (Fd fd) atime mtime =
@@ -482,6 +484,8 @@ setFdTimesHiRes =
 -- this function will raise an exception.
 --
 -- Note: calls @futimes@.
+--
+-- /Since: 2.7.0.0/
 touchFd :: Fd -> IO ()
 #if HAVE_FUTIMES
 touchFd (Fd fd) =

@@ -344,6 +344,8 @@ setFileTimes name atime mtime = do
 -- | Like 'setFileTimes' but timestamps can have sub-second resolution.
 --
 -- Note: calls @utimensat@ or @utimes@.
+--
+-- /Since: 2.7.0.0/
 setFileTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()
 #ifdef HAVE_UTIMENSAT
 setFileTimesHiRes name atime mtime =
@@ -363,6 +365,8 @@ setFileTimesHiRes name atime mtime =
 -- this function will raise an exception.
 --
 -- Note: calls @utimensat@ or @lutimes@.
+--
+-- /Since: 2.7.0.0/
 setSymbolicLinkTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()
 #if HAVE_UTIMENSAT
 setSymbolicLinkTimesHiRes name atime mtime =
@@ -395,6 +399,8 @@ touchFile name = do
 -- this function will raise an exception.
 --
 -- Note: calls @lutimes@.
+--
+-- /Since: 2.7.0.0/
 touchSymbolicLink :: FilePath -> IO ()
 #if HAVE_LUTIMES
 touchSymbolicLink name =

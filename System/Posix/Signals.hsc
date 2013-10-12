@@ -314,11 +314,13 @@ data Handler = Default
 	     -- not yet: | Hold 
              | Catch (IO ())
              | CatchOnce (IO ())
-             | CatchInfo (SignalInfo -> IO ())
-             | CatchInfoOnce (SignalInfo -> IO ())
+             | CatchInfo (SignalInfo -> IO ())     -- ^ /Since: 2.7.0.0/
+             | CatchInfoOnce (SignalInfo -> IO ()) -- ^ /Since: 2.7.0.0/
   deriving (Typeable)
 
 -- | Information about a received signal (derived from @siginfo_t@).
+--
+-- /Since: 2.7.0.0/
 data SignalInfo = SignalInfo {
       siginfoSignal   :: Signal,
       siginfoError    :: Errno,
@@ -327,6 +329,8 @@ data SignalInfo = SignalInfo {
 
 -- | Information specific to a particular type of signal
 -- (derived from @siginfo_t@).
+--
+-- /Since: 2.7.0.0/
 data SignalSpecificInfo
   = NoSignalSpecificInfo
   | SigChldInfo {
