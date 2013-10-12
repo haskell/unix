@@ -4,9 +4,12 @@ version:        2.7.0.0
 license:	BSD3
 license-file:	LICENSE
 maintainer:	libraries@haskell.org
-bug-reports: http://hackage.haskell.org/trac/ghc/newticket?component=libraries/unix
+bug-reports:    http://hackage.haskell.org/trac/ghc/newticket?component=libraries/unix
 synopsis:	POSIX functionality
 category:       System
+build-type:     Configure
+cabal-version:  >= 1.10
+tested-with:    GHC==7.6.3, GHC==7.6.2, GHC==7.6.1, GHC==7.4.2, GHC==7.4.1
 description:
 	This package gives you access to the set of operating system
 	services standardised by POSIX 1003.1b (or the IEEE Portable
@@ -14,23 +17,54 @@ description:
 	IEEE Std. 1003.1).
 	.
 	The package is not supported under Windows (except under Cygwin).
-        .
-        Changes in 2.7.0.0:
-        .
-        * @ProcessStatus@ changed to include a core-dumped flag.
 
 extra-source-files:
-        config.guess config.sub install-sh
-		configure.ac configure
-		unix.buildinfo.in include/HsUnixConfig.h.in
-		include/HsUnix.h
-extra-tmp-files:
-		config.log config.status autom4te.cache
-		unix.buildinfo include/HsUnixConfig.h
-build-type: Configure
-Cabal-Version: >= 1.6
+        changelog
+        config.guess
+        config.sub
+        configure
+        configure.ac
+        include/HsUnix.h
+        include/HsUnixConfig.h.in
+        install-sh
+        unix.buildinfo.in
 
-Library
+extra-tmp-files:
+        autom4te.cache
+        config.log
+        config.status
+        include/HsUnixConfig.h
+        unix.buildinfo
+
+source-repository head
+    type:     git
+    location: http://git.haskell.org/packages/unix.git
+
+source-repository this
+    type:     git
+    location: http://git.haskell.org/packages/unix.git
+    tag:      unix-2.7.0.0-release
+
+library
+    default-language: Haskell2010
+    other-extensions:
+        CApiFFI
+        CPP
+        DeriveDataTypeable
+        InterruptibleFFI
+        NoMonomorphismRestriction
+        OverloadedStrings
+
+    if impl(ghc)
+        other-extensions:
+          Safe
+          Trustworthy
+
+    build-depends:
+        base        >= 4.5     && < 4.8,
+        bytestring  >= 0.9.2   && < 0.11,
+        time        >= 1.2     && < 1.5
+
     exposed-modules:
         System.Posix
         System.Posix.ByteString
@@ -83,18 +117,9 @@ Library
         System.Posix.Process.Common
         System.Posix.Terminal.Common
 
-    build-depends:      base >= 4.5 && < 4.8,
-                        bytestring >= 0.9.2.0 && < 0.11,
-                        time
-    extensions: CPP, ForeignFunctionInterface, EmptyDataDecls,
-                NondecreasingIndentation
     include-dirs: 	include
     includes:       HsUnix.h execvpe.h
     install-includes:
         HsUnix.h HsUnixConfig.h execvpe.h
     c-sources:	cbits/HsUnix.c cbits/execvpe.c cbits/dirUtils.c
-
-source-repository head
-    type:     git
-    location: http://git.haskell.org/packages/unix.git
 
