@@ -97,11 +97,11 @@ unpackRLimit :: CRLim -> ResourceLimit
 unpackRLimit (#const RLIM_INFINITY)  = ResourceLimitInfinity
 unpackRLimit other
 #if defined(RLIM_SAVED_MAX)
-    | (#const RLIM_SAVED_MAX) != (#const RLIM_INFINITY) &&
+    | ((#const RLIM_SAVED_MAX) :: CRLim) /= (#const RLIM_INFINITY) &&
       other == (#const RLIM_SAVED_MAX) = ResourceLimitUnknown
 #endif
 #if defined(RLIM_SAVED_CUR)
-    | (#const RLIM_SAVED_CUR) != (#const RLIM_INFINITY) &&
+    | ((#const RLIM_SAVED_CUR) :: CRLim) /= (#const RLIM_INFINITY) &&
       other == (#const RLIM_SAVED_CUR) = ResourceLimitUnknown
 #endif
     | otherwise = ResourceLimit (fromIntegral other)
