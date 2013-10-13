@@ -3,28 +3,28 @@
 2.7.0.0  Oct 2013
 
         * Add new `Bool` flag to `ProcessStatus(Terminated)` constructor
-	indicating whether a core dump occured
+        indicating whether a core dump occured
 
-	* New functions in "System.Posix.Files(.ByteString)" for operating
-	on high resolution file timestamps:
+        * New functions in "System.Posix.Files(.ByteString)" for operating
+        on high resolution file timestamps:
 
-	 + `setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()`
-	 + `setFileTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()`
-	 + `setSymbolicLinkTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()`
-	 + `touchFd :: Fd -> IO ()`
-	 + `touchSymbolicLink :: FilePath -> IO ()`
+         + `setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()`
+         + `setFileTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()`
+         + `setSymbolicLinkTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()`
+         + `touchFd :: Fd -> IO ()`
+         + `touchSymbolicLink :: FilePath -> IO ()`
 
-	* Export `SignalInfo(..)` and `SignalSpecificInfo(..)` as well as
-	the two `Handler` constructors `CatchInfo` and `CatchInfoOnce`
-	from "System.Posix.Signals".
+        * Export `SignalInfo(..)` and `SignalSpecificInfo(..)` as well as
+        the two `Handler` constructors `CatchInfo` and `CatchInfoOnce`
+        from "System.Posix.Signals".
 
-	* Don't export `seekDirStream` and `tellDirStream` if the
-	underlying `seekdir(3)`/`telldir(3)` system calls are not
-	available (as on Android).
+        * Don't export `seekDirStream` and `tellDirStream` if the
+        underlying `seekdir(3)`/`telldir(3)` system calls are not
+        available (as on Android).
 
-	* Fix library detection of `shm*` on openSUSE (#8350)
+        * Fix library detection of `shm*` on openSUSE (#8350)
 
-	* Update package to `cabal-version >= 1.10` format
+        * Update package to `cabal-version >= 1.10` format
 
 2.6.0.1  Jan 2013
 
@@ -35,7 +35,7 @@
 2.6.0.0  Sep 2012
 
         * Bundled with GHC 7.6.1
-	* New functions `mkdtemp` and `mkstemps` in "System.Posix.Temp"
-	* New functions `setEnvironment` and `cleanEnv`
-	* New functions `accessTimeHiRes`, `modificationTimeHiRes`, and
-	`statusChangeTimeHiRes` for accessing high resolution timestamps
+        * New functions `mkdtemp` and `mkstemps` in "System.Posix.Temp"
+        * New functions `setEnvironment` and `cleanEnv`
+        * New functions `accessTimeHiRes`, `modificationTimeHiRes`, and
+        `statusChangeTimeHiRes` for accessing high resolution timestamps

@@ -1,40 +1,40 @@
-name:		unix
+name:           unix
 version:        2.7.0.0
 -- GHC 7.6.1 released with 2.6.0.0
-license:	BSD3
-license-file:	LICENSE
-maintainer:	libraries@haskell.org
+license:        BSD3
+license-file:   LICENSE
+maintainer:     libraries@haskell.org
 bug-reports:    http://hackage.haskell.org/trac/ghc/newticket?component=libraries/unix
-synopsis:	POSIX functionality
+synopsis:       POSIX functionality
 category:       System
 build-type:     Configure
 cabal-version:  >= 1.10
 tested-with:    GHC==7.6.3, GHC==7.6.2, GHC==7.6.1, GHC==7.4.2, GHC==7.4.1
 description:
-	This package gives you access to the set of operating system
-	services standardised by POSIX 1003.1b (or the IEEE Portable
-	Operating System Interface for Computing Environments -
-	IEEE Std. 1003.1).
-	.
-	The package is not supported under Windows (except under Cygwin).
+    This package gives you access to the set of operating system
+    services standardised by POSIX 1003.1b (or the IEEE Portable
+    Operating System Interface for Computing Environments -
+    IEEE Std. 1003.1).
+    .
+    The package is not supported under Windows (except under Cygwin).
 
 extra-source-files:
-        changelog
-        config.guess
-        config.sub
-        configure
-        configure.ac
-        include/HsUnix.h
-        include/HsUnixConfig.h.in
-        install-sh
-        unix.buildinfo.in
+    changelog
+    config.guess
+    config.sub
+    configure
+    configure.ac
+    include/HsUnix.h
+    include/HsUnixConfig.h.in
+    install-sh
+    unix.buildinfo.in
 
 extra-tmp-files:
-        autom4te.cache
-        config.log
-        config.status
-        include/HsUnixConfig.h
-        unix.buildinfo
+    autom4te.cache
+    config.log
+    config.status
+    include/HsUnixConfig.h
+    unix.buildinfo
 
 source-repository head
     type:     git
@@ -57,8 +57,8 @@ library
 
     if impl(ghc)
         other-extensions:
-          Safe
-          Trustworthy
+            Safe
+            Trustworthy
 
     build-depends:
         base        >= 4.5     && < 4.8,
@@ -119,9 +119,15 @@ library
 
     ghc-options: -Wall
 
-    include-dirs: 	include
-    includes:       HsUnix.h execvpe.h
+    include-dirs: include
+    includes:
+        HsUnix.h
+        execvpe.h
     install-includes:
-        HsUnix.h HsUnixConfig.h execvpe.h
-    c-sources:	cbits/HsUnix.c cbits/execvpe.c cbits/dirUtils.c
-
+        HsUnix.h
+        HsUnixConfig.h
+        execvpe.h
+    c-sources:
+        cbits/HsUnix.c
+        cbits/dirUtils.c
+        cbits/execvpe.c
