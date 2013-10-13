@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Files.Common
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -155,8 +155,8 @@ setGroupIDMode = (#const S_ISGID)
 
 -- | Owner, group and others have read and write permission.
 stdFileMode :: FileMode
-stdFileMode = ownerReadMode  .|. ownerWriteMode .|. 
-	      groupReadMode  .|. groupWriteMode .|. 
+stdFileMode = ownerReadMode  .|. ownerWriteMode .|.
+	      groupReadMode  .|. groupWriteMode .|.
 	      otherReadMode  .|. otherWriteMode
 
 -- | Owner has read, write and execute permission.
@@ -217,7 +217,7 @@ setFdMode :: Fd -> FileMode -> IO ()
 setFdMode (Fd fd) m =
   throwErrnoIfMinus1_ "setFdMode" (c_fchmod fd m)
 
-foreign import ccall unsafe "fchmod" 
+foreign import ccall unsafe "fchmod"
   c_fchmod :: CInt -> CMode -> IO CInt
 
 -- | @setFileCreationMask mode@ sets the file mode creation mask to @mode@.
@@ -268,9 +268,9 @@ statusChangeTime :: FileStatus -> EpochTime
 -- | Time of last status change (i.e. owner, group, link count, mode, etc.) in sub-second resolution.
 statusChangeTimeHiRes :: FileStatus -> POSIXTime
 
-deviceID (FileStatus stat) = 
+deviceID (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_dev)
-fileID (FileStatus stat) = 
+fileID (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_ino)
 fileMode (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_mode)
@@ -375,19 +375,19 @@ isSymbolicLink    :: FileStatus -> Bool
 -- | Checks if this file is a socket device.
 isSocket          :: FileStatus -> Bool
 
-isBlockDevice stat = 
+isBlockDevice stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == blockSpecialMode
-isCharacterDevice stat = 
+isCharacterDevice stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == characterSpecialMode
-isNamedPipe stat = 
+isNamedPipe stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == namedPipeMode
-isRegularFile stat = 
+isRegularFile stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == regularFileMode
-isDirectory stat = 
+isDirectory stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == directoryMode
-isSymbolicLink stat = 
+isSymbolicLink stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == symbolicLinkMode
-isSocket stat = 
+isSocket stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == socketMode
 
 -- | @getFdStatus fd@ acts as 'getFileStatus' but uses a file descriptor @fd@.
@@ -395,7 +395,7 @@ isSocket stat =
 -- Note: calls @fstat@.
 getFdStatus :: Fd -> IO FileStatus
 getFdStatus (Fd fd) = do
-  fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
+  fp <- mallocForeignPtrBytes (#const sizeof(struct stat))
   withForeignPtr fp $ \p ->
     throwErrnoIfMinus1_ "getFdStatus" (c_fstat fd p)
   return (FileStatus fp)
@@ -511,7 +511,7 @@ touchFd =
 --
 -- Note: calls @fchown@.
 setFdOwnerAndGroup :: Fd -> UserID -> GroupID -> IO ()
-setFdOwnerAndGroup (Fd fd) uid gid = 
+setFdOwnerAndGroup (Fd fd) uid gid =
   throwErrnoIfMinus1_ "setFdOwnerAndGroup" (c_fchown fd uid gid)
 
 foreign import ccall unsafe "fchown"
@@ -603,8 +603,8 @@ pathVarConst v = case v of
 -- Note: calls @fpathconf@.
 getFdPathVar :: Fd -> PathVar -> IO Limit
 getFdPathVar (Fd fd) v =
-    throwErrnoIfMinus1 "getFdPathVar" $ 
+    throwErrnoIfMinus1 "getFdPathVar" $
       c_fpathconf fd (pathVarConst v)
 
-foreign import ccall unsafe "fpathconf" 
+foreign import ccall unsafe "fpathconf"
   c_fpathconf :: CInt -> CInt -> IO CLong
