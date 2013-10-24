@@ -125,7 +125,6 @@ library
         execvpe.h
     install-includes:
         HsUnix.h
-        HsUnixConfig.h
         execvpe.h
     c-sources:
         cbits/HsUnix.c
