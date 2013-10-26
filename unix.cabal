@@ -4,7 +4,7 @@ version:        2.7.0.0
 license:        BSD3
 license-file:   LICENSE
 maintainer:     libraries@haskell.org
-bug-reports:    http://hackage.haskell.org/trac/ghc/newticket?component=libraries/unix
+bug-reports:    http://ghc.haskell.org/trac/ghc/newticket?component=libraries/unix
 synopsis:       POSIX functionality
 category:       System
 build-type:     Configure
