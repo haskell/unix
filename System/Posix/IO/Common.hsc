@@ -207,11 +207,6 @@ handleToFd :: Handle -> IO Fd
 
 -- | Converts an 'Fd' into a 'Handle' that can be used with the
 -- standard Haskell IO library (see "System.IO").  
---
--- GHC only: this function has the side effect of putting the 'Fd'
--- into non-blocking mode (@O_NONBLOCK@) due to the way the standard
--- IO library implements multithreaded I\/O.
---
 fdToHandle :: Fd -> IO Handle
 
 #ifdef __GLASGOW_HASKELL__
