@@ -7,7 +7,7 @@
 -- Module      :  System.Posix.IO.Common
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -55,7 +55,7 @@ module System.Posix.IO.Common (
 
     -- ** Converting file descriptors to\/from Handles
     handleToFd,
-    fdToHandle,  
+    fdToHandle,
 
   ) where
 
@@ -164,7 +164,7 @@ open_  :: CString
        -> OpenFileFlags
        -> IO Fd
 open_ str how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
-				nonBlockFlag truncateFlag) = do
+                                nonBlockFlag truncateFlag) = do
     fd <- c_open str all_flags mode_w
     return (Fd fd)
   where
@@ -177,14 +177,14 @@ open_ str how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
        (if nonBlockFlag  then (#const O_NONBLOCK) else 0) .|.
        (if truncateFlag  then (#const O_TRUNC)    else 0)
 
-    (creat, mode_w) = case maybe_mode of 
-			Nothing -> (0,0)
-			Just x  -> ((#const O_CREAT), x)
+    (creat, mode_w) = case maybe_mode of
+                        Nothing -> (0,0)
+                        Just x  -> ((#const O_CREAT), x)
 
     open_mode = case how of
-		   ReadOnly  -> (#const O_RDONLY)
-		   WriteOnly -> (#const O_WRONLY)
-		   ReadWrite -> (#const O_RDWR)
+                   ReadOnly  -> (#const O_RDONLY)
+                   WriteOnly -> (#const O_WRONLY)
+                   ReadWrite -> (#const O_RDWR)
 
 foreign import ccall unsafe "__hscore_open"
    c_open :: CString -> CInt -> CMode -> IO CInt
@@ -206,7 +206,7 @@ foreign import ccall unsafe "HsUnix.h close"
 handleToFd :: Handle -> IO Fd
 
 -- | Converts an 'Fd' into a 'Handle' that can be used with the
--- standard Haskell IO library (see "System.IO").  
+-- standard Haskell IO library (see "System.IO").
 fdToHandle :: Fd -> IO Handle
 
 #ifdef __GLASGOW_HASKELL__
@@ -223,12 +223,12 @@ handleToFd' :: Handle -> Handle__ -> IO (Handle__, Fd)
 handleToFd' h h_@Handle__{haType=_,..} = do
   case cast haDevice of
     Nothing -> ioError (ioeSetErrorString (mkIOError IllegalOperation
-                                           "handleToFd" (Just h) Nothing) 
+                                           "handleToFd" (Just h) Nothing)
                         "handle is not a file descriptor")
     Just fd -> do
      -- converting a Handle into an Fd effectively means
      -- letting go of the Handle; it is put into a closed
-     -- state as a result. 
+     -- state as a result.
      flushWriteBuffer h_
      FD.release fd
      return (Handle__{haType=ClosedHandle,..}, Fd (FD.fdFD fd))
@@ -250,9 +250,9 @@ fdToHandle fd = do
 -- Fd options
 
 data FdOption = AppendOnWrite     -- ^O_APPEND
-	      | CloseOnExec       -- ^FD_CLOEXEC
-	      | NonBlockingRead   -- ^O_NONBLOCK
-	      | SynchronousWrites -- ^O_SYNC
+              | CloseOnExec       -- ^FD_CLOEXEC
+              | NonBlockingRead   -- ^O_NONBLOCK
+              | SynchronousWrites -- ^O_SYNC
 
 fdOption2Int :: FdOption -> CInt
 fdOption2Int CloseOnExec       = (#const FD_CLOEXEC)
@@ -267,25 +267,25 @@ queryFdOption (Fd fd) opt = do
   return ((r .&. fdOption2Int opt) /= 0)
  where
   flag    = case opt of
-	      CloseOnExec       -> (#const F_GETFD)
-	      _    		-> (#const F_GETFL)
+              CloseOnExec       -> (#const F_GETFD)
+              _                 -> (#const F_GETFL)
 
 -- | May throw an exception if this is an invalid descriptor.
 setFdOption :: Fd -> FdOption -> Bool -> IO ()
 setFdOption (Fd fd) opt val = do
   r <- throwErrnoIfMinus1 "setFdOption" (Base.c_fcntl_read fd getflag)
   let r' | val       = r .|. opt_val
-	 | otherwise = r .&. (complement opt_val)
+         | otherwise = r .&. (complement opt_val)
   throwErrnoIfMinus1_ "setFdOption"
                       (Base.c_fcntl_write fd setflag (fromIntegral r'))
  where
   (getflag,setflag)= case opt of
-	      CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD)) 
-	      _    		-> ((#const F_GETFL),(#const F_SETFL))
+              CloseOnExec       -> ((#const F_GETFD),(#const F_SETFD))
+              _                 -> ((#const F_GETFL),(#const F_SETFL))
   opt_val = fdOption2Int opt
 
 -- -----------------------------------------------------------------------------
--- Seeking 
+-- Seeking
 
 mode2Int :: SeekMode -> CInt
 mode2Int AbsoluteSeek = (#const SEEK_SET)
@@ -320,7 +320,7 @@ getLock (Fd fd) lock =
 type CFLock     = ()
 
 allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
-allocaLock (lockreq, mode, start, len) io = 
+allocaLock (lockreq, mode, start, len) io =
   allocaBytes (#const sizeof(struct flock)) $ \p -> do
     (#poke struct flock, l_type)   p (lockReq2Int lockreq :: CShort)
     (#poke struct flock, l_whence) p (fromIntegral (mode2Int mode) :: CShort)
@@ -364,7 +364,7 @@ setLock (Fd fd) lock = do
 waitToSetLock :: Fd -> FileLock -> IO ()
 waitToSetLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
-    throwErrnoIfMinus1_ "waitToSetLock" 
+    throwErrnoIfMinus1_ "waitToSetLock"
         (Base.c_fcntl_lock fd (#const F_SETLKW) p_flock)
 
 -- -----------------------------------------------------------------------------
@@ -393,9 +393,9 @@ fdReadBuf :: Fd
           -> ByteCount -- ^ Maximum number of bytes to read
           -> IO ByteCount -- ^ Number of bytes read (zero for EOF)
 fdReadBuf _fd _buf 0 = return 0
-fdReadBuf fd buf nbytes = 
+fdReadBuf fd buf nbytes =
   fmap fromIntegral $
-    throwErrnoIfMinus1Retry "fdReadBuf" $ 
+    throwErrnoIfMinus1Retry "fdReadBuf" $
       c_safe_read (fromIntegral fd) (castPtr buf) nbytes
 
 foreign import ccall safe "read"
@@ -403,7 +403,7 @@ foreign import ccall safe "read"
 
 -- | Write a 'String' to an 'Fd' using the locale encoding.
 fdWrite :: Fd -> String -> IO ByteCount
-fdWrite fd str = 
+fdWrite fd str =
   withCStringLen str $ \ (buf,len) ->
     fdWriteBuf fd (castPtr buf) (fromIntegral len)
 
@@ -415,8 +415,8 @@ fdWriteBuf :: Fd
            -> IO ByteCount -- ^ Number of bytes written
 fdWriteBuf fd buf len =
   fmap fromIntegral $
-    throwErrnoIfMinus1Retry "fdWriteBuf" $ 
+    throwErrnoIfMinus1Retry "fdWriteBuf" $
       c_safe_write (fromIntegral fd) (castPtr buf) len
 
-foreign import ccall safe "write" 
+foreign import ccall safe "write"
    c_safe_write :: CInt -> Ptr CChar -> CSize -> IO CSsize
