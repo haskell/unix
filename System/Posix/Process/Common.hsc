@@ -7,7 +7,7 @@
 -- Module      :  System.Posix.Process.Common
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -83,7 +83,7 @@ import Control.Monad
 
 #ifdef __GLASGOW_HASKELL__
 import Control.Exception.Base ( bracket, getMaskingState, MaskingState(..) ) -- used by forkProcess
-import GHC.TopHandler	( runIO )
+import GHC.TopHandler   ( runIO )
 import GHC.IO ( unsafeUnmask, uninterruptibleMask_ )
 #endif
 
@@ -188,11 +188,11 @@ foreign import ccall unsafe "setsid"
 
 data ProcessTimes
   = ProcessTimes { elapsedTime     :: ClockTick
-  		 , userTime        :: ClockTick
-		 , systemTime      :: ClockTick
-		 , childUserTime   :: ClockTick
-		 , childSystemTime :: ClockTick
-		 }
+                 , userTime        :: ClockTick
+                 , systemTime      :: ClockTick
+                 , childUserTime   :: ClockTick
+                 , childSystemTime :: ClockTick
+                 }
 
 -- | 'getProcessTimes' calls @times@ to obtain time-accounting
 --   information for the current process and its children.
@@ -205,11 +205,11 @@ getProcessTimes = do
      cut <- (#peek struct tms, tms_cutime) p_tms
      cst <- (#peek struct tms, tms_cstime) p_tms
      return (ProcessTimes{ elapsedTime     = elapsed,
-	 		   userTime        = ut,
-	 		   systemTime      = st,
-	 		   childUserTime   = cut,
-	 		   childSystemTime = cst
-			  })
+                           userTime        = ut,
+                           systemTime      = st,
+                           childUserTime   = cut,
+                           childSystemTime = cst
+                          })
 
 type CTms = ()
 
@@ -256,7 +256,7 @@ setProcessPriority      :: ProcessID      -> Int -> IO ()
 setProcessGroupPriority :: ProcessGroupID -> Int -> IO ()
 setUserPriority         :: UserID         -> Int -> IO ()
 
-setProcessPriority pid val = 
+setProcessPriority pid val =
   throwErrnoIfMinus1_ "setProcessPriority" $
     c_setpriority (#const PRIO_PROCESS) (fromIntegral pid) (fromIntegral val)
 
@@ -329,11 +329,11 @@ getProcessStatus :: Bool -> Bool -> ProcessID -> IO (Maybe ProcessStatus)
 getProcessStatus block stopped pid =
   alloca $ \wstatp -> do
     pid' <- throwErrnoIfMinus1Retry "getProcessStatus"
-		(c_waitpid pid wstatp (waitOptions block stopped))
+                (c_waitpid pid wstatp (waitOptions block stopped))
     case pid' of
       0  -> return Nothing
       _  -> do ps <- readWaitStatus wstatp
-	       return (Just ps)
+               return (Just ps)
 
 -- safe/interruptible, because this call might block
 foreign import ccall interruptible "waitpid"
@@ -356,11 +356,11 @@ getGroupProcessStatus :: Bool
 getGroupProcessStatus block stopped pgid =
   alloca $ \wstatp -> do
     pid <- throwErrnoIfMinus1Retry "getGroupProcessStatus"
-		(c_waitpid (-pgid) wstatp (waitOptions block stopped))
+                (c_waitpid (-pgid) wstatp (waitOptions block stopped))
     case pid of
       0  -> return Nothing
       _  -> do ps <- readWaitStatus wstatp
-	       return (Just (pid, ps))
+               return (Just (pid, ps))
 
 -- | @'getAnyProcessStatus' blk stopped@ calls @waitpid@, returning
 --   @'Just' (pid, tc)@, the 'ProcessID' and 'ProcessStatus' for any

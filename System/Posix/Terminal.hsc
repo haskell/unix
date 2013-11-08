@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Terminal
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -88,7 +88,7 @@ import System.Posix.Internals (peekFilePath)
 getTerminalName :: Fd -> IO FilePath
 getTerminalName (Fd fd) = do
   s <- throwErrnoIfNull "getTerminalName" (c_ttyname fd)
-  peekFilePath s  
+  peekFilePath s
 
 foreign import ccall unsafe "ttyname"
   c_ttyname :: CInt -> IO CString
