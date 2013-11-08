@@ -407,7 +407,7 @@ foreign import ccall unsafe "exit"
 -- -----------------------------------------------------------------------------
 -- Deprecated or subject to change
 
-{-# DEPRECATED createProcessGroup "This function is scheduled to be replaced by something different in the future, we therefore recommend that you do not use this version and use createProcessGroupFor instead." #-} -- deprecated in 7.2
+{-# DEPRECATED createProcessGroup "This function is scheduled to be replaced by something different in the future, we therefore recommend that you do not use this version and use 'createProcessGroupFor' instead." #-} -- deprecated in 7.2
 -- | @'createProcessGroup' pid@ calls @setpgid@ to make
 --   process @pid@ a new process group leader.
 --   This function is currently deprecated,
@@ -418,7 +418,7 @@ createProcessGroup pid = do
   throwErrnoIfMinus1_ "createProcessGroup" (c_setpgid pid 0)
   return pid
 
-{-# DEPRECATED setProcessGroupID "This function is scheduled to be replaced by something different in the future, we therefore recommend that you do not use this version and use setProcessGroupIdOf instead." #-} -- deprecated in 7.2
+{-# DEPRECATED setProcessGroupID "This function is scheduled to be replaced by something different in the future, we therefore recommend that you do not use this version and use 'setProcessGroupIDOf' instead." #-} -- deprecated in 7.2
 -- | @'setProcessGroupID' pid pgid@ calls @setpgid@ to set the
 --   'ProcessGroupID' for process @pid@ to @pgid@.
 --   This function is currently deprecated,
