@@ -81,7 +81,9 @@ import System.Posix.Types
 import Control.Monad
 
 #ifdef __GLASGOW_HASKELL__
+import Control.Exception.Base ( bracket, getMaskingState, MaskingState(..) ) -- used by forkProcess
 import GHC.TopHandler	( runIO )
+import GHC.IO ( unsafeUnmask, uninterruptibleMask_ )
 #endif
 
 #ifdef __HUGS__
@@ -278,6 +280,9 @@ threads will be copied to the child process.
 On success, 'forkProcess' returns the child's 'ProcessID' to the parent process;
 in case of an error, an exception is thrown.
 
+The exception masking state of the executed action is inherited
+(c.f. 'forkIO'), see also 'forkProcessWithUnmask' (/since: 2.7.0.0/).
+
 'forkProcess' comes with a giant warning: since any other running
 threads are not copied into the child process, it's easy to go wrong:
 e.g. by accessing some shared resource that was held by another thread
@@ -286,10 +291,19 @@ in the parent.
 
 forkProcess :: IO () -> IO ProcessID
 forkProcess action = do
-  stable <- newStablePtr (runIO action)
-  pid <- throwErrnoIfMinus1 "forkProcess" (forkProcessPrim stable)
-  freeStablePtr stable
-  return pid
+  -- wrap action to re-establish caller's masking state, as
+  -- 'forkProcessPrim' starts in 'MaskedInterruptible' state by
+  -- default; see also #1048
+  mstate <- getMaskingState
+  let action' = case mstate of
+          Unmasked              -> unsafeUnmask action
+          MaskedInterruptible   -> action
+          MaskedUninterruptible -> uninterruptibleMask_ action
+
+  bracket
+    (newStablePtr (runIO action'))
+    freeStablePtr
+    (\stable -> throwErrnoIfMinus1 "forkProcess" (forkProcessPrim stable))
 
 foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CPid
 #endif /* __GLASGOW_HASKELL__ */

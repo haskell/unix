@@ -1,6 +1,8 @@
 -*-changelog-*-
 
-2.7.0.0  Oct 2013
+2.7.0.0  Nov 2013
+
+        * Change `forkProcess` to inherit the exception masking state of its caller
 
         * Add new `Bool` flag to `ProcessStatus(Terminated)` constructor
         indicating whether a core dump occured
