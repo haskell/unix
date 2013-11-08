@@ -2,6 +2,8 @@
 
 2.7.0.0  Nov 2013
 
+        * New `forkProcessWithUnmask` function in the style of `forkIOWithUnmask`
+
         * Change `forkProcess` to inherit the exception masking state of its caller
 
         * Add new `Bool` flag to `ProcessStatus(Terminated)` constructor
@@ -25,6 +27,8 @@
         available (as on Android).
 
         * Fix library detection of `shm*` on openSUSE (#8350)
+
+        * Minor documentation fixes/updates
 
         * Update package to `cabal-version >= 1.10` format
 

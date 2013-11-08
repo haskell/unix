@@ -54,6 +54,7 @@ library
         InterruptibleFFI
         NoMonomorphismRestriction
         OverloadedStrings
+        RankNTypes
 
     if impl(ghc)
         other-extensions:

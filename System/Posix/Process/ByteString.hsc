@@ -22,6 +22,7 @@ module System.Posix.Process.ByteString (
     -- ** Forking and executing
 #ifdef __GLASGOW_HASKELL__
     forkProcess,
+    forkProcessWithUnmask,
 #endif
     executeFile,
     

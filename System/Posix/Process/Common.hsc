@@ -1,4 +1,4 @@
-{-# LANGUAGE InterruptibleFFI #-}
+{-# LANGUAGE InterruptibleFFI, RankNTypes #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
@@ -23,6 +23,7 @@ module System.Posix.Process.Common (
     -- ** Forking and executing
 #ifdef __GLASGOW_HASKELL__
     forkProcess,
+    forkProcessWithUnmask,
 #endif
 
     -- ** Exiting
@@ -306,6 +307,13 @@ forkProcess action = do
     (\stable -> throwErrnoIfMinus1 "forkProcess" (forkProcessPrim stable))
 
 foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CPid
+
+-- | Variant of 'forkProcess' in the style of 'forkIOWithUnmask'.
+--
+-- /Since: 2.7.0.0/
+forkProcessWithUnmask :: ((forall a . IO a -> IO a) -> IO ()) -> IO ProcessID
+forkProcessWithUnmask action = forkProcess (action unsafeUnmask)
+
 #endif /* __GLASGOW_HASKELL__ */
 
 -- -----------------------------------------------------------------------------
