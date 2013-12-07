@@ -54,6 +54,9 @@
 
   * Update package to `cabal-version >= 1.10` format
 
+  * New functions `fsync` and `fdatasync`
+  * New module `System.Posix.Fcntl` providing `posix_fadvise` and `posix_fallocate`
+
 ## 2.6.0.1  *Jan 2013*
 
   * Bundled with GHC 7.6.2
