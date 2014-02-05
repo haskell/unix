@@ -1,3 +1,7 @@
+## 2.7.0.1
+
+  * Handle EROFS and ETXTBSY as (non-exceptional) permission denied in `fileAccess`
+
 ## 2.7.0.0  *Nov 2013*
 
   * New `forkProcessWithUnmask` function in the style of `forkIOWithUnmask`
