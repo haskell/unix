@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Files
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -60,7 +60,7 @@ module System.Posix.Files (
     isDirectory, isSymbolicLink, isSocket,
 
     -- * Creation
-    createNamedPipe, 
+    createNamedPipe,
     createDevice,
 
     -- * Hard links
@@ -134,26 +134,26 @@ fileAccess name readOK writeOK execOK = access name flags
 --
 -- Note: calls @access@.
 fileExist :: FilePath -> IO Bool
-fileExist name = 
+fileExist name =
   withFilePath name $ \s -> do
     r <- c_access s (#const F_OK)
     if (r == 0)
-	then return True
-	else do err <- getErrno
-	        if (err == eNOENT)
-		   then return False
-		   else throwErrnoPath "fileExist" name
+        then return True
+        else do err <- getErrno
+                if (err == eNOENT)
+                   then return False
+                   else throwErrnoPath "fileExist" name
 
 access :: FilePath -> CMode -> IO Bool
-access name flags = 
+access name flags =
   withFilePath name $ \s -> do
     r <- c_access s (fromIntegral flags)
     if (r == 0)
-	then return True
-	else do err <- getErrno
-	        if (err == eACCES || err == eROFS || err == eTXTBSY)
-		   then return False
-		   else throwErrnoPath "fileAccess" name
+        then return True
+        else do err <- getErrno
+                if (err == eACCES || err == eROFS || err == eTXTBSY)
+                   then return False
+                   else throwErrnoPath "fileAccess" name
 
 
 -- | @getFileStatus path@ calls gets the @FileStatus@ information (user ID,
@@ -162,9 +162,9 @@ access name flags =
 -- Note: calls @stat@.
 getFileStatus :: FilePath -> IO FileStatus
 getFileStatus path = do
-  fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
+  fp <- mallocForeignPtrBytes (#const sizeof(struct stat))
   withForeignPtr fp $ \p ->
-    withFilePath path $ \s -> 
+    withFilePath path $ \s ->
       throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
@@ -175,9 +175,9 @@ getFileStatus path = do
 -- Note: calls @lstat@.
 getSymbolicLinkStatus :: FilePath -> IO FileStatus
 getSymbolicLinkStatus path = do
-  fp <- mallocForeignPtrBytes (#const sizeof(struct stat)) 
+  fp <- mallocForeignPtrBytes (#const sizeof(struct stat))
   withForeignPtr fp $ \p ->
-    withFilePath path $ \s -> 
+    withFilePath path $ \s ->
       throwErrnoPathIfMinus1_ "getSymbolicLinkStatus" path (c_lstat s p)
   return (FileStatus fp)
 
@@ -193,7 +193,7 @@ foreign import ccall unsafe "__hsunix_lstat"
 -- Note: calls @mkfifo@.
 createNamedPipe :: FilePath -> FileMode -> IO ()
 createNamedPipe name mode = do
-  withFilePath name $ \s -> 
+  withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
 
 -- | @createDevice path mode dev@ creates either a regular or a special file
@@ -209,7 +209,7 @@ createDevice path mode dev =
   withFilePath path $ \s ->
     throwErrnoPathIfMinus1_ "createDevice" path (c_mknod s mode dev)
 
-foreign import ccall unsafe "__hsunix_mknod" 
+foreign import ccall unsafe "__hsunix_mknod"
   c_mknod :: CString -> CMode -> CDev -> IO CInt
 
 -- -----------------------------------------------------------------------------
@@ -268,8 +268,8 @@ readSymbolicLink :: FilePath -> IO FilePath
 readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
     withFilePath file $ \s -> do
-      len <- throwErrnoPathIfMinus1 "readSymbolicLink" file $ 
-	c_readlink s buf (#const PATH_MAX)
+      len <- throwErrnoPathIfMinus1 "readSymbolicLink" file $
+        c_readlink s buf (#const PATH_MAX)
       peekFilePathLen (buf,fromIntegral len)
 
 foreign import ccall unsafe "readlink"
@@ -316,7 +316,7 @@ setSymbolicLinkOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "setSymbolicLinkOwnerAndGroup" name
-	(c_lchown s uid gid)
+        (c_lchown s uid gid)
 
 foreign import ccall unsafe "lchown"
   c_lchown :: CString -> CUid -> CGid -> IO CInt
@@ -415,7 +415,7 @@ touchSymbolicLink =
 --
 -- Note: calls @truncate@.
 setFileSize :: FilePath -> FileOffset -> IO ()
-setFileSize file off = 
+setFileSize file off =
   withFilePath file $ \s ->
     throwErrnoPathIfMinus1_ "setFileSize" file (c_truncate s off)
 
@@ -434,9 +434,9 @@ foreign import ccall unsafe "truncate"
 -- Note: calls @pathconf@.
 getPathVar :: FilePath -> PathVar -> IO Limit
 getPathVar name v = do
-  withFilePath name $ \ nameP -> 
-    throwErrnoPathIfMinus1 "getPathVar" name $ 
+  withFilePath name $ \ nameP ->
+    throwErrnoPathIfMinus1 "getPathVar" name $
       c_pathconf nameP (pathVarConst v)
 
-foreign import ccall unsafe "pathconf" 
+foreign import ccall unsafe "pathconf"
   c_pathconf :: CString -> CInt -> IO CLong
