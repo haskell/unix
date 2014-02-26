@@ -96,6 +96,7 @@ import Foreign.C
 
 import System.Posix.Types
 import System.Posix.Files.Common
+import System.Posix.Error
 import System.Posix.Internals
 
 import Data.Time.Clock.POSIX
@@ -165,7 +166,7 @@ getFileStatus path = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct stat))
   withForeignPtr fp $ \p ->
     withFilePath path $ \s ->
-      throwErrnoPathIfMinus1_ "getFileStatus" path (c_stat s p)
+      throwErrnoPathIfMinus1Retry_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
 
 -- | Acts as 'getFileStatus' except when the 'FilePath' refers to a symbolic
