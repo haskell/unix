@@ -1,6 +1,12 @@
-## 2.7.0.1
+## 2.7.0.1  *Mar 2014*
 
-  * Handle EROFS and ETXTBSY as (non-exceptional) permission denied in `fileAccess`
+  * Bundled with GHC 7.8.1
+
+  * Handle `EROFS` and `ETXTBSY` as (non-exceptional) permission denied in
+    `fileAccess`
+
+  * Fix `getFileStatus` to retry `stat(2)` when it returns `EAGAIN`
+    (this can happen on Solaris)
 
 ## 2.7.0.0  *Nov 2013*
 
