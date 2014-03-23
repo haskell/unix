@@ -132,7 +132,7 @@ putEnv :: String -> IO ()
 putEnv keyvalue = do s <- newFilePath keyvalue
                      -- Do not free `s` after calling putenv.
                      -- According to SUSv2, the string passed to putenv
-                     -- becomes part of the enviroment. #7342
+                     -- becomes part of the environment. #7342
                      throwErrnoIfMinus1_ "putenv" (c_putenv s)
 #if !MIN_VERSION_base(4,7,0)
     where
