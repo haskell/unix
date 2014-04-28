@@ -1,4 +1,4 @@
-The `unix` Package  [![Build Status](https://travis-ci.org/ghc/packages-unix.png?branch=master)](https://travis-ci.org/ghc/packages-unix)
+The `unix` Package  [![Build Status](https://travis-ci.org/haskell/unix.svg)](https://travis-ci.org/haskell/unix)
 ==================
 
 See [`unix` on Hackage](http://hackage.haskell.org/package/unix) for
