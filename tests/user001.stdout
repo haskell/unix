@@ -3,9 +3,11 @@ getRealGroupID: OK
 getEffectiveUserID: OK
 getEffectiveGroupID: OK
 getGroups: OK
+getLoginName: OK
 getEffectiveUserName: OK
 getGroupEntryForID: OK
 getGroupEntryForName: OK
 getAllGroupEntries: OK
 getUserEntryForID: OK
+getUserEntryForName: OK
 getAllUserEntries: OK
