@@ -41,25 +41,25 @@ import Foreign.Ptr	( Ptr, FunPtr, nullPtr )
 import Foreign.C.Types
 import Foreign.C.String	( CString )
 
--- RTLD_NEXT madness
--- On some host (e.g. SuSe Linux 7.2) RTLD_NEXT is not visible
--- without setting _GNU_SOURCE. Since we don't want to set this
--- flag, here's a different solution: You can use the Haskell
--- function 'haveRtldNext' to check wether the flag is available
--- to you. Ideally, this will be optimized by the compiler so
--- that it should be as efficient as an #ifdef.
---    If you fail to test the flag and use it although it is
--- undefined, 'packOneModuleFlag' will bomb.
---    The same applies to RTLD_LOCAL which isn't available on
+
+-- |On some hosts (e.g. SuSe and Ubuntu Linux) 'RTLD_NEXT' (and
+-- 'RTLD_DEFAULT') are not visible without setting the macro
+-- '_GNU_SOURCE'. Since we don't want to define this macro, you can use
+-- the function 'haveRtldNext' to check wether the flag `Next` is
+-- available. Ideally, this will be optimized by the compiler so that it
+-- should be as efficient as an #ifdef.
+--
+-- If you fail to test the flag and use it although it is undefined,
+-- 'packDL' will throw an error.
+--
+-- The same applies to RTLD_LOCAL which isn't available on
 -- cygwin.
 
 haveRtldNext :: Bool
 
 #ifdef HAVE_RTLDNEXT
 haveRtldNext = True
-
 foreign import ccall unsafe "__hsunix_rtldNext" rtldNext :: Ptr a
-
 #else  /* HAVE_RTLDNEXT */
 haveRtldNext = False
 #endif /* HAVE_RTLDNEXT */
@@ -75,6 +75,9 @@ haveRtldLocal = True
 #else /* HAVE_RTLDLOCAL */
 haveRtldLocal = False
 #endif /* HAVE_RTLDLOCAL */
+
+
+-- |Flags for 'System.Posix.DynamicLinker.dlopen'.
 
 data RTLDFlags 
   = RTLD_LAZY
@@ -112,21 +115,29 @@ packRTLDFlag RTLD_LOCAL = #const RTLD_LOCAL
 packRTLDFlag RTLD_LOCAL = error "RTLD_LOCAL not available"
 #endif /* HAVE_RTLDLOCAL */
 
+
 -- |Flags for 'System.Posix.DynamicLinker.dlsym'. Notice that 'Next'
--- might not be available on your particular platform!
+-- might not be available on your particular platform! Use
+-- `haveRtldNext`.
+--
+-- If 'RTLD_DEFAULT' is not defined on your platform, `packDL` `Default`
+-- reduces to 'nullPtr'.
 
 data DL = Null | Next | Default | DLHandle (Ptr ()) deriving (Show)
 
 packDL :: DL -> Ptr ()
 packDL Null = nullPtr
+
 #ifdef HAVE_RTLDNEXT
 packDL Next = rtldNext
 #else
 packDL Next = error "RTLD_NEXT not available"
 #endif
+
 #ifdef HAVE_RTLDDEFAULT
 packDL Default = rtldDefault
 #else
 packDL Default = nullPtr
 #endif
+
 packDL (DLHandle h) = h

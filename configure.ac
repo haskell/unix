@@ -124,7 +124,9 @@ case "$fptools_cv_func_unsetenv_return_type" in
   ;;
 esac
 
-dnl ** sometimes RTLD_NEXT is hidden in #ifdefs we really don't wan to set
+dnl On some hosts (e.g. SuSe and Ubuntu Linux) RTLD_NEXT and RTLD_DEFAULT are
+dnl not visible without setting _GNU_SOURCE, which we really don't want to.
+dnl Also see comments in System/Posix/DynamicLinker/Prim.hsc.
 AC_MSG_CHECKING(for RTLD_NEXT from dlfcn.h)
 AC_EGREP_CPP(yes,
 [
@@ -139,7 +141,6 @@ AC_EGREP_CPP(yes,
   AC_MSG_RESULT(no)
   ])    
 
-dnl ** RTLD_DEFAULT isn't available on cygwin
 AC_MSG_CHECKING(for RTLD_DEFAULT from dlfcn.h)
 AC_EGREP_CPP(yes,
 [
