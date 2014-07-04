@@ -51,9 +51,6 @@ import Foreign.C.String	( CString )
 --
 -- If you fail to test the flag and use it although it is undefined,
 -- 'packDL' will throw an error.
---
--- The same applies to RTLD_LOCAL which isn't available on
--- cygwin.
 
 haveRtldNext :: Bool
 
@@ -69,12 +66,8 @@ foreign import ccall unsafe "__hsunix_rtldDefault" rtldDefault :: Ptr a
 #endif /* HAVE_RTLDDEFAULT */
 
 haveRtldLocal :: Bool
-
-#ifdef HAVE_RTLDLOCAL
 haveRtldLocal = True
-#else /* HAVE_RTLDLOCAL */
-haveRtldLocal = False
-#endif /* HAVE_RTLDLOCAL */
+{-# DEPRECATED haveRtldLocal "defaults to True" #-}
 
 
 -- |Flags for 'System.Posix.DynamicLinker.dlopen'.
@@ -98,12 +91,7 @@ packRTLDFlag :: RTLDFlags -> CInt
 packRTLDFlag RTLD_LAZY = #const RTLD_LAZY
 packRTLDFlag RTLD_NOW = #const RTLD_NOW
 packRTLDFlag RTLD_GLOBAL = #const RTLD_GLOBAL
-
-#ifdef HAVE_RTLDLOCAL
 packRTLDFlag RTLD_LOCAL = #const RTLD_LOCAL
-#else /* HAVE_RTLDLOCAL */
-packRTLDFlag RTLD_LOCAL = error "RTLD_LOCAL not available"
-#endif /* HAVE_RTLDLOCAL */
 
 
 -- |Flags for 'System.Posix.DynamicLinker.dlsym'. Notice that 'Next'

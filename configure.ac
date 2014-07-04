@@ -155,21 +155,6 @@ AC_EGREP_CPP(yes,
   AC_MSG_RESULT(no)
   ])    
 
-dnl ** RTLD_LOCAL isn't available on cygwin
-AC_MSG_CHECKING(for RTLD_LOCAL from dlfcn.h)
-AC_EGREP_CPP(yes,
-[
- #include <dlfcn.h>
- #ifdef RTLD_LOCAL
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_RTLDLOCAL], [1], [Define to 1 if RTLD_LOCAL is available.])
-], [
-  AC_MSG_RESULT(no)
-  ])    
-
 AC_CHECK_FUNCS(openpty,,
    AC_CHECK_LIB(util,openpty,
      [AC_DEFINE(HAVE_OPENPTY) EXTRA_LIBS="$EXTRA_LIBS util"],
