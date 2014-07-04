@@ -155,7 +155,7 @@ AC_EGREP_CPP(yes,
   AC_MSG_RESULT(no)
   ])    
 
-dnl ** RTLD_LOCAL isn't available on cygwin or openbsd
+dnl ** RTLD_LOCAL isn't available on cygwin
 AC_MSG_CHECKING(for RTLD_LOCAL from dlfcn.h)
 AC_EGREP_CPP(yes,
 [
@@ -166,36 +166,6 @@ AC_EGREP_CPP(yes,
 ], [
   AC_MSG_RESULT(yes)
   AC_DEFINE([HAVE_RTLDLOCAL], [1], [Define to 1 if RTLD_LOCAL is available.])
-], [
-  AC_MSG_RESULT(no)
-  ])    
-
-dnl ** RTLD_GLOBAL isn't available on openbsd
-AC_MSG_CHECKING(for RTLD_GLOBAL from dlfcn.h)
-AC_EGREP_CPP(yes,
-[
- #include <dlfcn.h>
- #ifdef RTLD_GLOBAL
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_RTLDGLOBAL], [1], [Define to 1 if RTLD_GLOBAL is available.])
-], [
-  AC_MSG_RESULT(no)
-  ])    
-
-dnl ** RTLD_NOW isn't available on openbsd
-AC_MSG_CHECKING(for RTLD_NOW from dlfcn.h)
-AC_EGREP_CPP(yes,
-[
- #include <dlfcn.h>
- #ifdef RTLD_NOW
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_RTLDNOW], [1], [Define to 1 if we can see RTLD_NOW in dlfcn.h])
 ], [
   AC_MSG_RESULT(no)
   ])    

@@ -96,18 +96,8 @@ packRTLDFlags flags = foldl (\ s f -> (packRTLDFlag f) .|. s) 0 flags
 
 packRTLDFlag :: RTLDFlags -> CInt
 packRTLDFlag RTLD_LAZY = #const RTLD_LAZY
-
-#ifdef HAVE_RTLDNOW
 packRTLDFlag RTLD_NOW = #const RTLD_NOW
-#else /* HAVE_RTLDNOW */
-packRTLDFlag RTLD_NOW =  error "RTLD_NOW not available"
-#endif /* HAVE_RTLDNOW */
-
-#ifdef HAVE_RTLDGLOBAL
 packRTLDFlag RTLD_GLOBAL = #const RTLD_GLOBAL
-#else /* HAVE_RTLDGLOBAL */
-packRTLDFlag RTLD_GLOBAL = error "RTLD_GLOBAL not available"
-#endif
 
 #ifdef HAVE_RTLDLOCAL
 packRTLDFlag RTLD_LOCAL = #const RTLD_LOCAL
