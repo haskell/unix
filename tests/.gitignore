@@ -6,6 +6,8 @@
 *.eventlog
 *.genscript
 *.exe
+*.interp.stderr
+*.interp.stdout
 
 # specific files
 /T1185
