@@ -17,11 +17,11 @@ main = do p "getRealUserID"        $ getRealUserID
           p "getEffectiveUserID"   $ getEffectiveUserID
           p "getEffectiveGroupID"  $ getEffectiveGroupID
           p "getGroups"            $ getGroups
-          -- p "getLoginName"         $ getLoginName
+          p "getLoginName"         $ getLoginName
           p "getEffectiveUserName" $ getEffectiveUserName
           p "getGroupEntryForID"   $ getRealGroupID >>= getGroupEntryForID
           p "getGroupEntryForName" $ getRealGroupID >>= getGroupEntryForID >>= getGroupEntryForName . groupName
           p "getAllGroupEntries"   $ getAllGroupEntries
           p "getUserEntryForID"    $ getRealUserID >>= getUserEntryForID
-          -- p "getUserEntryForName"  $ getLoginName >>= getUserEntryForName
+          p "getUserEntryForName"  $ getLoginName >>= getUserEntryForName
           p "getAllUserEntries"    $ getAllUserEntries
