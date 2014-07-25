@@ -19,6 +19,8 @@ module System.Posix.SharedMem
     (ShmOpenFlags(..), shmOpen, shmUnlink)
     where
 
+#include "HsUnixConfig.h"
+
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
