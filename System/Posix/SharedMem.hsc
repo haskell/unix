@@ -19,11 +19,11 @@ module System.Posix.SharedMem
     (ShmOpenFlags(..), shmOpen, shmUnlink)
     where
 
+#include "HsUnix.h"
+
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-
-#include "HsUnix.h"
 
 import System.Posix.Types
 #if defined(HAVE_SHM_OPEN) || defined(HAVE_SHM_UNLINK)
