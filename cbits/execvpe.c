@@ -129,6 +129,7 @@ __hsunix_execvpe(const char *name, char *const argv[], char *const envp[])
 	case EACCES:
 	    eacces = 1;
 	    break;
+	case ENOTDIR:
 	case ENOENT:
 	    break;
 	case ENOEXEC:

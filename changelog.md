@@ -14,6 +14,9 @@
 
   * Use CAPI FFI import for `truncate` to make sure the LFS-version is used.
 
+  * `executeFile`: Fix `ENOTDIR` error for entries with non-directory
+    components in `PATH` (and instead skip over non-directory `PATH`-elements)
+
 ## 2.7.0.1  *Mar 2014*
 
   * Bundled with GHC 7.8.1
