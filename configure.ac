@@ -18,6 +18,9 @@ AC_C_CONST
 
 dnl ** Enable large file support.  NB. do this before testing the type of
 dnl    off_t, because it will affect the result of that test.
+dnl
+dnl WARNING: It's essential this check agrees with HsBaseConfig.h as otherwise
+dnl          the definitions of COff/coff_t don't line up
 AC_SYS_LARGEFILE
 
 AC_CHECK_HEADERS([dirent.h fcntl.h grp.h limits.h pwd.h signal.h string.h])
