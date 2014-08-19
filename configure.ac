@@ -186,7 +186,7 @@ else
 fi
 
 # Avoid adding dl if absent or unneeded
-AC_CHECK_LIB(dl, dlopen, [EXTRA_LIBS="$EXTRA_LIBS dl"])
+AC_SEARCH_LIBS([dlopen], [dl], [EXTRA_LIBS="$EXTRA_LIBS $ac_lib"])
 
 # -{l,}pthread goo
 AC_CANONICAL_TARGET
