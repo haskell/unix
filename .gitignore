@@ -15,4 +15,5 @@ tests/*.eventlog
 tests/*.genscript
 tests/*.o
 tests/*.hi
+tests/*.normalised
 *~
