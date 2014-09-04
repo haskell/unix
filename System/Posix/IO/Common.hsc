@@ -1,7 +1,7 @@
 {-# LANGUAGE NondecreasingIndentation, RecordWildCards #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
-#if __GLASGOW_HASKELL__ >= 708
+#if __GLASGOW_HASKELL__ >= 701
 {-# LANGUAGE InterruptibleFFI #-}
 #endif
 #endif
@@ -402,7 +402,7 @@ fdReadBuf fd buf nbytes =
     throwErrnoIfMinus1Retry "fdReadBuf" $
       c_safe_read (fromIntegral fd) (castPtr buf) nbytes
 
-#if __GLASGOW_HASKELL__ >= 708
+#if __GLASGOW_HASKELL__ >= 701
 foreign import ccall interruptible "read"
 #else
 foreign import ccall safe "read"
@@ -426,7 +426,7 @@ fdWriteBuf fd buf len =
     throwErrnoIfMinus1Retry "fdWriteBuf" $
       c_safe_write (fromIntegral fd) (castPtr buf) len
 
-#if __GLASGOW_HASKELL__ >= 708
+#if __GLASGOW_HASKELL__ >= 701
 foreign import ccall interruptible "write"
 #else
 foreign import ccall safe "write"
