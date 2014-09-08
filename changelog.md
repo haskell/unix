@@ -1,3 +1,9 @@
+
+  * Fix `getGroupEntryForID/getGroupEntryForName' on Solaris. Solaris uses
+    CPP macros for required getgrgid_r and getgrnam_r functions definition
+    so the fix is to change from C ABI calling convention to C API calling
+    convention
+
 ## 2.7.0.1  *Mar 2014*
 
   * Bundled with GHC 7.8.1
