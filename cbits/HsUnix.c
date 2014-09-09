@@ -182,3 +182,18 @@ HsInt __hsunix_long_path_size(void) {
 #endif
 }
 
+#ifdef HAVE_GETGRGID_R
+// getgrgid_r is a macro on some platforms, so we need a wrapper:
+int __hsunix_getgrgid_r(gid_t gid, struct group *grp, char *buf, size_t len,
+                        struct group **res) {
+    return getgrgid_r(gid, grp, buf, len, res);
+}
+#endif
+
+#ifdef HAVE_GETGRNAM_R
+// getgrnam_r is a macro on some platforms, so we need a wrapper:
+int __hsunix_getgrnam_r(const char *cb, struct group *grp, char *buf, int len,
+                        struct group **res) {
+    return getgrnam_r(cb, grp, buf, len, res);
+}
+#endif
