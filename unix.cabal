@@ -1,6 +1,6 @@
 name:           unix
 version:        2.7.0.2
--- GHC 7.8.2 released with 2.7.0.1
+-- NOTE: Don't forget to update ./changelog.md
 license:        BSD3
 license-file:   LICENSE
 maintainer:     libraries@haskell.org
@@ -58,7 +58,7 @@ library
             Trustworthy
 
     build-depends:
-        base        >= 4.5     && < 4.8,
+        base        >= 4.5     && < 4.9,
         bytestring  >= 0.9.2   && < 0.11,
         time        >= 1.2     && < 1.5
 

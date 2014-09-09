@@ -1,3 +1,11 @@
+# Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
+
+## 2.7.0.2  *TBA*
+
+  * Add support for `base-4.8.0.0`
+  * Add haddock comments on `RTLD_NEXT` and `RTLD_DEFAULT`
+  * Deprecate function `haveRtldLocal`
+
 ## 2.7.0.1  *Mar 2014*
 
   * Bundled with GHC 7.8.1
