@@ -207,7 +207,7 @@ getGroupEntryForID gid =
    doubleAllocWhileERANGE "getGroupEntryForID" "group" grBufSize unpackGroupEntry $
      c_getgrgid_r gid pgr
 
-foreign import capi "HsUnix.h getgrgid_r"
+foreign import capi unsafe "HsUnix.h getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
 		 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
@@ -226,7 +226,7 @@ getGroupEntryForName name =
       doubleAllocWhileERANGE "getGroupEntryForName" "group" grBufSize unpackGroupEntry $
         c_getgrnam_r pstr pgr
 
-foreign import capi "HsUnix.h getgrnam_r"
+foreign import capi unsafe "HsUnix.h getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
 		 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
