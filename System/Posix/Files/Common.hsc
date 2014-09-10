@@ -92,7 +92,7 @@ import Data.Bits
 import Data.Int
 import Data.Ratio
 #endif
-import Data.Time.Clock.POSIX
+import Data.Time.Clock.POSIX (POSIXTime)
 import System.Posix.Internals
 import Foreign.C
 import Foreign.ForeignPtr

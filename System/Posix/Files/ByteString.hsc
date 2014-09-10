@@ -104,7 +104,7 @@ import Foreign.C hiding (
 import System.Posix.Files.Common
 import System.Posix.ByteString.FilePath
 
-import Data.Time.Clock.POSIX
+import Data.Time.Clock.POSIX (POSIXTime)
 
 -- -----------------------------------------------------------------------------
 -- chmod()

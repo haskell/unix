@@ -99,7 +99,7 @@ import System.Posix.Files.Common
 import System.Posix.Error
 import System.Posix.Internals
 
-import Data.Time.Clock.POSIX
+import Data.Time.Clock.POSIX (POSIXTime)
 
 -- -----------------------------------------------------------------------------
 -- chmod()
