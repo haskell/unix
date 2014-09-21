@@ -158,7 +158,8 @@ access name flags =
     if (r == 0)
         then return True
         else do err <- getErrno
-                if (err == eACCES || err == eROFS || err == eTXTBSY)
+                if (err == eACCES || err == eROFS || err == eTXTBSY ||
+                    err == ePERM)
                    then return False
                    else throwErrnoPath "fileAccess" name
 
