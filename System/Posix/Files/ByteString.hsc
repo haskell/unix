@@ -145,22 +145,22 @@ fileExist name =
   withFilePath name $ \s -> do
     r <- c_access s (#const F_OK)
     if (r == 0)
-	then return True
-	else do err <- getErrno
-	        if (err == eNOENT)
-		   then return False
-		   else throwErrnoPath "fileExist" name
+        then return True
+        else do err <- getErrno
+                if (err == eNOENT)
+                   then return False
+                   else throwErrnoPath "fileExist" name
 
 access :: RawFilePath -> CMode -> IO Bool
 access name flags = 
   withFilePath name $ \s -> do
     r <- c_access s (fromIntegral flags)
     if (r == 0)
-	then return True
-	else do err <- getErrno
-	        if (err == eACCES)
-		   then return False
-		   else throwErrnoPath "fileAccess" name
+        then return True
+        else do err <- getErrno
+                if (err == eACCES)
+                   then return False
+                   else throwErrnoPath "fileAccess" name
 
 
 -- | @getFileStatus path@ calls gets the @FileStatus@ information (user ID,
@@ -276,7 +276,7 @@ readSymbolicLink file =
   allocaArray0 (#const PATH_MAX) $ \buf -> do
     withFilePath file $ \s -> do
       len <- throwErrnoPathIfMinus1 "readSymbolicLink" file $ 
-	c_readlink s buf (#const PATH_MAX)
+        c_readlink s buf (#const PATH_MAX)
       peekFilePathLen (buf,fromIntegral len)
 
 foreign import ccall unsafe "readlink"
@@ -323,7 +323,7 @@ setSymbolicLinkOwnerAndGroup :: RawFilePath -> UserID -> GroupID -> IO ()
 setSymbolicLinkOwnerAndGroup name uid gid = do
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "setSymbolicLinkOwnerAndGroup" name
-	(c_lchown s uid gid)
+        (c_lchown s uid gid)
 
 foreign import ccall unsafe "lchown"
   c_lchown :: CString -> CUid -> CGid -> IO CInt
