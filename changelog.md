@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
 ## 2.7.0.2  *TBA*
@@ -9,6 +10,9 @@
     CPP macros for required getgrgid_r and getgrnam_r functions definition
     so the fix is to change from C ABI calling convention to C API calling
     convention
+  * Fix potential type-mismatch in `telldir`/`seekdir` FFI imports
+
+  * Use CAPI FFI import for `truncate` to make sure the LFS-version is used.
 
 ## 2.7.0.1  *Mar 2014*
 

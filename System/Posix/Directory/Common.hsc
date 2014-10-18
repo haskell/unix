@@ -62,20 +62,20 @@ newtype DirStreamOffset = DirStreamOffset COff
 #ifdef HAVE_SEEKDIR
 seekDirStream :: DirStream -> DirStreamOffset -> IO ()
 seekDirStream (DirStream dirp) (DirStreamOffset off) =
-  c_seekdir dirp off
+  c_seekdir dirp (fromIntegral off) -- TODO: check for CLong/COff overflow
 
 foreign import ccall unsafe "seekdir"
-  c_seekdir :: Ptr CDir -> COff -> IO ()
+  c_seekdir :: Ptr CDir -> CLong -> IO ()
 #endif
 
 #ifdef HAVE_TELLDIR
 tellDirStream :: DirStream -> IO DirStreamOffset
 tellDirStream (DirStream dirp) = do
   off <- c_telldir dirp
-  return (DirStreamOffset off)
+  return (DirStreamOffset (fromIntegral off)) -- TODO: check for overflow
 
 foreign import ccall unsafe "telldir"
-  c_telldir :: Ptr CDir -> IO COff
+  c_telldir :: Ptr CDir -> IO CLong
 #endif
 
 changeWorkingDirectoryFd :: Fd -> IO ()

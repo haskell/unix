@@ -1,6 +1,8 @@
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
 #endif
+{-# LANGUAGE CApiFFI #-}
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Files.ByteString
@@ -420,7 +422,7 @@ setFileSize file off =
   withFilePath file $ \s ->
     throwErrnoPathIfMinus1_ "setFileSize" file (c_truncate s off)
 
-foreign import ccall unsafe "truncate"
+foreign import capi unsafe "HsUnix.h truncate"
   c_truncate :: CString -> COff -> IO CInt
 
 -- -----------------------------------------------------------------------------
