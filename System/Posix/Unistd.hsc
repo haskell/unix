@@ -34,6 +34,8 @@ module System.Posix.Unistd (
     fileSynchronise,
     fileSynchroniseDataOnly,
 
+    ualarm,
+
   {-
     ToDo from unistd.h:
       confstr,
@@ -44,9 +46,6 @@ module System.Posix.Unistd (
 
     -- should be in System.Posix.Files?
     pathconf, fpathconf,
-
-    -- System.Posix.Signals
-    ualarm,
 
     -- System.Posix.IO
     read, write,
@@ -264,3 +263,14 @@ foreign import capi safe "unistd.h fdatasync"
 fileSynchroniseDataOnly _ = ioError (ioeSetLocation unsupportedOperation
                                      "fileSynchroniseDataOnly")
 #endif
+
+-- | Call ualarm. On some systems, the values must be in [0, 1000000) or else
+--   nothing will happen. Make your checks.
+--
+--   ToDo perhaps give IO (Maybe Int) to indicate failure, by checking if ualarm
+--   returns EINVAL.
+ualarm :: Int -> Int -> IO Int
+ualarm usecs interval = fmap fromIntegral $ c_usleep (fromIntegral usecs) (fromIntegral interval)
+
+foreign import ccall safe "ualarm"
+  c_usleep :: CUInt -> CUInt -> IO CUInt
