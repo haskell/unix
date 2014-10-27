@@ -514,6 +514,7 @@ setFdTimesHiRes (Fd fd) atime mtime =
   withArray [toCTimeVal atime, toCTimeVal mtime] $ \times ->
     throwErrnoIfMinus1_ "setFdTimesHiRes" (c_futimes fd times)
 #else
+{-# WARNING setFdTimesHiRes "setFdTimesHiRes: not available on this platform" #-}
 setFdTimesHiRes =
   error "setSymbolicLinkTimesHiRes: not available on this platform"
 #endif
@@ -530,6 +531,7 @@ touchFd :: Fd -> IO ()
 touchFd (Fd fd) =
   throwErrnoIfMinus1_ "touchFd" (c_futimes fd nullPtr)
 #else
+{-# WARNING touchFd "touchFd: not available on this platform" #-}
 touchFd =
   error "touchFd: not available on this platform"
 #endif
