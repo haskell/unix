@@ -211,6 +211,7 @@ foreign import capi unsafe "HsUnix.h getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
 		 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
+{-# WARNING getGroupEntryForID "System.Posix.User.getGroupEntryForID: not supported" #-}
 getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 #endif
 
@@ -230,6 +231,7 @@ foreign import capi unsafe "HsUnix.h getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
 		 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
+{-# WARNING getGroupEntryForName "System.Posix.User.getGroupEntryForName: not supported" #-}
 getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not supported"
 #endif
 
@@ -261,6 +263,7 @@ foreign import ccall unsafe "setgrent"
 foreign import ccall unsafe "endgrent"
   c_endgrent :: IO ()
 #else
+{-# WARNING getAllGroupEntries "System.Posix.User.getAllGroupEntries: not supported" #-}
 getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
 #endif
 
@@ -332,6 +335,7 @@ getUserEntryForID uid = do
 foreign import ccall unsafe "getpwuid" 
   c_getpwuid :: CUid -> IO (Ptr CPasswd)
 #else
+{-# WARNING getUserEntryForID "System.Posix.User.getUserEntryForID: not supported" #-}
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 #endif
 
@@ -360,6 +364,7 @@ getUserEntryForName name = do
 foreign import ccall unsafe "getpwnam" 
   c_getpwnam :: CString -> IO (Ptr CPasswd)
 #else
+{-# WARNING getUserEntryForName "System.Posix.User.getUserEntryForName: not supported" #-}
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
 #endif
 
@@ -385,6 +390,7 @@ foreign import ccall unsafe "setpwent"
 foreign import ccall unsafe "endpwent"
   c_endpwent :: IO ()
 #else
+{-# WARNING getAllUserEntries "System.Posix.User.getAllUserEntries: not supported" #-}
 getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 #endif
 
