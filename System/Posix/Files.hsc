@@ -399,6 +399,9 @@ setSymbolicLinkTimesHiRes name atime mtime =
       throwErrnoPathIfMinus1_ "setSymbolicLinkTimesHiRes" name $
         c_lutimes s times
 #else
+{-# WARNING setSymbolicLinkTimesHiRes
+ "System.Posix.Files.setSymbolicLinkTImesHiRes: not available on this platform"
+  #-}
 setSymbolicLinkTimesHiRes =
   error "setSymbolicLinkTimesHiRes: not available on this platform"
 #endif
@@ -425,6 +428,9 @@ touchSymbolicLink name =
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "touchSymbolicLink" name (c_lutimes s nullPtr)
 #else
+{-#
+  WARNING touchSymbolicLink "System.Posix.Files.touchSymbolicLink: not available on this platform"
+  #-}
 touchSymbolicLink =
   error "touchSymbolicLink: not available on this platform"
 #endif

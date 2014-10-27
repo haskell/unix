@@ -141,6 +141,7 @@ getSlaveTerminalName (Fd fd) = do
 foreign import capi unsafe "HsUnix.h ptsname"
   c_ptsname :: CInt -> IO CString
 #else
+{-# WARNING getSlaveTerminalName "getSlaveTerminalName: not available on this platform" #-}
 getSlaveTerminalName _ =
     ioError (errnoToIOError "getSlaveTerminalName" eNOSYS Nothing Nothing)
 #endif

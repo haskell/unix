@@ -320,6 +320,7 @@ foreign import capi safe "HsUnix.h getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
                  -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
+{-# WARNING getGroupEntryForID "System.Posix.User.getGroupEntryForID: not supported" #-}
 getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 #endif
 
@@ -339,6 +340,7 @@ foreign import capi safe "HsUnix.h getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
                  -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
+{-# WARNING getGroupEntryForName "System.Posix.User.getGroupEntryForName: not supported" #-}
 getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not supported"
 #endif
 
@@ -366,6 +368,7 @@ foreign import ccall safe "getgrent" c_getgrent :: IO (Ptr CGroup)
 foreign import ccall safe "setgrent" c_setgrent :: IO ()
 foreign import ccall safe "endgrent" c_endgrent :: IO ()
 #else
+{-# WARNING getAllGroupEntries "System.Posix.User.getAllGroupEntries: not supported" #-}
 getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
 #endif
 
@@ -416,6 +419,7 @@ foreign import capi safe "HsUnix.h getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd ->
                         CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #else
+{-# WARNING getUserEntryForID "System.Posix.User.getUserEntryForID: not supported" #-}
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 #endif
 
@@ -435,6 +439,7 @@ foreign import capi safe "HsUnix.h getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
                -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #else
+{-# WARNING getUserEntryForName "System.Posix.User.getUserEntryForName: not supported" #-}
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
 #endif
 
@@ -456,6 +461,7 @@ foreign import ccall safe "getpwent" c_getpwent :: IO (Ptr CPasswd)
 foreign import ccall safe "setpwent" c_setpwent :: IO ()
 foreign import ccall safe "endpwent" c_endpwent :: IO ()
 #else
+{-# WARNING getAllUserEntries "System.Posix.User.getAllUserEntries: not supported" #-}
 getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 #endif
 

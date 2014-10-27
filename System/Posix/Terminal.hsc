@@ -135,6 +135,7 @@ foreign import capi unsafe "HsUnix.h ptsname"
 #else
 getSlaveTerminalName _ =
     ioError (errnoToIOError "getSlaveTerminalName" eNOSYS Nothing Nothing)
+{-# WARNING getSlaveTerminalName "getSlaveTerminalName: not available on this platform" #-}
 #endif
 
 -- -----------------------------------------------------------------------------
@@ -172,6 +173,10 @@ openPseudoTerminal = do
   pushModule slave "ttcompat"
 # endif /* __hpux */
   return (Fd master, slave)
+
+# ifndef HAVE_PTSNAME
+{-# WARNING openPseudoTerminal "openPseudoTerminal: not available on this platform (neither OPENPTY nor PTSNAME available)" #-}
+# endif  /* HAVE_PTSNAME */
 
 -- Push a STREAMS module, for System V systems.
 pushModule :: Fd -> String -> IO ()
