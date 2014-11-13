@@ -3,6 +3,7 @@
 ## 2.7.0.2  *TBA*
 
   * Add support for `base-4.8.0.0`
+  * Tighten `SafeHaskell` bounds for GHC 7.10+
   * Add haddock comments on `RTLD_NEXT` and `RTLD_DEFAULT`
   * Deprecate function `haveRtldLocal`
   * Fix `getGroupEntryForID/getGroupEntryForName' on Solaris. Solaris uses

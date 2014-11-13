@@ -1,5 +1,8 @@
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
+#if __GLASGOW_HASKELL__ >= 709
+{-# OPTIONS_GHC -fno-warn-trustworthy-safe #-}
+#endif
 #endif
 -----------------------------------------------------------------------------
 -- |
