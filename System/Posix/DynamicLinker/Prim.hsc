@@ -1,5 +1,6 @@
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
+{-# OPTIONS_GHC -fno-warn-trustworthy-safe #-}
 #endif
 -----------------------------------------------------------------------------
 -- |
