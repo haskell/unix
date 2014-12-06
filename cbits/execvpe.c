@@ -8,12 +8,13 @@
          execvpe(3) is available, we use that instead.
 
    -------------------------------------------------------------------------- */
-#include "execvpe.h"
 
-#include "HsUnixConfig.h"
+#include "execvpe.h"
 
 #if HAVE_EXECVPE
 # define _GNU_SOURCE
+#else
+# undef execvpe
 #endif
 
 #include <errno.h>
