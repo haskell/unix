@@ -16,6 +16,8 @@
 --
 -----------------------------------------------------------------------------
 
+#include "HsUnix.h"
+
 module System.Posix.Unistd (
     -- * System environment
     SystemID(..),
@@ -26,6 +28,14 @@ module System.Posix.Unistd (
 
     -- * Sleeping
     sleep, usleep, nanosleep,
+
+    -- * File synchronization
+#ifdef HAVE_FSYNC
+    fsync,
+#endif
+#ifdef HAVE_FDATASYNC
+    fdatasync,
+#endif
 
   {-
     ToDo from unistd.h:
@@ -49,12 +59,11 @@ module System.Posix.Unistd (
 -}
   ) where
 
-#include "HsUnix.h"
-
 import Foreign.C.Error
 import Foreign.C.String ( peekCString )
 import Foreign.C.Types
 import Foreign
+import System.Posix.Types
 import System.Posix.Internals
 
 -- -----------------------------------------------------------------------------
@@ -206,3 +215,24 @@ sysconf n = do
 
 foreign import ccall unsafe "sysconf"
   c_sysconf :: CInt -> IO CLong
+
+-- -----------------------------------------------------------------------------
+-- File synchronization
+
+#ifdef HAVE_FSYNC
+fsync :: Fd -> IO ()
+fsync fd = do
+  throwErrnoIfMinus1_ "fsync" (c_fsync $ fromIntegral fd)
+
+foreign import ccall safe "fsync"
+  c_fsync :: CInt -> IO CInt
+#endif
+
+#ifdef HAVE_FDATASYNC
+fdatasync :: Fd -> IO ()
+fdatasync fd = do
+  throwErrnoIfMinus1_ "fdatasync" (c_fdatasync $ fromIntegral fd)
+
+foreign import ccall safe "fdatasync"
+  c_fdatasync :: CInt -> IO CInt
+#endif
