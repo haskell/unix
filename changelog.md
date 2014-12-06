@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
 ## 2.7.0.2  *TBA*
