@@ -7,7 +7,7 @@
 -- Module      :  System.Posix.Directory.Common
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -79,7 +79,7 @@ foreign import ccall unsafe "telldir"
 #endif
 
 changeWorkingDirectoryFd :: Fd -> IO ()
-changeWorkingDirectoryFd (Fd fd) = 
+changeWorkingDirectoryFd (Fd fd) =
   throwErrnoIfMinus1Retry_ "changeWorkingDirectoryFd" (c_fchdir fd)
 
 foreign import ccall unsafe "fchdir"

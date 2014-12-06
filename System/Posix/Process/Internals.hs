@@ -39,25 +39,25 @@ decipherWaitStatus wstat =
       then do
         let exitstatus = c_WEXITSTATUS wstat
         if exitstatus == 0
-	   then return (Exited ExitSuccess)
-	   else return (Exited (ExitFailure (fromIntegral exitstatus)))
+           then return (Exited ExitSuccess)
+           else return (Exited (ExitFailure (fromIntegral exitstatus)))
       else do
         if c_WIFSIGNALED wstat /= 0
-	   then do
+           then do
                 let termsig    = c_WTERMSIG wstat
                 let coredumped = c_WCOREDUMP wstat /= 0
                 return (Terminated termsig coredumped)
-	   else do
-		if c_WIFSTOPPED wstat /= 0
-		   then do
-			let stopsig = c_WSTOPSIG wstat
+           else do
+                if c_WIFSTOPPED wstat /= 0
+                   then do
+                        let stopsig = c_WSTOPSIG wstat
                         return (Stopped stopsig)
-		   else do
-			ioError (mkIOError illegalOperationErrorType
-				   "waitStatus" Nothing Nothing)
+                   else do
+                        ioError (mkIOError illegalOperationErrorType
+                                   "waitStatus" Nothing Nothing)
 
 foreign import ccall unsafe "__hsunix_wifexited"
-  c_WIFEXITED :: CInt -> CInt 
+  c_WIFEXITED :: CInt -> CInt
 
 foreign import ccall unsafe "__hsunix_wexitstatus"
   c_WEXITSTATUS :: CInt -> CInt
@@ -66,7 +66,7 @@ foreign import ccall unsafe "__hsunix_wifsignaled"
   c_WIFSIGNALED :: CInt -> CInt
 
 foreign import ccall unsafe "__hsunix_wtermsig"
-  c_WTERMSIG :: CInt -> CInt 
+  c_WTERMSIG :: CInt -> CInt
 
 foreign import ccall unsafe "__hsunix_wifstopped"
   c_WIFSTOPPED :: CInt -> CInt

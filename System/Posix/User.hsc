@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.User
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -55,7 +55,7 @@ import Foreign.C
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
-import System.Posix.Internals	( CGroup, CPasswd )
+import System.Posix.Internals   ( CGroup, CPasswd )
 
 #if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 import Control.Concurrent.MVar  ( MVar, newMVar, withMVar )
@@ -209,7 +209,7 @@ getGroupEntryForID gid =
 
 foreign import capi unsafe "HsUnix.h getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
-		 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
+                 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
 getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 #endif
@@ -228,7 +228,7 @@ getGroupEntryForName name =
 
 foreign import capi unsafe "HsUnix.h getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
-		 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
+                 -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
 getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not supported"
 #endif
@@ -247,7 +247,7 @@ getAllGroupEntries =
     withMVar lock $ \_ -> bracket_ c_setgrent c_endgrent $ worker []
     where worker accum =
               do resetErrno
-                 ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $ 
+                 ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $
                         c_getgrent
                  if ppw == nullPtr
                      then return (reverse accum)
@@ -321,15 +321,15 @@ getUserEntryForID uid =
       c_getpwuid_r uid ppw
 
 foreign import ccall unsafe "__hsunix_getpwuid_r"
-  c_getpwuid_r :: CUid -> Ptr CPasswd -> 
-			CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
+  c_getpwuid_r :: CUid -> Ptr CPasswd ->
+                        CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWUID
 getUserEntryForID uid = do
   withMVar lock $ \_ -> do
     ppw <- throwErrnoIfNull "getUserEntryForID" $ c_getpwuid uid
     unpackUserEntry ppw
 
-foreign import ccall unsafe "getpwuid" 
+foreign import ccall unsafe "getpwuid"
   c_getpwuid :: CUid -> IO (Ptr CPasswd)
 #else
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
@@ -357,21 +357,21 @@ getUserEntryForName name = do
       ppw <- throwErrnoIfNull "getUserEntryForName" $ c_getpwnam pstr
       unpackUserEntry ppw
 
-foreign import ccall unsafe "getpwnam" 
+foreign import ccall unsafe "getpwnam"
   c_getpwnam :: CString -> IO (Ptr CPasswd)
 #else
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
 #endif
 
--- | @getAllUserEntries@ returns all user entries on the system by 
+-- | @getAllUserEntries@ returns all user entries on the system by
 --   repeatedly calling @getpwent@
 getAllUserEntries :: IO [UserEntry]
 #ifdef HAVE_GETPWENT
-getAllUserEntries = 
+getAllUserEntries =
     withMVar lock $ \_ -> bracket_ c_setpwent c_endpwent $ worker []
-    where worker accum = 
+    where worker accum =
               do resetErrno
-                 ppw <- throwErrnoIfNullAndError "getAllUserEntries" $ 
+                 ppw <- throwErrnoIfNullAndError "getAllUserEntries" $
                         c_getpwent
                  if ppw == nullPtr
                      then return (reverse accum)
@@ -403,10 +403,10 @@ foreign import ccall unsafe "sysconf"
 
 -- We need a default value since sysconf can fail and return -1
 -- even when the parameter name is defined in unistd.h.
--- One example of this is _SC_GETPW_R_SIZE_MAX under 
+-- One example of this is _SC_GETPW_R_SIZE_MAX under
 -- Mac OS X 10.4.9 on i386.
 sysconfWithDefault :: Int -> CInt -> Int
-sysconfWithDefault def sc = 
+sysconfWithDefault def sc =
     unsafePerformIO $ do v <- fmap fromIntegral $ c_sysconf sc
                          return $ if v == (-1) then def else v
 #endif

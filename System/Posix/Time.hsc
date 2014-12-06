@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Time
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -16,9 +16,9 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Time (
-	epochTime,
-	-- ToDo: lots more from sys/time.h
-	-- how much already supported by System.Time?
+        epochTime,
+        -- ToDo: lots more from sys/time.h
+        -- how much already supported by System.Time?
   ) where
 
 #include "HsUnix.h"
@@ -30,7 +30,7 @@ import Foreign.C
 -- -----------------------------------------------------------------------------
 -- epochTime
 
--- | @epochTime@ calls @time@ to obtain the number of 
+-- | @epochTime@ calls @time@ to obtain the number of
 --   seconds that have elapsed since the epoch (Jan 01 00:00:00 GMT 1970).
 epochTime :: IO EpochTime
 epochTime = throwErrnoIfMinus1 "epochTime" (c_time nullPtr)

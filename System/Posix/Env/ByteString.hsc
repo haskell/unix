@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Env.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -18,10 +18,10 @@
 module System.Posix.Env.ByteString (
        -- * Environment Variables
         getEnv
-	, getEnvDefault
-	, getEnvironmentPrim
-	, getEnvironment
-	, putEnv
+        , getEnvDefault
+        , getEnvironmentPrim
+        , getEnvironment
+        , putEnv
         , setEnv
        , unsetEnv
 
@@ -34,7 +34,7 @@ module System.Posix.Env.ByteString (
 import Foreign
 import Foreign.C
 import Control.Monad    ( liftM )
-import Data.Maybe	( fromMaybe )
+import Data.Maybe       ( fromMaybe )
 
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
@@ -130,7 +130,7 @@ setEnv key value ovrwrt = do
   B.useAsCString key $ \ keyP ->
     B.useAsCString value $ \ valueP ->
       throwErrnoIfMinus1_ "setenv" $
-	c_setenv keyP valueP (fromIntegral (fromEnum ovrwrt))
+        c_setenv keyP valueP (fromIntegral (fromEnum ovrwrt))
 
 foreign import ccall unsafe "setenv"
    c_setenv :: CString -> CString -> CInt -> IO CInt

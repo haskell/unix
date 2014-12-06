@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.Process
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -25,7 +25,7 @@ module System.Posix.Process (
     forkProcessWithUnmask,
 #endif
     executeFile,
-    
+
     -- ** Exiting
     exitImmediately,
 
@@ -86,21 +86,21 @@ import System.Posix.Internals ( withFilePath )
 --   environment is provided to supersede the process's current
 --   environment.  The basename (leading directory names suppressed) of
 --   the command is passed to @execv*@ as @arg[0]@;
---   the argument list passed to 'executeFile' therefore 
+--   the argument list passed to 'executeFile' therefore
 --   begins with @arg[1]@.
-executeFile :: FilePath			    -- ^ Command
-            -> Bool			    -- ^ Search PATH?
-            -> [String]			    -- ^ Arguments
-            -> Maybe [(String, String)]	    -- ^ Environment
+executeFile :: FilePath                     -- ^ Command
+            -> Bool                         -- ^ Search PATH?
+            -> [String]                     -- ^ Arguments
+            -> Maybe [(String, String)]     -- ^ Environment
             -> IO a
 executeFile path search args Nothing = do
   withFilePath path $ \s ->
     withMany withFilePath (path:args) $ \cstrs ->
       withArray0 nullPtr cstrs $ \arr -> do
-	pPrPr_disableITimers
-	if search 
-	   then throwErrnoPathIfMinus1_ "executeFile" path (c_execvp s arr)
-	   else throwErrnoPathIfMinus1_ "executeFile" path (c_execv s arr)
+        pPrPr_disableITimers
+        if search
+           then throwErrnoPathIfMinus1_ "executeFile" path (c_execvp s arr)
+           else throwErrnoPathIfMinus1_ "executeFile" path (c_execv s arr)
         return undefined -- never reached
 
 executeFile path search args (Just env) = do
@@ -110,12 +110,12 @@ executeFile path search args (Just env) = do
     let env' = map (\ (name, val) -> name ++ ('=' : val)) env in
     withMany withFilePath env' $ \cenv ->
       withArray0 nullPtr cenv $ \env_arr -> do
-	pPrPr_disableITimers
-	if search 
-	   then throwErrnoPathIfMinus1_ "executeFile" path
-		   (c_execvpe s arg_arr env_arr)
-	   else throwErrnoPathIfMinus1_ "executeFile" path
-		   (c_execve s arg_arr env_arr)
+        pPrPr_disableITimers
+        if search
+           then throwErrnoPathIfMinus1_ "executeFile" path
+                   (c_execvpe s arg_arr env_arr)
+           else throwErrnoPathIfMinus1_ "executeFile" path
+                   (c_execve s arg_arr env_arr)
         return undefined -- never reached
 
 foreign import ccall unsafe "execvp"

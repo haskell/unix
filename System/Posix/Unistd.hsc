@@ -7,7 +7,7 @@
 -- Module      :  System.Posix.Unistd
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -29,7 +29,7 @@ module System.Posix.Unistd (
 
   {-
     ToDo from unistd.h:
-      confstr, 
+      confstr,
       lots of sysconf variables
 
     -- use Network.BSD
@@ -62,11 +62,11 @@ import System.Posix.Internals
 
 data SystemID =
   SystemID { systemName :: String
-  	   , nodeName   :: String
-	   , release    :: String
-	   , version    :: String
-	   , machine    :: String
-	   }
+           , nodeName   :: String
+           , release    :: String
+           , version    :: String
+           , machine    :: String
+           }
 
 getSystemID :: IO SystemID
 getSystemID = do
@@ -78,11 +78,11 @@ getSystemID = do
     ver  <- peekCString ((#ptr struct utsname, version) p_sid)
     mach <- peekCString ((#ptr struct utsname, machine) p_sid)
     return (SystemID { systemName = sysN,
-		       nodeName   = node,
-		       release    = rel,
-		       version    = ver,
-		       machine    = mach
-		     })
+                       nodeName   = node,
+                       release    = rel,
+                       version    = ver,
+                       machine    = mach
+                     })
 
 foreign import ccall unsafe "uname"
    c_uname :: Ptr CUtsname -> IO CInt
@@ -152,7 +152,7 @@ nanosleep nsecs = do
   allocaBytes (#const sizeof(struct timespec)) $ \pts1 -> do
   allocaBytes (#const sizeof(struct timespec)) $ \pts2 -> do
      let (tv_sec0, tv_nsec0) = nsecs `divMod` 1000000000
-     let 
+     let
        loop tv_sec tv_nsec = do
          (#poke struct timespec, tv_sec)  pts1 tv_sec
          (#poke struct timespec, tv_nsec) pts1 tv_nsec
@@ -170,7 +170,7 @@ nanosleep nsecs = do
 
 data CTimeSpec
 
-foreign import ccall safe "__hsunix_nanosleep" 
+foreign import ccall safe "__hsunix_nanosleep"
   c_nanosleep :: Ptr CTimeSpec -> Ptr CTimeSpec -> IO CInt
 #endif
 
@@ -185,14 +185,14 @@ data SysVar = ArgumentLimit
             | PosixVersion
             | HasSavedIDs
             | HasJobControl
-	-- ToDo: lots more
+        -- ToDo: lots more
 
 getSysVar :: SysVar -> IO Integer
 getSysVar v =
     case v of
       ArgumentLimit -> sysconf (#const _SC_ARG_MAX)
       ChildLimit    -> sysconf (#const _SC_CHILD_MAX)
-      ClockTick	    -> sysconf (#const _SC_CLK_TCK)
+      ClockTick     -> sysconf (#const _SC_CLK_TCK)
       GroupLimit    -> sysconf (#const _SC_NGROUPS_MAX)
       OpenFileLimit -> sysconf (#const _SC_OPEN_MAX)
       PosixVersion  -> sysconf (#const _SC_VERSION)
@@ -200,7 +200,7 @@ getSysVar v =
       HasJobControl -> sysconf (#const _SC_JOB_CONTROL)
 
 sysconf :: CInt -> IO Integer
-sysconf n = do 
+sysconf n = do
   r <- throwErrnoIfMinus1 "getSysVar" (c_sysconf n)
   return (fromIntegral r)
 

@@ -69,9 +69,9 @@ getResourceLimit res = do
     soft <- (#peek struct rlimit, rlim_cur) p_rlimit
     hard <- (#peek struct rlimit, rlim_max) p_rlimit
     return (ResourceLimits {
-		softLimit = unpackRLimit soft,
-		hardLimit = unpackRLimit hard
-	   })
+                softLimit = unpackRLimit soft,
+                hardLimit = unpackRLimit hard
+           })
 
 setResourceLimit :: Resource -> ResourceLimits -> IO ()
 setResourceLimit res ResourceLimits{softLimit=soft,hardLimit=hard} = do
@@ -79,7 +79,7 @@ setResourceLimit res ResourceLimits{softLimit=soft,hardLimit=hard} = do
     (#poke struct rlimit, rlim_cur) p_rlimit (packRLimit soft True)
     (#poke struct rlimit, rlim_max) p_rlimit (packRLimit hard False)
     throwErrnoIfMinus1_ "setResourceLimit" $
-	c_setrlimit (packResource res) p_rlimit
+        c_setrlimit (packResource res) p_rlimit
     return ()
 
 packResource :: Resource -> CInt
@@ -126,14 +126,14 @@ import Control.Monad
 
 main = do
  zipWithM_ (\r n -> setResourceLimit r ResourceLimits{
-					hardLimit = ResourceLimit n,
-					softLimit = ResourceLimit n })
-	allResources [1..]
+                                        hardLimit = ResourceLimit n,
+                                        softLimit = ResourceLimit n })
+        allResources [1..]
  showAll
  mapM_ (\r -> setResourceLimit r ResourceLimits{
-					hardLimit = ResourceLimit 1,
-					softLimit = ResourceLimitInfinity })
-	allResources
+                                        hardLimit = ResourceLimit 1,
+                                        softLimit = ResourceLimitInfinity })
+        allResources
    -- should fail
 
 
@@ -142,11 +142,11 @@ showAll =
 
 allResources =
     [ResourceCoreFileSize, ResourceCPUTime, ResourceDataSize,
-	ResourceFileSize, ResourceOpenFiles, ResourceStackSize
+        ResourceFileSize, ResourceOpenFiles, ResourceStackSize
 #ifdef RLIMIT_AS
-	, ResourceTotalMemory
+        , ResourceTotalMemory
 #endif
-	]
+        ]
 
 showRLims ResourceLimits{hardLimit=h,softLimit=s}
   = "hard: " ++ showRLim h ++ ", soft: " ++ showRLim s

@@ -7,7 +7,7 @@
 -- Module      :  System.Posix.Terminal.Common
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -92,44 +92,44 @@ withTerminalAttributes (TerminalAttributes termios) = withForeignPtr termios
 
 
 data TerminalMode
-	-- input flags
-   = InterruptOnBreak		-- BRKINT
-   | MapCRtoLF			-- ICRNL
-   | IgnoreBreak		-- IGNBRK
-   | IgnoreCR			-- IGNCR
-   | IgnoreParityErrors		-- IGNPAR
-   | MapLFtoCR			-- INLCR
-   | CheckParity		-- INPCK
-   | StripHighBit		-- ISTRIP
-   | StartStopInput		-- IXOFF
-   | StartStopOutput		-- IXON
-   | MarkParityErrors		-- PARMRK
+        -- input flags
+   = InterruptOnBreak           -- BRKINT
+   | MapCRtoLF                  -- ICRNL
+   | IgnoreBreak                -- IGNBRK
+   | IgnoreCR                   -- IGNCR
+   | IgnoreParityErrors         -- IGNPAR
+   | MapLFtoCR                  -- INLCR
+   | CheckParity                -- INPCK
+   | StripHighBit               -- ISTRIP
+   | StartStopInput             -- IXOFF
+   | StartStopOutput            -- IXON
+   | MarkParityErrors           -- PARMRK
 
-	-- output flags
-   | ProcessOutput		-- OPOST
-	-- ToDo: ONLCR, OCRNL, ONOCR, ONLRET, OFILL,
-	--       NLDLY(NL0,NL1), CRDLY(CR0,CR1,CR2,CR2)
-	--	 TABDLY(TAB0,TAB1,TAB2,TAB3)
-	--	 BSDLY(BS0,BS1), VTDLY(VT0,VT1), FFDLY(FF0,FF1)
+        -- output flags
+   | ProcessOutput              -- OPOST
+        -- ToDo: ONLCR, OCRNL, ONOCR, ONLRET, OFILL,
+        --       NLDLY(NL0,NL1), CRDLY(CR0,CR1,CR2,CR2)
+        --       TABDLY(TAB0,TAB1,TAB2,TAB3)
+        --       BSDLY(BS0,BS1), VTDLY(VT0,VT1), FFDLY(FF0,FF1)
 
-	-- control flags
-   | LocalMode			-- CLOCAL
-   | ReadEnable			-- CREAD
-   | TwoStopBits		-- CSTOPB
-   | HangupOnClose		-- HUPCL
-   | EnableParity		-- PARENB
-   | OddParity			-- PARODD
+        -- control flags
+   | LocalMode                  -- CLOCAL
+   | ReadEnable                 -- CREAD
+   | TwoStopBits                -- CSTOPB
+   | HangupOnClose              -- HUPCL
+   | EnableParity               -- PARENB
+   | OddParity                  -- PARODD
 
-	-- local modes
-   | EnableEcho			-- ECHO
-   | EchoErase			-- ECHOE
-   | EchoKill			-- ECHOK
-   | EchoLF			-- ECHONL
-   | ProcessInput		-- ICANON
-   | ExtendedFunctions		-- IEXTEN
-   | KeyboardInterrupts		-- ISIG
-   | NoFlushOnInterrupt		-- NOFLSH
-   | BackgroundWriteInterrupt	-- TOSTOP
+        -- local modes
+   | EnableEcho                 -- ECHO
+   | EchoErase                  -- ECHOE
+   | EchoKill                   -- ECHOK
+   | EchoLF                     -- ECHONL
+   | ProcessInput               -- ICANON
+   | ExtendedFunctions          -- IEXTEN
+   | KeyboardInterrupts         -- ISIG
+   | NoFlushOnInterrupt         -- NOFLSH
+   | BackgroundWriteInterrupt   -- TOSTOP
 
 withoutMode :: TerminalAttributes -> TerminalMode -> TerminalAttributes
 withoutMode termios InterruptOnBreak = clearInputFlag (#const BRKINT) termios
@@ -226,11 +226,11 @@ bitsPerByte termios = unsafePerformIO $ do
   where
     word2Bits :: CTcflag -> Int
     word2Bits x =
-	if x == (#const CS5) then 5
-	else if x == (#const CS6) then 6
-	else if x == (#const CS7) then 7
-	else if x == (#const CS8) then 8
-	else 0
+        if x == (#const CS5) then 5
+        else if x == (#const CS6) then 6
+        else if x == (#const CS7) then 7
+        else if x == (#const CS8) then 8
+        else 0
 
 withBits :: TerminalAttributes -> Int -> TerminalAttributes
 withBits termios bits = unsafePerformIO $ do
@@ -247,15 +247,15 @@ withBits termios bits = unsafePerformIO $ do
     mask _ = error "withBits bit value out of range [5..8]"
 
 data ControlCharacter
-  = EndOfFile		-- VEOF
-  | EndOfLine		-- VEOL
-  | Erase		-- VERASE
-  | Interrupt		-- VINTR
-  | Kill		-- VKILL
-  | Quit		-- VQUIT
-  | Start		-- VSTART
-  | Stop		-- VSTOP
-  | Suspend		-- VSUSP
+  = EndOfFile           -- VEOF
+  | EndOfLine           -- VEOL
+  | Erase               -- VERASE
+  | Interrupt           -- VINTR
+  | Kill                -- VKILL
+  | Quit                -- VQUIT
+  | Start               -- VSTART
+  | Stop                -- VSTOP
+  | Suspend             -- VSUSP
 
 controlChar :: TerminalAttributes -> ControlCharacter -> Maybe Char
 controlChar termios cc = unsafePerformIO $ do
@@ -265,7 +265,7 @@ controlChar termios cc = unsafePerformIO $ do
     if val == ((#const _POSIX_VDISABLE)::CCc)
        then return Nothing
        else return (Just (chr (fromEnum val)))
-  
+
 withCC :: TerminalAttributes
        -> (ControlCharacter, Char)
        -> TerminalAttributes
@@ -416,9 +416,9 @@ foreign import capi unsafe "termios.h tcdrain"
 
 
 data QueueSelector
-  = InputQueue		-- TCIFLUSH
-  | OutputQueue		-- TCOFLUSH
-  | BothQueues		-- TCIOFLUSH
+  = InputQueue          -- TCIFLUSH
+  | OutputQueue         -- TCOFLUSH
+  | BothQueues          -- TCIOFLUSH
 
 -- | @discardData fd queues@ calls @tcflush@ to discard
 --   pending input and\/or output for @Fd@ @fd@,
@@ -436,12 +436,12 @@ foreign import capi unsafe "termios.h tcflush"
   c_tcflush :: CInt -> CInt -> IO CInt
 
 data FlowAction
-  = SuspendOutput	-- ^ TCOOFF
-  | RestartOutput	-- ^ TCOON
-  | TransmitStop	-- ^ TCIOFF
-  | TransmitStart	-- ^ TCION
+  = SuspendOutput       -- ^ TCOOFF
+  | RestartOutput       -- ^ TCOON
+  | TransmitStop        -- ^ TCIOFF
+  | TransmitStart       -- ^ TCION
 
--- | @controlFlow fd action@ calls @tcflow@ to control the 
+-- | @controlFlow fd action@ calls @tcflow@ to control the
 --   flow of data on @Fd@ @fd@, as indicated by
 --   @action@.
 controlFlow :: Fd -> FlowAction -> IO ()
@@ -458,7 +458,7 @@ foreign import capi unsafe "termios.h tcflow"
   c_tcflow :: CInt -> CInt -> IO CInt
 
 -- | @getTerminalProcessGroupID fd@ calls @tcgetpgrp@ to
---   obtain the @ProcessGroupID@ of the foreground process group 
+--   obtain the @ProcessGroupID@ of the foreground process group
 --   associated with the terminal attached to @Fd@ @fd@.
 getTerminalProcessGroupID :: Fd -> IO ProcessGroupID
 getTerminalProcessGroupID (Fd fd) = do
@@ -468,8 +468,8 @@ foreign import ccall unsafe "tcgetpgrp"
   c_tcgetpgrp :: CInt -> IO CPid
 
 -- | @setTerminalProcessGroupID fd pgid@ calls @tcsetpgrp@ to
---   set the @ProcessGroupID@ of the foreground process group 
---   associated with the terminal attached to @Fd@ 
+--   set the @ProcessGroupID@ of the foreground process group
+--   associated with the terminal attached to @Fd@
 --   @fd@ to @pgid@.
 setTerminalProcessGroupID :: Fd -> ProcessGroupID -> IO ()
 setTerminalProcessGroupID (Fd fd) pgid =
@@ -562,7 +562,7 @@ clearInputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       iflag <- (#peek struct termios, c_iflag) p2
       (#poke struct termios, c_iflag) p1 (iflag .&. complement flag)
   return $ makeTerminalAttributes fp
@@ -574,7 +574,7 @@ setInputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       iflag <- (#peek struct termios, c_iflag) p2
       (#poke struct termios, c_iflag) p1 (iflag .|. flag)
   return $ makeTerminalAttributes fp
@@ -594,7 +594,7 @@ clearControlFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       cflag <- (#peek struct termios, c_cflag) p2
       (#poke struct termios, c_cflag) p1 (cflag .&. complement flag)
   return $ makeTerminalAttributes fp
@@ -606,7 +606,7 @@ setControlFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       cflag <- (#peek struct termios, c_cflag) p2
       (#poke struct termios, c_cflag) p1 (cflag .|. flag)
   return $ makeTerminalAttributes fp
@@ -626,7 +626,7 @@ clearLocalFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       lflag <- (#peek struct termios, c_lflag) p2
       (#poke struct termios, c_lflag) p1 (lflag .&. complement flag)
   return $ makeTerminalAttributes fp
@@ -638,7 +638,7 @@ setLocalFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       lflag <- (#peek struct termios, c_lflag) p2
       (#poke struct termios, c_lflag) p1 (lflag .|. flag)
   return $ makeTerminalAttributes fp
@@ -658,7 +658,7 @@ clearOutputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       oflag <- (#peek struct termios, c_oflag) p2
       (#poke struct termios, c_oflag) p1 (oflag .&. complement flag)
   return $ makeTerminalAttributes fp
@@ -670,7 +670,7 @@ setOutputFlag flag termios = unsafePerformIO $ do
   fp <- mallocForeignPtrBytes (#const sizeof(struct termios))
   withForeignPtr fp $ \p1 -> do
     withTerminalAttributes termios $ \p2 -> do
-      copyBytes p1 p2 (#const sizeof(struct termios)) 
+      copyBytes p1 p2 (#const sizeof(struct termios))
       oflag <- (#peek struct termios, c_oflag) p2
       (#poke struct termios, c_oflag) p1 (oflag .|. flag)
   return $ makeTerminalAttributes fp
@@ -683,7 +683,7 @@ testOutputFlag flag termios = unsafePerformIO $
     oflag <- (#peek struct termios, c_oflag) p
     return $! ((oflag .&. flag) /= 0)
 
-withNewTermios :: TerminalAttributes -> (Ptr CTermios -> IO a) 
+withNewTermios :: TerminalAttributes -> (Ptr CTermios -> IO a)
   -> IO TerminalAttributes
 withNewTermios termios action = do
   fp1 <- mallocForeignPtrBytes (#const sizeof(struct termios))

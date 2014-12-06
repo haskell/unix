@@ -16,8 +16,8 @@
 -----------------------------------------------------------------------------
 
 module System.Posix.Semaphore
-    (OpenSemFlags(..), Semaphore(), 
-     semOpen, semUnlink, semWait, semTryWait, semThreadWait, 
+    (OpenSemFlags(..), Semaphore(),
+     semOpen, semUnlink, semWait, semTryWait, semThreadWait,
      semPost, semGetValue)
     where
 
@@ -44,14 +44,14 @@ data OpenSemFlags = OpenSemFlags { semCreate :: Bool,
 
 newtype Semaphore = Semaphore (ForeignPtr ())
 
--- | Open a named semaphore with the given name, flags, mode, and initial 
+-- | Open a named semaphore with the given name, flags, mode, and initial
 --   value.
 semOpen :: String -> OpenSemFlags -> FileMode -> Int -> IO Semaphore
 semOpen name flags mode value =
     let cflags = (if semCreate flags then #{const O_CREAT} else 0) .|.
                  (if semExclusive flags then #{const O_EXCL} else 0)
         semOpen' cname =
-            do sem <- throwErrnoPathIfNull "semOpen" name $ 
+            do sem <- throwErrnoPathIfNull "semOpen" name $
                       sem_open cname (toEnum cflags) mode (toEnum value)
                fptr <- newForeignPtr sem (finalize sem)
                return $ Semaphore fptr
@@ -68,7 +68,7 @@ semUnlink name = withCAString name semUnlink'
 -- | Lock the semaphore, blocking until it becomes available.  Since this
 --   is done through a system call, this will block the *entire runtime*,
 --   not just the current thread.  If this is not the behaviour you want,
---   use semThreadWait instead. 
+--   use semThreadWait instead.
 semWait :: Semaphore -> IO ()
 semWait (Semaphore fptr) = withForeignPtr fptr semWait'
     where semWait' sem = throwErrnoIfMinus1Retry_ "semWait" $
@@ -81,13 +81,13 @@ semTryWait (Semaphore fptr) = withForeignPtr fptr semTrywait'
     where semTrywait' sem = do res <- sem_trywait sem
                                (if res == 0 then return True
                                 else do errno <- getErrno
-                                        (if errno == eINTR 
+                                        (if errno == eINTR
                                          then semTrywait' sem
                                          else if errno == eAGAIN
                                               then return False
                                               else throwErrno "semTrywait"))
 
--- | Poll the semaphore until it is available, then lock it.  Unlike 
+-- | Poll the semaphore until it is available, then lock it.  Unlike
 --   semWait, this will block only the current thread rather than the
 --   entire process.
 semThreadWait :: Semaphore -> IO ()

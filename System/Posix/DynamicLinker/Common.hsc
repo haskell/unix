@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.DynamicLinker.Common
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -27,16 +27,16 @@ module System.Posix.DynamicLinker.Common (
 
 --  Usage:
 --  ******
---  
+--
 --  Let's assume you want to open a local shared library \'foo\' (.\/libfoo.so)
 --  offering a function
 --    @char \* mogrify (char\*,int)@
 --  and invoke @str = mogrify("test",1)@:
--- 
---  
+--
+--
 --  type Fun = CString -> Int -> IO CString
 --  foreign import dynamic unsafe fun__ :: FunPtr Fun -> Fun
--- 
+--
 --  withDL "libfoo.so" [RTLD_NOW] \$ \\ mod -> do
 --     funptr <- dlsym mod "mogrify"
 --     let fun = fun__ funptr
@@ -44,7 +44,7 @@ module System.Posix.DynamicLinker.Common (
 --       strptr <- fun str 1
 --       strstr <- peekCString strptr
 --       ...
---  
+--
 
 where
 
@@ -59,7 +59,7 @@ dlclose (DLHandle h) = throwDLErrorIf_ "dlclose" (/= 0) $ c_dlclose h
 dlclose h = error $ "dlclose: invalid argument" ++ (show h)
 
 dlerror :: IO String
-dlerror = c_dlerror >>= peekCString 
+dlerror = c_dlerror >>= peekCString
 
 -- |'dlsym' returns the address binding of the symbol described in @symbol@,
 -- as it occurs in the shared object identified by @source@.

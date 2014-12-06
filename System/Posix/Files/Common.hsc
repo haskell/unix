@@ -159,8 +159,8 @@ setGroupIDMode = (#const S_ISGID)
 -- | Owner, group and others have read and write permission.
 stdFileMode :: FileMode
 stdFileMode = ownerReadMode  .|. ownerWriteMode .|.
-	      groupReadMode  .|. groupWriteMode .|.
-	      otherReadMode  .|. otherWriteMode
+              groupReadMode  .|. groupWriteMode .|.
+              otherReadMode  .|. otherWriteMode
 
 -- | Owner has read, write and execute permission.
 ownerModes :: FileMode
@@ -534,67 +534,67 @@ setFdSize (Fd fd) off =
 -- pathconf()/fpathconf() support
 
 data PathVar
-  = FileSizeBits		  {- _PC_FILESIZEBITS     -}
+  = FileSizeBits                  {- _PC_FILESIZEBITS     -}
   | LinkLimit                     {- _PC_LINK_MAX         -}
   | InputLineLimit                {- _PC_MAX_CANON        -}
   | InputQueueLimit               {- _PC_MAX_INPUT        -}
   | FileNameLimit                 {- _PC_NAME_MAX         -}
   | PathNameLimit                 {- _PC_PATH_MAX         -}
   | PipeBufferLimit               {- _PC_PIPE_BUF         -}
-				  -- These are described as optional in POSIX:
-  				  {- _PC_ALLOC_SIZE_MIN     -}
-  				  {- _PC_REC_INCR_XFER_SIZE -}
-  				  {- _PC_REC_MAX_XFER_SIZE  -}
-  				  {- _PC_REC_MIN_XFER_SIZE  -}
- 				  {- _PC_REC_XFER_ALIGN     -}
-  | SymbolicLinkLimit		  {- _PC_SYMLINK_MAX      -}
+                                  -- These are described as optional in POSIX:
+                                  {- _PC_ALLOC_SIZE_MIN     -}
+                                  {- _PC_REC_INCR_XFER_SIZE -}
+                                  {- _PC_REC_MAX_XFER_SIZE  -}
+                                  {- _PC_REC_MIN_XFER_SIZE  -}
+                                  {- _PC_REC_XFER_ALIGN     -}
+  | SymbolicLinkLimit             {- _PC_SYMLINK_MAX      -}
   | SetOwnerAndGroupIsRestricted  {- _PC_CHOWN_RESTRICTED -}
   | FileNamesAreNotTruncated      {- _PC_NO_TRUNC         -}
-  | VDisableChar		  {- _PC_VDISABLE         -}
-  | AsyncIOAvailable		  {- _PC_ASYNC_IO         -}
-  | PrioIOAvailable		  {- _PC_PRIO_IO          -}
-  | SyncIOAvailable		  {- _PC_SYNC_IO          -}
+  | VDisableChar                  {- _PC_VDISABLE         -}
+  | AsyncIOAvailable              {- _PC_ASYNC_IO         -}
+  | PrioIOAvailable               {- _PC_PRIO_IO          -}
+  | SyncIOAvailable               {- _PC_SYNC_IO          -}
 
 pathVarConst :: PathVar -> CInt
 pathVarConst v = case v of
-	LinkLimit     			-> (#const _PC_LINK_MAX)
-	InputLineLimit			-> (#const _PC_MAX_CANON)
-	InputQueueLimit			-> (#const _PC_MAX_INPUT)
-	FileNameLimit			-> (#const _PC_NAME_MAX)
-	PathNameLimit			-> (#const _PC_PATH_MAX)
-	PipeBufferLimit			-> (#const _PC_PIPE_BUF)
-	SetOwnerAndGroupIsRestricted	-> (#const _PC_CHOWN_RESTRICTED)
-	FileNamesAreNotTruncated	-> (#const _PC_NO_TRUNC)
-	VDisableChar			-> (#const _PC_VDISABLE)
+        LinkLimit                       -> (#const _PC_LINK_MAX)
+        InputLineLimit                  -> (#const _PC_MAX_CANON)
+        InputQueueLimit                 -> (#const _PC_MAX_INPUT)
+        FileNameLimit                   -> (#const _PC_NAME_MAX)
+        PathNameLimit                   -> (#const _PC_PATH_MAX)
+        PipeBufferLimit                 -> (#const _PC_PIPE_BUF)
+        SetOwnerAndGroupIsRestricted    -> (#const _PC_CHOWN_RESTRICTED)
+        FileNamesAreNotTruncated        -> (#const _PC_NO_TRUNC)
+        VDisableChar                    -> (#const _PC_VDISABLE)
 
 #ifdef _PC_SYNC_IO
-	SyncIOAvailable		-> (#const _PC_SYNC_IO)
+        SyncIOAvailable         -> (#const _PC_SYNC_IO)
 #else
-	SyncIOAvailable		-> error "_PC_SYNC_IO not available"
+        SyncIOAvailable         -> error "_PC_SYNC_IO not available"
 #endif
 
 #ifdef _PC_ASYNC_IO
-	AsyncIOAvailable	-> (#const _PC_ASYNC_IO)
+        AsyncIOAvailable        -> (#const _PC_ASYNC_IO)
 #else
-	AsyncIOAvailable	-> error "_PC_ASYNC_IO not available"
+        AsyncIOAvailable        -> error "_PC_ASYNC_IO not available"
 #endif
 
 #ifdef _PC_PRIO_IO
-	PrioIOAvailable		-> (#const _PC_PRIO_IO)
+        PrioIOAvailable         -> (#const _PC_PRIO_IO)
 #else
-	PrioIOAvailable		-> error "_PC_PRIO_IO not available"
+        PrioIOAvailable         -> error "_PC_PRIO_IO not available"
 #endif
 
 #if _PC_FILESIZEBITS
-	FileSizeBits		-> (#const _PC_FILESIZEBITS)
+        FileSizeBits            -> (#const _PC_FILESIZEBITS)
 #else
-	FileSizeBits		-> error "_PC_FILESIZEBITS not available"
+        FileSizeBits            -> error "_PC_FILESIZEBITS not available"
 #endif
 
 #if _PC_SYMLINK_MAX
-	SymbolicLinkLimit	-> (#const _PC_SYMLINK_MAX)
+        SymbolicLinkLimit       -> (#const _PC_SYMLINK_MAX)
 #else
-	SymbolicLinkLimit	-> error "_PC_SYMLINK_MAX not available"
+        SymbolicLinkLimit       -> error "_PC_SYMLINK_MAX not available"
 #endif
 
 -- | @getFdPathVar var fd@ obtains the dynamic value of the requested

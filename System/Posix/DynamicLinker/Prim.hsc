@@ -9,7 +9,7 @@
 -- Module      :  System.Posix.DynamicLinker.Prim
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -39,10 +39,10 @@ where
 
 #include "HsUnix.h"
 
-import Data.Bits	( (.|.) )
-import Foreign.Ptr	( Ptr, FunPtr, nullPtr )
+import Data.Bits        ( (.|.) )
+import Foreign.Ptr      ( Ptr, FunPtr, nullPtr )
 import Foreign.C.Types
-import Foreign.C.String	( CString )
+import Foreign.C.String ( CString )
 
 
 -- |On some hosts (e.g. SuSe and Ubuntu Linux) 'RTLD_NEXT' (and
@@ -75,10 +75,10 @@ haveRtldLocal = True
 
 -- |Flags for 'System.Posix.DynamicLinker.dlopen'.
 
-data RTLDFlags 
+data RTLDFlags
   = RTLD_LAZY
   | RTLD_NOW
-  | RTLD_GLOBAL 
+  | RTLD_GLOBAL
   | RTLD_LOCAL
     deriving (Show, Read)
 

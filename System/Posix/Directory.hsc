@@ -8,7 +8,7 @@
 -- Module      :  System.Posix.Directory
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  libraries@haskell.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -27,7 +27,7 @@ module System.Posix.Directory (
    DirStream,
    openDirStream,
    readDirStream,
-   rewindDirStream,   
+   rewindDirStream,
    closeDirStream,
    DirStreamOffset,
 #ifdef HAVE_TELLDIR
@@ -52,13 +52,13 @@ import Foreign.C
 import System.Posix.Directory.Common
 import System.Posix.Internals (withFilePath, peekFilePath)
 
--- | @createDirectory dir mode@ calls @mkdir@ to 
+-- | @createDirectory dir mode@ calls @mkdir@ to
 --   create a new directory, @dir@, with permissions based on
 --  @mode@.
 createDirectory :: FilePath -> FileMode -> IO ()
 createDirectory name mode =
-  withFilePath name $ \s -> 
-    throwErrnoPathIfMinus1Retry_ "createDirectory" name (c_mkdir s mode)  
+  withFilePath name $ \s ->
+    throwErrnoPathIfMinus1Retry_ "createDirectory" name (c_mkdir s mode)
     -- POSIX doesn't allow mkdir() to return EINTR, but it does on
     -- OS X (#5184), so we need the Retry variant here.
 
@@ -88,19 +88,19 @@ readDirStream (DirStream dirp) =
     resetErrno
     r <- c_readdir dirp ptr_dEnt
     if (r == 0)
-	 then do dEnt <- peek ptr_dEnt
-		 if (dEnt == nullPtr)
-		    then return []
-		    else do
-	 	     entry <- (d_name dEnt >>= peekFilePath)
-		     c_freeDirEnt dEnt
-		     return entry
-	 else do errno <- getErrno
-		 if (errno == eINTR) then loop ptr_dEnt else do
-		 let (Errno eo) = errno
-		 if (eo == 0)
-		    then return []
-		    else throwErrno "readDirStream"
+         then do dEnt <- peek ptr_dEnt
+                 if (dEnt == nullPtr)
+                    then return []
+                    else do
+                     entry <- (d_name dEnt >>= peekFilePath)
+                     c_freeDirEnt dEnt
+                     return entry
+         else do errno <- getErrno
+                 if (errno == eINTR) then loop ptr_dEnt else do
+                 let (Errno eo) = errno
+                 if (eo == 0)
+                    then return []
+                    else throwErrno "readDirStream"
 
 -- traversing directories
 foreign import ccall unsafe "__hscore_readdir"
@@ -120,17 +120,17 @@ getWorkingDirectory = do
   p <- mallocBytes long_path_size
   go p long_path_size
   where go p bytes = do
-    	  p' <- c_getcwd p (fromIntegral bytes)
-	  if p' /= nullPtr 
-	     then do s <- peekFilePath p'
-		     free p'
-		     return s
-	     else do errno <- getErrno
-		     if errno == eRANGE
-		        then do let bytes' = bytes * 2
-			        p'' <- reallocBytes p bytes'
-			        go p'' bytes'
-		        else throwErrno "getCurrentDirectory"
+          p' <- c_getcwd p (fromIntegral bytes)
+          if p' /= nullPtr
+             then do s <- peekFilePath p'
+                     free p'
+                     return s
+             else do errno <- getErrno
+                     if errno == eRANGE
+                        then do let bytes' = bytes * 2
+                                p'' <- reallocBytes p bytes'
+                                go p'' bytes'
+                        else throwErrno "getCurrentDirectory"
 
 foreign import ccall unsafe "getcwd"
    c_getcwd   :: Ptr CChar -> CSize -> IO (Ptr CChar)
@@ -143,7 +143,7 @@ foreign import ccall unsafe "__hsunix_long_path_size"
 changeWorkingDirectory :: FilePath -> IO ()
 changeWorkingDirectory path =
   modifyIOError (`ioeSetFileName` path) $
-    withFilePath path $ \s -> 
+    withFilePath path $ \s ->
        throwErrnoIfMinus1Retry_ "changeWorkingDirectory" (c_chdir s)
 
 foreign import ccall unsafe "chdir"

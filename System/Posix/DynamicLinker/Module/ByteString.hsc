@@ -6,7 +6,7 @@
 -- Module      :  System.Posix.DynamicLinker.Module.ByteString
 -- Copyright   :  (c) Volker Stolz <vs@foldr.org> 2003
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
--- 
+--
 -- Maintainer  :  vs@foldr.org
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
@@ -21,15 +21,15 @@ module System.Posix.DynamicLinker.Module.ByteString (
 
 --  Usage:
 --  ******
---  
+--
 --  Let's assume you want to open a local shared library 'foo' (./libfoo.so)
 --  offering a function
 --    char * mogrify (char*,int)
 --  and invoke str = mogrify("test",1):
--- 
+--
 --  type Fun = CString -> Int -> IO CString
 --  foreign import dynamic unsafe fun__ :: FunPtr Fun -> Fun
--- 
+--
 --  withModule (Just ".") ("libfoo.so") [RTLD_NOW] $ \ mod -> do
 --     funptr <- moduleSymbol mod "mogrify"
 --     let fun = fun__ funptr
@@ -43,16 +43,16 @@ module System.Posix.DynamicLinker.Module.ByteString (
     , moduleSymbol           -- :: Source -> String -> IO (FunPtr a)
     , moduleClose            -- :: Module -> IO Bool
     , moduleError            -- :: IO String
-    , withModule             -- :: Maybe String 
-                             -- -> String 
-	                     -- -> [ModuleFlags ]
-			     -- -> (Module -> IO a) 
-			     -- -> IO a
-    , withModule_            -- :: Maybe String 
- 			     -- -> String 
- 			     -- -> [ModuleFlags] 
- 			     -- -> (Module -> IO a) 
- 			     -- -> IO ()
+    , withModule             -- :: Maybe String
+                             -- -> String
+                             -- -> [ModuleFlags ]
+                             -- -> (Module -> IO a)
+                             -- -> IO a
+    , withModule_            -- :: Maybe String
+                             -- -> String
+                             -- -> [ModuleFlags]
+                             -- -> (Module -> IO a)
+                             -- -> IO ()
     )
 where
 
