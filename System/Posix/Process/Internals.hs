@@ -30,7 +30,7 @@ data ProcessStatus
 foreign import ccall unsafe "pPrPr_disableITimers"
   pPrPr_disableITimers :: IO ()
 
-foreign import ccall unsafe "execvpe"
+foreign import ccall unsafe "__hsunix_execvpe"
   c_execvpe :: CString -> Ptr CString -> Ptr CString -> IO CInt
 
 decipherWaitStatus :: CInt -> IO ProcessStatus

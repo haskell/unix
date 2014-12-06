@@ -1,27 +1,11 @@
 /* ----------------------------------------------------------------------------
    (c) The University of Glasgow 2004
 
-   Interface for code in execvpe.c
+   Interface for code in cbits/execvpe.c
    ------------------------------------------------------------------------- */
 
-#include "HsUnixConfig.h"
-// Otherwise these clash with similar definitions from other packages:
-#undef PACKAGE_BUGREPORT
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_VERSION
+extern int
+__hsunix_execvpe(const char *name, char *const argv[], char *const envp[]);
 
-#include <errno.h>
-#include <sys/types.h>
-#if HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-
-#if !defined(_MSC_VER) && !defined(__MINGW32__) && !defined(_WIN32)
-#ifndef __QNXNTO__
-extern int execvpe(char *name, char *const argv[], char **envp);
-#endif
+// implemented in cbits/ghcrts.c
 extern void pPrPr_disableITimers (void);
-#endif
-

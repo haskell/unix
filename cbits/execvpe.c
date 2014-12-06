@@ -2,19 +2,25 @@
    (c) The University of Glasgow 1995-2004
 
    Our low-level exec() variant.
+
+   Note: __hsunix_execvpe() is very similiar to the function
+         execvpe(3) as provided by glibc 2.11 and later. However, if
+         execvpe(3) is available, we use that instead.
+
    -------------------------------------------------------------------------- */
 #include "execvpe.h"
 
-#ifdef __GLASGOW_HASKELL__
-#include "Rts.h"
+#include "HsUnixConfig.h"
+
+#if HAVE_EXECVPE
+# define _GNU_SOURCE
 #endif
 
-#if !(defined(_MSC_VER) || defined(__MINGW32__) || defined(_WIN32)) /* to the end */
-#ifndef __QNXNTO__
-
-/* Evidently non-Posix. */
-/* #include "PosixSource.h" */
-
+#include <errno.h>
+#include <sys/types.h>
+#if HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
 #include <unistd.h>
 #include <sys/time.h>
 #include <stdlib.h>
@@ -59,8 +65,11 @@
  */
 
 int
-execvpe(char *name, char *const argv[], char **envp)
+__hsunix_execvpe(const char *name, char *const argv[], char *const envp[])
 {
+#if HAVE_EXECVPE
+    return execvpe(name, argv, envp);
+#else
     register int lp, ln;
     register char *p;
     int eacces=0, etxtbsy=0;
@@ -75,18 +84,18 @@ execvpe(char *name, char *const argv[], char **envp)
 
     /* Get the path we're searching. */
     if (!(path = getenv("PATH"))) {
-#ifdef HAVE_CONFSTR
+# ifdef HAVE_CONFSTR
         ln = confstr(_CS_PATH, NULL, 0);
         if ((cur = path = malloc(ln + 1)) != NULL) {
 	    path[0] = ':';
 	    (void) confstr (_CS_PATH, path + 1, ln);
 	}
-#else
+# else
         if ((cur = path = malloc(1 + 1)) != NULL) {
 	    path[0] = ':';
 	    path[1] = '\0';
 	}
-#endif
+# endif
     } else
 	cur = path = strdup(path);
 
@@ -157,16 +166,5 @@ execvpe(char *name, char *const argv[], char **envp)
     if (buf)
 	free(buf);
     return (-1);
-}
-#endif
-
-
-/* Copied verbatim from ghc/lib/std/cbits/system.c. */
-void pPrPr_disableITimers (void)
-{
-#ifdef __GLASGOW_HASKELL__
-    stopTimer();
 #endif
 }
-
-#endif

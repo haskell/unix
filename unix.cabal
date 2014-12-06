@@ -127,3 +127,4 @@ library
         cbits/HsUnix.c
         cbits/dirUtils.c
         cbits/execvpe.c
+        cbits/ghcrts.c
