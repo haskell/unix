@@ -16,6 +16,8 @@ __hsunix_execvpe(const char *name, char *const argv[], char *const envp[]);
 #if HAVE_EXECVPE
 # define _GNU_SOURCE
 # include <unistd.h>
+extern int
+execvpe(const char *name, char *const argv[], char *const envp[]);
 #else
 # define execvpe(name,argv,envp) __hsunix_execvpe(name,argv,envp)
 #endif
