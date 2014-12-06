@@ -59,7 +59,11 @@
  */
 
 int
+#ifdef __OpenBSD__
+execvpe(const char *name, char *const *argv, char *const *envp)
+#else
 execvpe(char *name, char *const argv[], char **envp)
+#endif
 {
     register int lp, ln;
     register char *p;
