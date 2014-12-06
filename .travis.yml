@@ -28,7 +28,7 @@ script:
  - autoreconf -i
  - cabal configure -v2
  - cabal build
- - cabal check
+ - cabal check || [ "$CABALVER" == "1.16" ]
  - cabal sdist
  - export SRC_TGZ=$(cabal info . | awk '{print $2 ".tar.gz";exit}') ;
    cd dist/;
