@@ -9,12 +9,10 @@
 
    -------------------------------------------------------------------------- */
 
-#include "execvpe.h"
+#include "HsUnixConfig.h"
 
 #if HAVE_EXECVPE
 # define _GNU_SOURCE
-#else
-# undef execvpe
 #endif
 
 #include <errno.h>
@@ -27,6 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+
+#define HSUNIX_EXECVPE_H_NO_COMPAT
+#include "execvpe.h"
 
 /*
  * We want the search semantics of execvp, but we want to provide our
