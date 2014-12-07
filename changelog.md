@@ -1,6 +1,6 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## 2.7.0.2  *TBA*
+## 2.7.1.0  *Dec 2014*
 
   * Add support for `base-4.8.0.0`
   * Tighten `SafeHaskell` bounds for GHC 7.10+
@@ -16,6 +16,10 @@
 
   * `executeFile`: Fix `ENOTDIR` error for entries with non-directory
     components in `PATH` (and instead skip over non-directory `PATH`-elements)
+
+  * New functions in `System.Posix.Unistd`:
+     - `fileSynchronise` (aka `fsync(2)`), and
+     - `fileSynchroniseDataOnly` (aka `fdatasync(2)`)
 
 ## 2.7.0.1  *Mar 2014*
 

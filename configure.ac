@@ -67,6 +67,9 @@ AC_CHECK_FUNCS([lutimes futimes])
 # Additional temp functions
 AC_CHECK_FUNCS([mkstemps mkdtemp])
 
+# Functions for file synchronization and allocation control
+AC_CHECK_FUNCS([fsync fdatasync])
+
 # Avoid adding rt if absent or unneeded
 # shm_open needs -lrt on linux
 AC_SEARCH_LIBS(shm_open, rt, [AC_CHECK_FUNCS([shm_open shm_unlink])])
