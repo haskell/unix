@@ -1,6 +1,11 @@
 #ifdef __GLASGOW_HASKELL__
+#if defined(SIGINFO) || defined(SIGWINCH)
 {-# LANGUAGE Trustworthy #-}
+#else
+{-# LANGUAGE Safe #-}
 #endif
+#endif
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Signals.Exts
