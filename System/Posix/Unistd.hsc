@@ -228,6 +228,8 @@ foreign import ccall unsafe "sysconf"
 -- Throws 'IOError' (\"unsupported operation\") if platform does not
 -- provide @fsync(2)@ (use @#if HAVE_FSYNC@ CPP guard to
 -- detect availability).
+--
+-- /Since: 2.7.1.0/
 fileSynchronise :: Fd -> IO ()
 #if HAVE_FSYNC
 fileSynchronise fd = do
@@ -247,6 +249,8 @@ fileSynchronise _ = ioError (ioeSetLocation unsupportedOperation
 -- Throws 'IOError' (\"unsupported operation\") if platform does not
 -- provide @fdatasync(2)@ (use @#if HAVE_FDATASYNC@ CPP guard to
 -- detect availability).
+--
+-- /Since: 2.7.1.0/
 fileSynchroniseDataOnly :: Fd -> IO ()
 #if HAVE_FDATASYNC
 fileSynchroniseDataOnly fd = do
