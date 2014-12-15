@@ -239,7 +239,7 @@ foreign import capi safe "unistd.h fsync"
   c_fsync :: Fd -> IO CInt
 #else
 {-# WARNING fileSynchronise
-    "operation will throw exception (CPP guard: @#if HAVE_FSYNC@)" #-}
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_FSYNC@)" #-}
 fileSynchronise _ = ioError (ioeSetLocation unsupportedOperation
                              "fileSynchronise")
 #endif
@@ -260,7 +260,7 @@ foreign import capi safe "unistd.h fdatasync"
   c_fdatasync :: Fd -> IO CInt
 #else
 {-# WARNING fileSynchroniseDataOnly
-    "operation will throw exception (CPP guard: @#if HAVE_FDATASYNC@)" #-}
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_FDATASYNC@)" #-}
 fileSynchroniseDataOnly _ = ioError (ioeSetLocation unsupportedOperation
                                      "fileSynchroniseDataOnly")
 #endif
