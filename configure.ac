@@ -69,6 +69,7 @@ AC_CHECK_FUNCS([mkstemps mkdtemp])
 
 # Functions for file synchronization and allocation control
 AC_CHECK_FUNCS([fsync fdatasync])
+AC_CHECK_FUNCS([posix_fadvise posix_fallocate])
 
 # Avoid adding rt if absent or unneeded
 # shm_open needs -lrt on linux

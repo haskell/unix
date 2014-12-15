@@ -21,6 +21,10 @@
      - `fileSynchronise` (aka `fsync(2)`), and
      - `fileSynchroniseDataOnly` (aka `fdatasync(2)`)
 
+  * New module `System.Posix.Fcntl` providing
+     - `fileAdvise` (aka `posix_fadvise(2)`), and
+     - `fileAllocate` (aka `posix_fallocate(2)`)
+
 ## 2.7.0.1  *Mar 2014*
 
   * Bundled with GHC 7.8.1

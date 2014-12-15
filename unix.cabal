@@ -96,6 +96,8 @@ library
         System.Posix.Env
         System.Posix.Env.ByteString
 
+        System.Posix.Fcntl
+
         System.Posix.Process
         System.Posix.Process.Internals
         System.Posix.Process.ByteString
