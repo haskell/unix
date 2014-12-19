@@ -28,6 +28,8 @@ module System.Posix.Signals.Exts (
   module System.Posix.Signals
   , sigINFO
   , sigWINCH
+  , infoEvent
+  , windowChange
   ) where
 
 import Foreign.C
@@ -38,3 +40,10 @@ sigINFO   = CONST_SIGINFO
 
 sigWINCH   :: CInt
 sigWINCH   = CONST_SIGWINCH
+
+
+infoEvent :: Signal
+infoEvent = sigINFO
+
+windowChange :: Signal
+windowChange = sigWINCH
