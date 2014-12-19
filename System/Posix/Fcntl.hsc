@@ -16,6 +16,7 @@
 --
 -- POSIX file control support
 --
+-- /Since: 2.7.1.0/
 -----------------------------------------------------------------------------
 
 #include "HsUnix.h"
@@ -42,6 +43,8 @@ import GHC.IO.Exception ( unsupportedOperation )
 -- | Advice parameter for 'fileAdvise' operation.
 --
 -- For more details, see documentation of @posix_fadvise(2)@.
+--
+-- /Since: 2.7.1.0/
 data Advice
   = AdviceNormal
   | AdviceRandom
