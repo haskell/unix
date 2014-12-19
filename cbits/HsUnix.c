@@ -21,14 +21,7 @@ void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 #endif
 
 #ifdef HAVE_RTLDDEFAULT
-void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;} 
-#endif
-
-#ifdef SIGINFO
-int __hsunix_SIGINFO(void)	{ return SIGINFO; }
-#endif
-#ifdef SIGWINCH
-int __hsunix_SIGWINCH(void)	{ return SIGWINCH; }
+void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
 // lstat is a macro on some platforms, so we need a wrapper:
