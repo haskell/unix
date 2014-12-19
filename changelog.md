@@ -6,25 +6,20 @@
   * Tighten `SafeHaskell` bounds for GHC 7.10+
   * Add haddock comments on `RTLD_NEXT` and `RTLD_DEFAULT`
   * Deprecate function `haveRtldLocal`
-  * Fix `getGroupEntryForID/getGroupEntryForName' on Solaris. Solaris uses
-    CPP macros for required getgrgid_r and getgrnam_r functions definition
+  * Fix `getGroupEntryForID/getGroupEntryForName` on Solaris. Solaris uses
+    CPP macros for required `getgrgid_r` and `getgrnam_r` functions definition
     so the fix is to change from C ABI calling convention to C API calling
     convention
   * Fix potential type-mismatch in `telldir`/`seekdir` FFI imports
-
   * Use CAPI FFI import for `truncate` to make sure the LFS-version is used.
-
   * `executeFile`: Fix `ENOTDIR` error for entries with non-directory
     components in `PATH` (and instead skip over non-directory `PATH`-elements)
-
   * New functions in `System.Posix.Unistd`:
      - `fileSynchronise` (aka `fsync(2)`), and
      - `fileSynchroniseDataOnly` (aka `fdatasync(2)`)
-
   * New module `System.Posix.Fcntl` providing
      - `fileAdvise` (aka `posix_fadvise(2)`), and
      - `fileAllocate` (aka `posix_fallocate(2)`)
-
   * Fix SIGINFO and SIGWINCH definitions
 
 ## 2.7.0.1  *Mar 2014*
