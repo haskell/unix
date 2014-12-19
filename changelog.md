@@ -2,6 +2,8 @@
 
 ## 2.7.1.0  *Dec 2014*
 
+  * Bundled with GHC 7.10.1
+
   * Add support for `base-4.8.0.0`
 
   * Tighten `SafeHaskell` bounds for GHC 7.10+
