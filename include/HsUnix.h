@@ -119,13 +119,6 @@ fall back to O_FSYNC, which should be the same */
 #define O_SYNC O_FSYNC
 #endif
 
-#ifdef SIGINFO
-int __hsunix_SIGINFO();
-#endif
-#ifdef SIGWINCH
-int __hsunix_SIGWINCH();
-#endif
-
 // lstat is a macro on some platforms, so we need a wrapper:
 int __hsunix_lstat(const char *path, struct stat *buf);
 

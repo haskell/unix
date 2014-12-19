@@ -25,6 +25,8 @@
      - `fileAdvise` (aka `posix_fadvise(2)`), and
      - `fileAllocate` (aka `posix_fallocate(2)`)
 
+  * Fix SIGINFO and SIGWINCH definitions
+
 ## 2.7.0.1  *Mar 2014*
 
   * Bundled with GHC 7.8.1
