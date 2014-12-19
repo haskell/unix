@@ -1,5 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
-#ifdef __GLASGOW_HASKELL__
+#if __GLASGOW_HASKELL__ >= 709
+{-# LANGUAGE Safe #-}
+#elif __GLASGOW_HASKELL__ >= 703
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
