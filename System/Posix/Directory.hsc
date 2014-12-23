@@ -116,21 +116,21 @@ foreign import ccall unsafe "__hscore_d_name"
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
 --   of the current working directory.
 getWorkingDirectory :: IO FilePath
-getWorkingDirectory = do
-  p <- mallocBytes long_path_size
-  go p long_path_size
-  where go p bytes = do
-          p' <- c_getcwd p (fromIntegral bytes)
-          if p' /= nullPtr
-             then do s <- peekFilePath p'
-                     free p'
-                     return s
-             else do errno <- getErrno
-                     if errno == eRANGE
-                        then do let bytes' = bytes * 2
-                                p'' <- reallocBytes p bytes'
-                                go p'' bytes'
-                        else throwErrno "getCurrentDirectory"
+getWorkingDirectory = go long_path_size
+  where
+    go bytes = do
+        r <- allocaBytes bytes $ \buf -> do
+            buf' <- c_getcwd buf (fromIntegral bytes)
+            if buf' /= nullPtr
+                then do s <- peekFilePath buf
+                        return (Just s)
+                else do errno <- getErrno
+                        if errno == eRANGE
+                            -- we use Nothing to indicate that we should
+                            -- try again with a bigger buffer
+                            then return Nothing
+                            else throwErrno "getWorkingDirectory"
+        maybe (go (2 * bytes)) return r
 
 foreign import ccall unsafe "getcwd"
    c_getcwd   :: Ptr CChar -> CSize -> IO (Ptr CChar)
