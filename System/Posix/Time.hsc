@@ -125,13 +125,17 @@ getitimer itimerType = alloca $ \itimerValPtr -> do
     else (return Nothing)
 
 -- | Works like setitimer from sys/time.h, without support for giving an
---   itimerval pointer to store the old itimerval.
---   If there is an error, False is given; True otherwise.
-setitimer :: ITimerType -> ITimerVal -> IO Bool
+--   itimerval pointer to store the old itimerval. Instead, we always get the
+--   old itimerval, and return in under Right in case nothing went wrong.
+--   If there is an error, Left () is given.
+setitimer :: ITimerType -> ITimerVal -> IO (Either () ITimerVal)
 setitimer itimerType itimerVal = alloca $ \itimerValPtr -> do
     poke itimerValPtr itimerVal
-    status <- c_setitimer (iTimerTypeToCInt itimerType) itimerValPtr nullPtr
-    return (if ((fromIntegral status) == 0) then True else False)
+    alloca $ \oldItimerValPtr -> do
+      status <- c_setitimer (iTimerTypeToCInt itimerType) itimerValPtr oldItimerValPtr
+      if (fromIntegral status) == 0
+      then fmap Right (peek oldItimerValPtr)
+      else return $ Left ()
 
 foreign import ccall unsafe "setitimer"
   c_setitimer :: CInt -> Ptr ITimerVal -> Ptr ITimerVal -> IO CInt
