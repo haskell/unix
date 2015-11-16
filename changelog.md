@@ -6,6 +6,9 @@
 
   * Don't assume existence of termios constants beyond `B38400`
 
+  * Turn build error into compile warnings for exotic `struct stat`
+    configurations (GHC #8859).
+
 ## 2.7.1.0  *Dec 2014*
 
   * Bundled with GHC 7.10.1
