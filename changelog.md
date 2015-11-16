@@ -4,6 +4,8 @@
 
   * Don't assume non-POSIX `WCOREDUMP(x)` macro exists
 
+  * Don't assume existence of termios constants beyond `B38400`
+
 ## 2.7.1.0  *Dec 2014*
 
   * Bundled with GHC 7.10.1
