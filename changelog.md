@@ -1,5 +1,9 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## **TBA**
+
+  * Don't assume non-POSIX `WCOREDUMP(x)` macro exists
+
 ## 2.7.1.0  *Dec 2014*
 
   * Bundled with GHC 7.10.1

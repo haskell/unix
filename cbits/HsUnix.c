@@ -14,6 +14,12 @@ int __hsunix_wifsignaled (int stat) { return WIFSIGNALED(stat); }
 int __hsunix_wtermsig    (int stat) { return WTERMSIG(stat); }
 int __hsunix_wifstopped  (int stat) { return WIFSTOPPED(stat); }
 int __hsunix_wstopsig    (int stat) { return WSTOPSIG(stat); }
+
+// not part of POSIX, hence may not be always defined
+#ifndef WCOREDUMP
+# define WCOREDUMP(s) 0
+#endif
+
 int __hsunix_wcoredump   (int stat) { return WCOREDUMP(stat); }
 
 #ifdef HAVE_RTLDNEXT
