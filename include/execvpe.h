@@ -14,7 +14,6 @@ __hsunix_execvpe(const char *name, char *const argv[], char *const envp[]);
 #ifndef HSUNIX_EXECVPE_H_NO_COMPAT
 #include "HsUnixConfig.h"
 #if HAVE_EXECVPE
-# define _GNU_SOURCE
 # include <unistd.h>
 extern int
 execvpe(const char *name, char *const argv[], char *const envp[]);

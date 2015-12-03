@@ -11,10 +11,6 @@
 
 #include "HsUnixConfig.h"
 
-#if HAVE_EXECVPE
-# define _GNU_SOURCE
-#endif
-
 #include <errno.h>
 #include <sys/types.h>
 #if HAVE_SYS_WAIT_H

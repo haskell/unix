@@ -4,17 +4,6 @@
  * Directory Runtime Support
  */
 
-/* needed only for solaris2_HOST_OS */
-#ifdef __GLASGOW_HASKELL__
-#include "ghcconfig.h"
-#endif
-
-// The following is required on Solaris to force the POSIX versions of
-// the various _r functions instead of the Solaris versions.
-#ifdef solaris2_HOST_OS
-#define _POSIX_PTHREAD_SEMANTICS
-#endif
-
 #include "HsUnix.h"
 
 /*
