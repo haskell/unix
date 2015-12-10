@@ -76,10 +76,13 @@ AC_CHECK_FUNCS([fsync])
 
 # A more comprehensive check that fdatasync exits
 # Necessary for platforms that have fdatasync in headers but have no
-# implementation
+# implementation. Use -Werror=implicit-function-declaration for platforms
+# that don't have fdatasync at all.
 dnl Originally provided by user copiousfreetime for the beanstalkd project
 dnl {{{ make sure that fdatasync exits
 AC_CACHE_CHECK([for fdatasync],[ac_cv_func_fdatasync],[
+  saved_cflags="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror=implicit-function-declaration"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <unistd.h>
 ]],[[
@@ -87,6 +90,7 @@ fdatasync(4);
 ]])],
 [ac_cv_func_fdatasync=yes],
 [ac_cv_func_fdatasync=no])
+  CFLAGS="$saved_cflags"
 ])
 AS_IF([test "x${ac_cv_func_fdatasync}" = "xyes"],
  [AC_DEFINE([HAVE_FDATASYNC],[1],[If the system defines fdatasync])])
