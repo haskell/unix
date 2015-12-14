@@ -4,10 +4,7 @@ AC_INIT([Haskell unix package], [2.0], [libraries@haskell.org], [unix])
 # Safety check: Ensure that we are in the correct source directory.
 AC_CONFIG_SRCDIR([include/HsUnix.h])
 
-AC_ARG_WITH([cc],
-            [C compiler],
-            [CC=$withval])
-AC_PROG_CC()
+AC_PROG_CC
 
 dnl make extensions visible to allow feature-tests to detect them lateron
 AC_USE_SYSTEM_EXTENSIONS
