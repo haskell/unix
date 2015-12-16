@@ -71,23 +71,12 @@ AC_CHECK_FUNCS([mkstemps mkdtemp])
 # Functions for file synchronization and allocation control
 AC_CHECK_FUNCS([fsync])
 
-# A more comprehensive check that fdatasync exits
-# Necessary for platforms that have fdatasync in headers but have no
-# implementation
-dnl Originally provided by user copiousfreetime for the beanstalkd project
-dnl {{{ make sure that fdatasync exits
-AC_CACHE_CHECK([for fdatasync],[ac_cv_func_fdatasync],[
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include <unistd.h>
-]],[[
-fdatasync(4);
-]])],
-[ac_cv_func_fdatasync=yes],
-[ac_cv_func_fdatasync=no])
-])
-AS_IF([test "x${ac_cv_func_fdatasync}" = "xyes"],
- [AC_DEFINE([HAVE_FDATASYNC],[1],[If the system defines fdatasync])])
-dnl }}}
+# On OSX linking against 'fdatasync' succeeds, but that doesn't pick
+# the expected the POSIX 'fdatasync' function.  So make sure that we
+# also have a function declaration in scope, in addition to being able
+# to link against 'fdatasync'.
+AC_CHECK_DECLS([fdatasync],[AC_CHECK_FUNCS([fdatasync])])
+
 
 AC_CHECK_FUNCS([posix_fadvise posix_fallocate])
 

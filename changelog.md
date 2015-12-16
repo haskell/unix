@@ -9,6 +9,8 @@
   * Turn build error into compile warnings for exotic `struct stat`
     configurations (GHC #8859).
 
+  * Improve detection of `fdatasync(2)` (GHC #11137)
+
 ## 2.7.1.0  *Dec 2014*
 
   * Bundled with GHC 7.10.1
