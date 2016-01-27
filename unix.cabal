@@ -132,3 +132,4 @@ library
         cbits/execvpe.c
         cbits/ghcrts.c
         cbits/tcdrain.c
+        cbits/ctermid.c
