@@ -39,6 +39,7 @@ AC_CHECK_FUNCS([setitimer])
 AC_CHECK_FUNCS([readdir_r])
 dnl not available on android so check for it
 AC_CHECK_FUNCS([telldir seekdir])
+AC_CHECK_FUNCS([tcdrain])
 
 dnl This is e.g. available as a GNU extension in glibc 2.11+
 AC_CHECK_FUNCS([execvpe])
