@@ -131,3 +131,5 @@ library
         cbits/dirUtils.c
         cbits/execvpe.c
         cbits/ghcrts.c
+        cbits/tcdrain.c
+        cbits/ctermid.c
