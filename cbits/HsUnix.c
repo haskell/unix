@@ -76,12 +76,6 @@ int __hsunix_nanosleep(const struct timespec *rqtp, struct timespec *rmtp)
 }
 #endif
 
-// opendir is a macro on some platforms, so we need a wrapper:
-DIR *__hsunix_opendir(const char *filename)
-{
-    return opendir(filename);
-}
-
 // time is a macro on some platforms, so we need a wrapper:
 time_t __hsunix_time(time_t *tloc)
 {
