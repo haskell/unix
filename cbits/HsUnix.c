@@ -8,19 +8,10 @@
 
 #include "HsUnix.h"
 
-int __hsunix_wifexited   (int stat) { return WIFEXITED(stat); }
-int __hsunix_wexitstatus (int stat) { return WEXITSTATUS(stat); }
-int __hsunix_wifsignaled (int stat) { return WIFSIGNALED(stat); }
-int __hsunix_wtermsig    (int stat) { return WTERMSIG(stat); }
-int __hsunix_wifstopped  (int stat) { return WIFSTOPPED(stat); }
-int __hsunix_wstopsig    (int stat) { return WSTOPSIG(stat); }
-
 // not part of POSIX, hence may not be always defined
 #ifndef WCOREDUMP
 # define WCOREDUMP(s) 0
 #endif
-
-int __hsunix_wcoredump   (int stat) { return WCOREDUMP(stat); }
 
 #ifdef HAVE_RTLDNEXT
 void *__hsunix_rtldNext (void) {return RTLD_NEXT;} 

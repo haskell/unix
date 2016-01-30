@@ -94,13 +94,6 @@ extern HsInt nocldstop;
 
 extern char **environ;
 
-int __hsunix_wifexited   (int stat);
-int __hsunix_wexitstatus (int stat);
-int __hsunix_wifsignaled (int stat);
-int __hsunix_wtermsig    (int stat);
-int __hsunix_wifstopped  (int stat);
-int __hsunix_wstopsig    (int stat);
-
 #ifdef HAVE_RTLDNEXT
 void *__hsunix_rtldNext (void);
 #endif

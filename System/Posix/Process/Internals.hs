@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE CPP #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
@@ -56,24 +57,25 @@ decipherWaitStatus wstat =
                         ioError (mkIOError illegalOperationErrorType
                                    "waitStatus" Nothing Nothing)
 
-foreign import ccall unsafe "__hsunix_wifexited"
+
+foreign import capi unsafe "HsUnix.h WIFEXITED"
   c_WIFEXITED :: CInt -> CInt
 
-foreign import ccall unsafe "__hsunix_wexitstatus"
+foreign import capi unsafe "HsUnix.h WEXITSTATUS"
   c_WEXITSTATUS :: CInt -> CInt
 
-foreign import ccall unsafe "__hsunix_wifsignaled"
+foreign import capi unsafe "HsUnix.h WIFSIGNALED"
   c_WIFSIGNALED :: CInt -> CInt
 
-foreign import ccall unsafe "__hsunix_wtermsig"
+foreign import capi unsafe "HsUnix.h WTERMSIG"
   c_WTERMSIG :: CInt -> CInt
 
-foreign import ccall unsafe "__hsunix_wifstopped"
+foreign import capi unsafe "HsUnix.h WIFSTOPPED"
   c_WIFSTOPPED :: CInt -> CInt
 
-foreign import ccall unsafe "__hsunix_wstopsig"
+foreign import capi unsafe "HsUnix.h WSTOPSIG"
   c_WSTOPSIG :: CInt -> CInt
 
-foreign import ccall unsafe "__hsunix_wcoredump"
+foreign import capi unsafe "HsUnix.h WCOREDUMP"
   c_WCOREDUMP :: CInt -> CInt
 
