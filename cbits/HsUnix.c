@@ -81,17 +81,6 @@ char *__hscore_mkdtemp(char *filetemplate) {
 }
 #endif
 
-
-#if !defined(irix_HOST_OS)
-int __hscore_getrlimit(int resource, struct rlimit *rlim) {
-    return (getrlimit(resource, rlim));
-}
-
-int __hscore_setrlimit(int resource, struct rlimit *rlim) {
-    return (setrlimit(resource, rlim));
-}
-#endif
-
 #ifdef HAVE_UNSETENV
 int __hsunix_unsetenv(const char *name)
 {

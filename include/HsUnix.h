@@ -144,11 +144,6 @@ int __hscore_mkstemps(char *filetemplate, int suffixlen);
 char *__hscore_mkdtemp(char *filetemplate);
 #endif
 
-#if !defined(irix_HOST_OS)
-int __hscore_getrlimit(int resource, struct rlimit *rlim);
-int __hscore_setrlimit(int resource, struct rlimit *rlim);
-#endif
-
 int __hsunix_unsetenv(const char *name);
 
 /* A size that will contain many path names, but not necessarily all

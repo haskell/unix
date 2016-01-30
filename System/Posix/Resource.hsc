@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #else
@@ -57,10 +58,10 @@ data ResourceLimit
 
 data {-# CTYPE "struct rlimit" #-} RLimit
 
-foreign import ccall unsafe "HsUnix.h __hscore_getrlimit"
+foreign import capi unsafe "HsUnix.h getrlimit"
   c_getrlimit :: CInt -> Ptr RLimit -> IO CInt
 
-foreign import ccall unsafe "HsUnix.h __hscore_setrlimit"
+foreign import capi unsafe "HsUnix.h setrlimit"
   c_setrlimit :: CInt -> Ptr RLimit -> IO CInt
 
 getResourceLimit :: Resource -> IO ResourceLimits
