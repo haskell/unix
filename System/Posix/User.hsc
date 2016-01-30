@@ -53,7 +53,6 @@ import Foreign.C
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
-import System.Posix.Internals   ( CGroup, CPasswd )
 
 #if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 import Control.Concurrent.MVar  ( MVar, newMVar, withMVar )
@@ -63,6 +62,10 @@ import Control.Exception
 #endif
 import Control.Monad
 import System.IO.Error
+
+-- internal types
+data {-# CTYPE "struct passwd" #-} CPasswd
+data {-# CTYPE "struct group"  #-} CGroup
 
 -- -----------------------------------------------------------------------------
 -- user environemnt
@@ -318,7 +321,7 @@ getUserEntryForID uid =
     doubleAllocWhileERANGE "getUserEntryForID" "user" pwBufSize unpackUserEntry $
       c_getpwuid_r uid ppw
 
-foreign import ccall unsafe "__hsunix_getpwuid_r"
+foreign import capi unsafe "HsUnix.h getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd ->
                         CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWUID
@@ -345,7 +348,7 @@ getUserEntryForName name =
       doubleAllocWhileERANGE "getUserEntryForName" "user" pwBufSize unpackUserEntry $
         c_getpwnam_r pstr ppw
 
-foreign import ccall unsafe "__hsunix_getpwnam_r"
+foreign import capi unsafe "HsUnix.h getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
                -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #elif HAVE_GETPWNAM

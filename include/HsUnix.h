@@ -113,18 +113,6 @@ fall back to O_FSYNC, which should be the same */
 # define WCOREDUMP(s) 0
 #endif
 
-#if HAVE_GETPWNAM_R
-// getpwnam_r is a macro on some platforms, so we need a wrapper:
-int __hsunix_getpwnam_r(const char *, struct passwd *, char *, size_t,
-                        struct passwd **);
-#endif
-
-#ifdef HAVE_GETPWUID_R
-// getpwuid_r is a macro on some platforms, so we need a wrapper:
-int __hsunix_getpwuid_r(uid_t, struct passwd *, char *, size_t,
-                        struct passwd **);
-#endif
-
 #ifdef HAVE_PTSNAME
 char *__hsunix_ptsname(int fd);
 int __hsunix_grantpt(int fd);

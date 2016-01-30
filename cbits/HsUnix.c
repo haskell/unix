@@ -16,24 +16,6 @@ void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
-#if HAVE_GETPWNAM_R
-// getpwnam_r is a macro on some platforms, so we need a wrapper:
-int __hsunix_getpwnam_r(const char *name, struct passwd *pw, char *buffer,
-                        size_t buflen, struct passwd **result)
-{
-    return getpwnam_r(name, pw, buffer, buflen, result);
-}
-#endif
-
-#ifdef HAVE_GETPWUID_R
-// getpwuid_r is a macro on some platforms, so we need a wrapper:
-int __hsunix_getpwuid_r(uid_t uid, struct passwd *pw, char *buffer,
-                        size_t buflen, struct passwd **result)
-{
-    return getpwuid_r(uid, pw, buffer, buflen, result);
-}
-#endif
-
 #ifdef HAVE_PTSNAME
 // On Linux (and others), <stdlib.h> needs to be included while
 // `_XOPEN_SOURCE` is already defined. However, GHCs before GHC 8.0
