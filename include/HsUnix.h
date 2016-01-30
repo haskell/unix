@@ -108,6 +108,11 @@ fall back to O_FSYNC, which should be the same */
 #define O_SYNC O_FSYNC
 #endif
 
+// not part of POSIX, hence may not be always defined
+#ifndef WCOREDUMP
+# define WCOREDUMP(s) 0
+#endif
+
 // lstat is a macro on some platforms, so we need a wrapper:
 int __hsunix_lstat(const char *path, struct stat *buf);
 

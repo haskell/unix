@@ -8,11 +8,6 @@
 
 #include "HsUnix.h"
 
-// not part of POSIX, hence may not be always defined
-#ifndef WCOREDUMP
-# define WCOREDUMP(s) 0
-#endif
-
 #ifdef HAVE_RTLDNEXT
 void *__hsunix_rtldNext (void) {return RTLD_NEXT;} 
 #endif
