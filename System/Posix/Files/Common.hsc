@@ -1,6 +1,5 @@
-#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
-#endif
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Files.Common

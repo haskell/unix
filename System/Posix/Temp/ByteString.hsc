@@ -1,6 +1,6 @@
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
-#elif __GLASGOW_HASKELL__ >= 703
+#else
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -38,10 +38,8 @@ import System.Posix.Directory (createDirectory)
 import System.Posix.IO
 import System.Posix.Types
 
-#if defined(__GLASGOW_HASKELL__)
 foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
   c_mkstemp :: CString -> IO CInt
-#endif
 
 -- | Make a unique filename and open it for reading\/writing. The returned
 -- 'RawFilePath' is the (possibly relative) path of the created file, which is
@@ -53,17 +51,11 @@ foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
 mkstemp :: ByteString -> IO (RawFilePath, Handle)
 mkstemp template' = do
   let template = template' `B.append` (BC.pack "XXXXXX")
-#if defined(__GLASGOW_HASKELL__)
   withFilePath template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
     name <- peekFilePath ptr
     h <- fdToHandle (Fd fd)
     return (name, h)
-#else
-  name <- mktemp template
-  h <- openFile (BC.unpack name) ReadWriteMode
-  return (name, h)
-#endif
 
 #if HAVE_MKSTEMPS
 foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
@@ -114,7 +106,7 @@ mkdtemp template' = do
   return name
 #endif
 
-#if !defined(__GLASGOW_HASKELL__) || !HAVE_MKDTEMP
+#if !HAVE_MKDTEMP
 
 foreign import ccall unsafe "mktemp"
   c_mktemp :: CString -> IO CString

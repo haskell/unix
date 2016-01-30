@@ -1,8 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE InterruptibleFFI, RankNTypes #-}
-#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
-#endif
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Process.Common
@@ -22,10 +21,8 @@ module System.Posix.Process.Common (
     -- * Processes
 
     -- ** Forking and executing
-#ifdef __GLASGOW_HASKELL__
     forkProcess,
     forkProcessWithUnmask,
-#endif
 
     -- ** Exiting
     exitImmediately,
@@ -82,11 +79,9 @@ import System.Posix.Process.Internals
 import System.Posix.Types
 import Control.Monad
 
-#ifdef __GLASGOW_HASKELL__
 import Control.Exception.Base ( bracket, getMaskingState, MaskingState(..) ) -- used by forkProcess
 import GHC.TopHandler   ( runIO )
 import GHC.IO ( unsafeUnmask, uninterruptibleMask_ )
-#endif
 
 -- -----------------------------------------------------------------------------
 -- Process environment
@@ -271,7 +266,6 @@ foreign import ccall unsafe "setpriority"
 -- -----------------------------------------------------------------------------
 -- Forking, execution
 
-#ifdef __GLASGOW_HASKELL__
 {- | 'forkProcess' corresponds to the POSIX @fork@ system call.
 The 'IO' action passed as an argument is executed in the child process; no other
 threads will be copied to the child process.
@@ -310,8 +304,6 @@ foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CP
 -- /Since: 2.7.0.0/
 forkProcessWithUnmask :: ((forall a . IO a -> IO a) -> IO ()) -> IO ProcessID
 forkProcessWithUnmask action = forkProcess (action unsafeUnmask)
-
-#endif /* __GLASGOW_HASKELL__ */
 
 -- -----------------------------------------------------------------------------
 -- Waiting for process termination

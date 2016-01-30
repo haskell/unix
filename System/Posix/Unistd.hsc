@@ -2,7 +2,7 @@
 {-# LANGUAGE NondecreasingIndentation #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
-#elif __GLASGOW_HASKELL__ >= 703
+#else
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -118,9 +118,7 @@ sleep :: Int -> IO Int
 sleep 0 = return 0
 sleep secs = do r <- c_sleep (fromIntegral secs); return (fromIntegral r)
 
-#ifdef __GLASGOW_HASKELL__
 {-# WARNING sleep "This function has several shortcomings (see documentation). Please consider using Control.Concurrent.threadDelay instead." #-}
-#endif
 
 foreign import ccall safe "sleep"
   c_sleep :: CUInt -> IO CUInt

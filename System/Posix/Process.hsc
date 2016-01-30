@@ -1,6 +1,6 @@
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
-#elif __GLASGOW_HASKELL__ >= 703
+#else
 {-# LANGUAGE Trustworthy #-}
 #endif
 -----------------------------------------------------------------------------
@@ -22,10 +22,8 @@ module System.Posix.Process (
     -- * Processes
 
     -- ** Forking and executing
-#ifdef __GLASGOW_HASKELL__
     forkProcess,
     forkProcessWithUnmask,
-#endif
     executeFile,
 
     -- ** Exiting

@@ -1,8 +1,6 @@
 {-# LANGUAGE CApiFFI, CPP, DeriveDataTypeable, NondecreasingIndentation #-}
 {-# OPTIONS_GHC -fno-cse #-} -- global variables
-#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
-#endif
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Signals
@@ -66,12 +64,10 @@ module System.Posix.Signals (
   signalProcess,
   signalProcessGroup,
 
-#ifdef __GLASGOW_HASKELL__
   -- * Handling signals
   Handler(Default,Ignore,Catch,CatchOnce,CatchInfo,CatchInfoOnce),
   SignalInfo(..), SignalSpecificInfo(..),
   installHandler,
-#endif
 
   -- * Signal sets
   SignalSet,
@@ -88,10 +84,8 @@ module System.Posix.Signals (
   getPendingSignals,
   awaitSignal,
 
-#ifdef __GLASGOW_HASKELL__
   -- * The @NOCLDSTOP@ flag
   setStoppedChildFlag, queryStoppedChildFlag,
-#endif
 
   -- MISSING FUNCTIONALITY:
   -- sigaction(), (inc. the sigaction structure + flags etc.)
@@ -114,11 +108,9 @@ import System.Posix.Process
 import System.Posix.Process.Internals
 import Data.Dynamic
 
-#ifdef __GLASGOW_HASKELL__
 ##include "rts/Signals.h"
 
 import GHC.Conc hiding (Signal)
-#endif
 
 -- -----------------------------------------------------------------------------
 -- Specific signals
@@ -298,7 +290,7 @@ foreign import ccall unsafe "killpg"
 raiseSignal :: Signal -> IO ()
 raiseSignal sig = throwErrnoIfMinus1_ "raiseSignal" (c_raise sig)
 
-#if defined(__GLASGOW_HASKELL__) && (defined(openbsd_HOST_OS) || defined(freebsd_HOST_OS) || defined(dragonfly_HOST_OS) || defined(netbsd_HOST_OS) || defined(darwin_HOST_OS))
+#if (defined(openbsd_HOST_OS) || defined(freebsd_HOST_OS) || defined(dragonfly_HOST_OS) || defined(netbsd_HOST_OS) || defined(darwin_HOST_OS))
 foreign import ccall unsafe "genericRaise"
   c_raise :: CInt -> IO CInt
 #else
@@ -306,9 +298,8 @@ foreign import ccall unsafe "raise"
   c_raise :: CInt -> IO CInt
 #endif
 
-#ifdef __GLASGOW_HASKELL__
-type Signal = CInt
 
+type Signal = CInt
 
 -- | The actions to perform when a signal is received.
 data Handler = Default
@@ -448,7 +439,6 @@ unmarshalSigInfo fp = do
         siginfoSpecific = extra }
 
 #endif /* !__PARALLEL_HASKELL__ */
-#endif /* __GLASGOW_HASKELL__ */
 
 -- -----------------------------------------------------------------------------
 -- Alarms
@@ -463,7 +453,6 @@ scheduleAlarm secs = do
 foreign import ccall unsafe "alarm"
   c_alarm :: CUInt -> IO CUInt
 
-#ifdef __GLASGOW_HASKELL__
 -- -----------------------------------------------------------------------------
 -- The NOCLDSTOP flag
 
@@ -482,7 +471,6 @@ queryStoppedChildFlag :: IO Bool
 queryStoppedChildFlag = do
     rc <- peek nocldstop
     return (rc == (0::Int))
-#endif /* __GLASGOW_HASKELL__ */
 
 -- -----------------------------------------------------------------------------
 -- Manipulating signal sets

@@ -1,6 +1,6 @@
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
-#elif __GLASGOW_HASKELL__ >= 703
+#else
 {-# LANGUAGE Trustworthy #-}
 #endif
 {-# LANGUAGE CApiFFI #-}

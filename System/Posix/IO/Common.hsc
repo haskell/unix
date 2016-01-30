@@ -1,7 +1,7 @@
 {-# LANGUAGE NondecreasingIndentation, RecordWildCards #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
-#elif __GLASGOW_HASKELL__ >= 703
+#else
 {-# LANGUAGE Trustworthy #-}
 #endif
 
@@ -70,14 +70,12 @@ import qualified System.Posix.Internals as Base
 import Foreign
 import Foreign.C
 
-#ifdef __GLASGOW_HASKELL__
 import GHC.IO.Handle.Internals
 import GHC.IO.Handle.Types
 import qualified GHC.IO.FD as FD
 import qualified GHC.IO.Handle.FD as FD
 import GHC.IO.Exception
 import Data.Typeable (cast)
-#endif
 
 #include "HsUnix.h"
 
@@ -206,8 +204,8 @@ handleToFd :: Handle -> IO Fd
 -- | Converts an 'Fd' into a 'Handle' that can be used with the
 -- standard Haskell IO library (see "System.IO").
 fdToHandle :: Fd -> IO Handle
+fdToHandle fd = FD.fdToHandle (fromIntegral fd)
 
-#ifdef __GLASGOW_HASKELL__
 handleToFd h@(FileHandle _ m) = do
   withHandle' "handleToFd" h m $ handleToFd' h
 handleToFd h@(DuplexHandle _ r w) = do
@@ -231,8 +229,6 @@ handleToFd' h h_@Handle__{haType=_,..} = do
      FD.release fd
      return (Handle__{haType=ClosedHandle,..}, Fd (FD.fdFD fd))
 
-fdToHandle fd = FD.fdToHandle (fromIntegral fd)
-#endif
 
 -- -----------------------------------------------------------------------------
 -- Fd options

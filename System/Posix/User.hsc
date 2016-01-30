@@ -1,6 +1,4 @@
-#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy, CApiFFI #-}
-#endif
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.User

@@ -1,8 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE CPP #-}
-#ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
-#endif
 
 module System.Posix.Process.Internals (
        pPrPr_disableITimers, c_execvpe,
