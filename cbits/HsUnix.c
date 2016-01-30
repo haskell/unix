@@ -16,12 +16,6 @@ void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
-// lstat is a macro on some platforms, so we need a wrapper:
-int __hsunix_lstat(const char *path, struct stat *buf) 
-{ 
-    return lstat(path,buf);
-}
-
 // mknod is a macro on some platforms, so we need a wrapper:
 int __hsunix_mknod(const char *pathname, mode_t mode, dev_t dev)
 { 

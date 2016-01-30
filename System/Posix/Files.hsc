@@ -187,7 +187,7 @@ getSymbolicLinkStatus path = do
       throwErrnoPathIfMinus1_ "getSymbolicLinkStatus" path (c_lstat s p)
   return (FileStatus fp)
 
-foreign import ccall unsafe "__hsunix_lstat"
+foreign import capi unsafe "HsUnix.h lstat"
   c_lstat :: CString -> Ptr CStat -> IO CInt
 
 -- | @createNamedPipe fifo mode@
