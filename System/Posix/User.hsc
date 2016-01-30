@@ -378,11 +378,11 @@ getAllUserEntries =
                      else do thisentry <- unpackUserEntry ppw
                              worker (thisentry : accum)
 
-foreign import ccall unsafe "__hsunix_getpwent"
+foreign import capi unsafe "HsUnix.h getpwent"
   c_getpwent :: IO (Ptr CPasswd)
-foreign import ccall unsafe "setpwent"
+foreign import capi unsafe "HsUnix.h setpwent"
   c_setpwent :: IO ()
-foreign import ccall unsafe "endpwent"
+foreign import capi unsafe "HsUnix.h endpwent"
   c_endpwent :: IO ()
 #else
 getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"

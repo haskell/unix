@@ -16,14 +16,6 @@ void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
-#ifdef HAVE_GETPWENT
-// getpwent is a macro on some platforms, so we need a wrapper:
-struct passwd *__hsunix_getpwent(void)
-{
-    return getpwent();
-}
-#endif
-
 #if HAVE_GETPWNAM_R
 // getpwnam_r is a macro on some platforms, so we need a wrapper:
 int __hsunix_getpwnam_r(const char *name, struct passwd *pw, char *buffer,
