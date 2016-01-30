@@ -80,6 +80,19 @@ AC_CHECK_DECLS([fdatasync],[AC_CHECK_FUNCS([fdatasync])])
 
 AC_CHECK_FUNCS([posix_fadvise posix_fallocate])
 
+# Some termios(3) functions known to be missing sometimes (see also #55)
+AC_CHECK_DECLS([tcdrain],[AC_DEFINE([HAVE_TCDRAIN],[1],[Define to 1 if you have the `tcdrain' function.])],[],[AC_INCLUDES_DEFAULT
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif
+])
+
+AC_CHECK_DECLS([ctermid],[AC_DEFINE([HAVE_CTERMID],[1],[Define to 1 if you have the `ctermid' function.])],[],[AC_INCLUDES_DEFAULT
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif
+])
+
 # Avoid adding rt if absent or unneeded
 # shm_open needs -lrt on linux
 AC_SEARCH_LIBS(shm_open, rt, [AC_CHECK_FUNCS([shm_open shm_unlink])])

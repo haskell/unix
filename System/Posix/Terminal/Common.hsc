@@ -78,6 +78,11 @@ import Foreign.Storable ( Storable(..) )
 import System.IO.Unsafe ( unsafePerformIO )
 import System.Posix.Types
 
+#if !HAVE_TCDRAIN
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- -----------------------------------------------------------------------------
 -- Terminal attributes
 
@@ -408,12 +413,21 @@ foreign import capi unsafe "termios.h tcsendbreak"
 
 -- | @drainOutput fd@ calls @tcdrain@ to block until all output
 --   written to @Fd@ @fd@ has been transmitted.
+--
+-- Throws 'IOError' (\"unsupported operation\") if platform does not
+-- provide @tcdrain(3)@ (use @#if HAVE_TCDRAIN@ CPP guard to
+-- detect availability).
 drainOutput :: Fd -> IO ()
+#if HAVE_TCDRAIN
 drainOutput (Fd fd) = throwErrnoIfMinus1_ "drainOutput" (c_tcdrain fd)
 
 foreign import capi unsafe "termios.h tcdrain"
   c_tcdrain :: CInt -> IO CInt
-
+#else
+{-# WARNING drainOutput
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TCDRAIN@)" #-}
+drainOutput _ = ioError (ioeSetLocation unsupportedOperation "drainOutput")
+#endif
 
 data QueueSelector
   = InputQueue          -- TCIFLUSH

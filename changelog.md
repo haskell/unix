@@ -4,7 +4,9 @@
 
   * Don't assume non-POSIX `WCOREDUMP(x)` macro exists
 
-  * Don't assume existence of termios constants beyond `B38400`
+  * Don't assume existence of `termios(3)` constants beyond `B38400`
+
+  * Don't assume existence of `ctermid(3)`/`tcdrain(3)`
 
   * Turn build error into compile warnings for exotic `struct stat`
     configurations (GHC #8859).

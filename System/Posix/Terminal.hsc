@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #elif __GLASGOW_HASKELL__ >= 703
@@ -83,6 +84,11 @@ import System.Posix.IO
 
 import System.Posix.Internals (peekFilePath)
 
+#if !HAVE_CTERMID
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- | @getTerminalName fd@ calls @ttyname@ to obtain a name associated
 --   with the terminal for @Fd@ @fd@. If @fd@ is associated
 --   with a terminal, @getTerminalName@ returns the name of the
@@ -100,13 +106,23 @@ foreign import ccall unsafe "ttyname"
 --   controlling terminal exists,
 --   @getControllingTerminalName@ returns the name of the
 --   controlling terminal.
+--
+-- Throws 'IOError' (\"unsupported operation\") if platform does not
+-- provide @ctermid(3)@ (use @#if HAVE_CTERMID@ CPP guard to
+-- detect availability).
 getControllingTerminalName :: IO FilePath
+#if HAVE_CTERMID
 getControllingTerminalName = do
   s <- throwErrnoIfNull "getControllingTerminalName" (c_ctermid nullPtr)
   peekFilePath s
 
-foreign import ccall unsafe "ctermid"
+foreign import capi unsafe "termios.h ctermid"
   c_ctermid :: CString -> IO CString
+#else
+{-# WARNING getControllingTerminalName
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_CTERMID@)" #-}
+getControllingTerminalName = ioError (ioeSetLocation unsupportedOperation "getControllingTerminalName")
+#endif
 
 -- | @getSlaveTerminalName@ calls @ptsname@ to obtain the name of the
 -- slave terminal associated with a pseudoterminal pair.  The file
