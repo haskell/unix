@@ -8,8 +8,10 @@
 
   * Don't assume existence of `ctermid(3)`/`tcdrain(3)`
 
+  * Change `drainOutput`'s `tcdrain(3)` into a `safe` FFI call
+
   * Turn build error into compile warnings for exotic `struct stat`
-    configurations (GHC #8859).
+    configurations (GHC #8859)
 
   * Improve detection of `fdatasync(2)` (GHC #11137)
 

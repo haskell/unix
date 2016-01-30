@@ -421,7 +421,7 @@ drainOutput :: Fd -> IO ()
 #if HAVE_TCDRAIN
 drainOutput (Fd fd) = throwErrnoIfMinus1_ "drainOutput" (c_tcdrain fd)
 
-foreign import capi unsafe "termios.h tcdrain"
+foreign import capi safe "termios.h tcdrain"
   c_tcdrain :: CInt -> IO CInt
 #else
 {-# WARNING drainOutput
