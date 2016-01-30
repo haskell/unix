@@ -113,9 +113,6 @@ fall back to O_FSYNC, which should be the same */
 # define WCOREDUMP(s) 0
 #endif
 
-// mknod is a macro on some platforms, so we need a wrapper:
-int __hsunix_mknod(const char *pathname, mode_t mode, dev_t dev);
-
 #ifdef HAVE_GETPWENT
 // getpwent is a macro on some platforms, so we need a wrapper:
 struct passwd *__hsunix_getpwent(void);

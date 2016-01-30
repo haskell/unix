@@ -215,7 +215,7 @@ createDevice path mode dev =
   withFilePath path $ \s ->
     throwErrnoPathIfMinus1_ "createDevice" path (c_mknod s mode dev)
 
-foreign import ccall unsafe "__hsunix_mknod"
+foreign import capi unsafe "HsUnix.h mknod"
   c_mknod :: CString -> CMode -> CDev -> IO CInt
 
 -- -----------------------------------------------------------------------------

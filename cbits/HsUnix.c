@@ -16,12 +16,6 @@ void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
-// mknod is a macro on some platforms, so we need a wrapper:
-int __hsunix_mknod(const char *pathname, mode_t mode, dev_t dev)
-{ 
-    return mknod(pathname,mode,dev);
-}
-
 #ifdef HAVE_GETPWENT
 // getpwent is a macro on some platforms, so we need a wrapper:
 struct passwd *__hsunix_getpwent(void)
