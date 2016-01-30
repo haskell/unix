@@ -143,9 +143,6 @@ int __hsunix_getpwuid_r(uid_t, struct passwd *, char *, size_t,
 int __hsunix_nanosleep(const struct timespec *, struct timespec *);
 #endif
 
-// time is a macro on some platforms, so we need a wrapper:
-time_t __hsunix_time(time_t *);
-
 // times is a macro on some platforms, so we need a wrapper:
 clock_t __hsunix_times(struct tms *);
 

@@ -76,12 +76,6 @@ int __hsunix_nanosleep(const struct timespec *rqtp, struct timespec *rmtp)
 }
 #endif
 
-// time is a macro on some platforms, so we need a wrapper:
-time_t __hsunix_time(time_t *tloc)
-{
-    return time(tloc);
-}
-
 // times is a macro on some platforms, so we need a wrapper:
 clock_t __hsunix_times(struct tms *tp)
 {

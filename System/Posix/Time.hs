@@ -1,3 +1,5 @@
+{-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE CPP #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #elif __GLASGOW_HASKELL__ >= 703
@@ -23,8 +25,6 @@ module System.Posix.Time (
         -- how much already supported by System.Time?
   ) where
 
-#include "HsUnix.h"
-
 import System.Posix.Types
 import Foreign
 import Foreign.C
@@ -37,5 +37,5 @@ import Foreign.C
 epochTime :: IO EpochTime
 epochTime = throwErrnoIfMinus1 "epochTime" (c_time nullPtr)
 
-foreign import ccall unsafe "__hsunix_time"
+foreign import capi unsafe "HsUnix.h time"
   c_time :: Ptr CTime -> IO CTime
