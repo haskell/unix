@@ -143,9 +143,6 @@ int __hsunix_getpwuid_r(uid_t, struct passwd *, char *, size_t,
 int __hsunix_nanosleep(const struct timespec *, struct timespec *);
 #endif
 
-// times is a macro on some platforms, so we need a wrapper:
-clock_t __hsunix_times(struct tms *);
-
 #ifdef HAVE_PTSNAME
 // I cannot figure out how to make the definitions of the following
 // functions visible in <stdlib.h> on Linux.  But these definitions

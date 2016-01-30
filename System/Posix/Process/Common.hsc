@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE InterruptibleFFI, RankNTypes #-}
 #ifdef __GLASGOW_HASKELL__
 {-# LANGUAGE Trustworthy #-}
@@ -213,7 +214,7 @@ getProcessTimes = do
 
 type CTms = ()
 
-foreign import ccall unsafe "__hsunix_times"
+foreign import capi unsafe "HsUnix.h times"
   c_times :: Ptr CTms -> IO CClock
 
 -- -----------------------------------------------------------------------------

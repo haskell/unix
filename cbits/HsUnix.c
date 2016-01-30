@@ -76,12 +76,6 @@ int __hsunix_nanosleep(const struct timespec *rqtp, struct timespec *rmtp)
 }
 #endif
 
-// times is a macro on some platforms, so we need a wrapper:
-clock_t __hsunix_times(struct tms *tp)
-{
-    return times(tp);
-}
-
 #ifdef HAVE_PTSNAME
 // I cannot figure out how to make the definitions of the following
 // functions visible in <stdlib.h> on Linux.  But these definitions
