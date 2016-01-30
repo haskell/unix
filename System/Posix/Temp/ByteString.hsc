@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #else
@@ -38,7 +39,7 @@ import System.Posix.Directory (createDirectory)
 import System.Posix.IO
 import System.Posix.Types
 
-foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
+foreign import capi unsafe "HsUnix.h mkstemp"
   c_mkstemp :: CString -> IO CInt
 
 -- | Make a unique filename and open it for reading\/writing. The returned
@@ -58,7 +59,7 @@ mkstemp template' = do
     return (name, h)
 
 #if HAVE_MKSTEMPS
-foreign import ccall unsafe "HsUnix.h __hscore_mkstemps"
+foreign import capi unsafe "HsUnix.h mkstemps"
   c_mkstemps :: CString -> CInt -> IO CInt
 #endif
 
@@ -82,7 +83,7 @@ mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform"
 #endif
 
 #if HAVE_MKDTEMP
-foreign import ccall unsafe "HsUnix.h __hscore_mkdtemp"
+foreign import capi unsafe "HsUnix.h mkdtemp"
   c_mkdtemp :: CString -> IO CString
 #endif
 

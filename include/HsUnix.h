@@ -134,16 +134,6 @@ int __hsunix_unlockpt(int fd);
 // push a SVR4 STREAMS module; do nothing if STREAMS not available
 int __hsunix_push_module(int fd, const char *module);
 
-int __hscore_mkstemp(char *filetemplate);
-
-#if HAVE_MKSTEMPS
-int __hscore_mkstemps(char *filetemplate, int suffixlen);
-#endif
-
-#if HAVE_MKDTEMP
-char *__hscore_mkdtemp(char *filetemplate);
-#endif
-
 int __hsunix_unsetenv(const char *name);
 
 /* A size that will contain many path names, but not necessarily all

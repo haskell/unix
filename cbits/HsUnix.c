@@ -65,22 +65,6 @@ int __hsunix_push_module(int fd, const char *module)
 #endif
 }
 
-int __hscore_mkstemp(char *filetemplate) {
-    return (mkstemp(filetemplate));
-}
-
-#if HAVE_MKSTEMPS
-int __hscore_mkstemps(char *filetemplate, int suffixlen) {
-    return (mkstemps(filetemplate, suffixlen));
-}
-#endif
-
-#if HAVE_MKDTEMP
-char *__hscore_mkdtemp(char *filetemplate) {
-    return (mkdtemp(filetemplate));
-}
-#endif
-
 #ifdef HAVE_UNSETENV
 int __hsunix_unsetenv(const char *name)
 {
