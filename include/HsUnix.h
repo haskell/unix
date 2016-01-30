@@ -143,9 +143,7 @@ int __hsunix_unlockpt(int fd);
 // push a SVR4 STREAMS module; do nothing if STREAMS not available
 int __hsunix_push_module(int fd, const char *module);
 
-#if !defined(__MINGW32__)
 int __hscore_mkstemp(char *filetemplate);
-#endif
 
 #if HAVE_MKSTEMPS
 int __hscore_mkstemps(char *filetemplate, int suffixlen);
@@ -155,7 +153,7 @@ int __hscore_mkstemps(char *filetemplate, int suffixlen);
 char *__hscore_mkdtemp(char *filetemplate);
 #endif
 
-#if !defined(__MINGW32__) && !defined(irix_HOST_OS)
+#if !defined(irix_HOST_OS)
 int __hscore_getrlimit(int resource, struct rlimit *rlim);
 int __hscore_setrlimit(int resource, struct rlimit *rlim);
 #endif

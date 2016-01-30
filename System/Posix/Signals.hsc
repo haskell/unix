@@ -86,9 +86,7 @@ module System.Posix.Signals (
 
   -- * Waiting for signals
   getPendingSignals,
-#ifndef cygwin32_HOST_OS
   awaitSignal,
-#endif
 
 #ifdef __GLASGOW_HASKELL__
   -- * The @NOCLDSTOP@ flag
@@ -575,8 +573,6 @@ getPendingSignals = do
    throwErrnoIfMinus1_ "getPendingSignals" (c_sigpending p)
   return (SignalSet fp)
 
-#ifndef cygwin32_HOST_OS
-
 -- | @awaitSignal iset@ suspends execution until an interrupt is received.
 -- If @iset@ is @Just s@, @awaitSignal@ calls @sigsuspend@, installing
 -- @s@ as the new signal mask before suspending execution; otherwise, it
@@ -605,7 +601,6 @@ awaitSignal maybe_sigset = do
 
 foreign import ccall unsafe "sigsuspend"
   c_sigsuspend :: Ptr CSigset -> IO CInt
-#endif
 
 #ifdef __HUGS__
 foreign import ccall unsafe "sigdelset"

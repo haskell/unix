@@ -17,7 +17,7 @@ description:
     Operating System Interface for Computing Environments -
     IEEE Std. 1003.1).
     .
-    The package is not supported under Windows (except under Cygwin).
+    The package is not supported under Windows.
 
 extra-source-files:
     changelog.md
