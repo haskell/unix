@@ -181,9 +181,9 @@ nanosleep nsecs = do
                        else throwErrno "nanosleep"
      loop (fromIntegral tv_sec0 :: CTime) (fromIntegral tv_nsec0 :: CTime)
 
-data CTimeSpec
+data {-# CTYPE "struct timespec" #-} CTimeSpec
 
-foreign import ccall safe "__hsunix_nanosleep"
+foreign import capi safe "HsUnix.h nanosleep"
   c_nanosleep :: Ptr CTimeSpec -> Ptr CTimeSpec -> IO CInt
 #endif
 
