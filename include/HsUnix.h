@@ -126,10 +126,6 @@ int __hsunix_getpwuid_r(uid_t, struct passwd *, char *, size_t,
 #endif
 
 #ifdef HAVE_PTSNAME
-// I cannot figure out how to make the definitions of the following
-// functions visible in <stdlib.h> on Linux.  But these definitions
-// follow the POSIX specs, and everything links and runs.
-
 char *__hsunix_ptsname(int fd);
 int __hsunix_grantpt(int fd);
 int __hsunix_unlockpt(int fd);

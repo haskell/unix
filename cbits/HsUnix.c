@@ -35,25 +35,22 @@ int __hsunix_getpwuid_r(uid_t uid, struct passwd *pw, char *buffer,
 #endif
 
 #ifdef HAVE_PTSNAME
-// I cannot figure out how to make the definitions of the following
-// functions visible in <stdlib.h> on Linux.  But these definitions
-// follow the POSIX specs, and everything links and runs.
+// On Linux (and others), <stdlib.h> needs to be included while
+// `_XOPEN_SOURCE` is already defined. However, GHCs before GHC 8.0
+// didn't do that yet for CApiFFI, so we need this workaround here.
 
 char *__hsunix_ptsname(int fd)
 {
-    extern char *ptsname(int);
     return ptsname(fd);
 }
 
 int __hsunix_grantpt(int fd)
 {
-    extern int grantpt(int);
     return grantpt(fd);
 }
 
 int __hsunix_unlockpt(int fd)
 {
-    extern int unlockpt(int);
     return unlockpt(fd);
 }
 #endif
