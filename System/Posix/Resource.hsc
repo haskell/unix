@@ -55,7 +55,7 @@ data ResourceLimit
   | ResourceLimit Integer
   deriving Eq
 
-type RLimit = ()
+data {-# CTYPE "struct rlimit" #-} RLimit
 
 foreign import ccall unsafe "HsUnix.h __hscore_getrlimit"
   c_getrlimit :: CInt -> Ptr RLimit -> IO CInt

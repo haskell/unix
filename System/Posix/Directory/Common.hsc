@@ -39,8 +39,8 @@ import Foreign.C
 
 newtype DirStream = DirStream (Ptr CDir)
 
-type CDir       = ()
-type CDirent    = ()
+data {-# CTYPE "DIR" #-} CDir
+data {-# CTYPE "struct dirent" #-} CDirent
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
 --   the directory stream @dp@ at the beginning of the directory.

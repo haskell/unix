@@ -77,6 +77,7 @@ import Foreign.Ptr ( Ptr, plusPtr )
 import Foreign.Storable ( Storable(..) )
 import System.IO.Unsafe ( unsafePerformIO )
 import System.Posix.Types
+import System.Posix.Internals ( CTermios )
 
 #if !HAVE_TCDRAIN
 import System.IO.Error ( ioeSetLocation )
@@ -86,7 +87,6 @@ import GHC.IO.Exception ( unsupportedOperation )
 -- -----------------------------------------------------------------------------
 -- Terminal attributes
 
-type CTermios = ()
 newtype TerminalAttributes = TerminalAttributes (ForeignPtr CTermios)
 
 makeTerminalAttributes :: ForeignPtr CTermios -> TerminalAttributes

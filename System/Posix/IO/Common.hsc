@@ -320,9 +320,7 @@ getLock (Fd fd) lock =
     maybeResult (_, (Unlock, _, _, _)) = Nothing
     maybeResult x = Just x
 
-type CFLock     = ()
-
-allocaLock :: FileLock -> (Ptr CFLock -> IO a) -> IO a
+allocaLock :: FileLock -> (Ptr Base.CFLock -> IO a) -> IO a
 allocaLock (lockreq, mode, start, len) io =
   allocaBytes (#const sizeof(struct flock)) $ \p -> do
     (#poke struct flock, l_type)   p (lockReq2Int lockreq :: CShort)
@@ -336,7 +334,7 @@ lockReq2Int ReadLock  = (#const F_RDLCK)
 lockReq2Int WriteLock = (#const F_WRLCK)
 lockReq2Int Unlock    = (#const F_UNLCK)
 
-bytes2ProcessIDAndLock :: Ptr CFLock -> IO (ProcessID, FileLock)
+bytes2ProcessIDAndLock :: Ptr Base.CFLock -> IO (ProcessID, FileLock)
 bytes2ProcessIDAndLock p = do
   req   <- (#peek struct flock, l_type)   p
   mode  <- (#peek struct flock, l_whence) p

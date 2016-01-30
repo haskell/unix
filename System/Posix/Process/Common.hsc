@@ -212,7 +212,7 @@ getProcessTimes = do
                            childSystemTime = cst
                           })
 
-type CTms = ()
+data {-# CTYPE "struct tms" #-} CTms
 
 foreign import capi unsafe "HsUnix.h times"
   c_times :: Ptr CTms -> IO CClock
