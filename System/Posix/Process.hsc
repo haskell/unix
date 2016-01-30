@@ -78,10 +78,6 @@ import System.Posix.Process.Internals
 import System.Posix.Process.Common
 import System.Posix.Internals ( withFilePath )
 
-#ifdef __HUGS__
-{-# CFILES cbits/HsUnix.c  #-}
-#endif
-
 -- | @'executeFile' cmd args env@ calls one of the
 --   @execv*@ family, depending on whether or not the current
 --   PATH is to be searched for the command, and whether or not an

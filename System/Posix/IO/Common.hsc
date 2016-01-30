@@ -79,11 +79,6 @@ import GHC.IO.Exception
 import Data.Typeable (cast)
 #endif
 
-#ifdef __HUGS__
-import Hugs.Prelude (IOException(..), IOErrorType(..))
-import qualified Hugs.IO (handleToFd, openFd)
-#endif
-
 #include "HsUnix.h"
 
 -- -----------------------------------------------------------------------------
@@ -237,16 +232,6 @@ handleToFd' h h_@Handle__{haType=_,..} = do
      return (Handle__{haType=ClosedHandle,..}, Fd (FD.fdFD fd))
 
 fdToHandle fd = FD.fdToHandle (fromIntegral fd)
-#endif
-
-#ifdef __HUGS__
-handleToFd h = do
-  fd <- Hugs.IO.handleToFd h
-  return (fromIntegral fd)
-
-fdToHandle fd = do
-  mode <- fdGetMode (fromIntegral fd)
-  Hugs.IO.openFd (fromIntegral fd) False mode True
 #endif
 
 -- -----------------------------------------------------------------------------

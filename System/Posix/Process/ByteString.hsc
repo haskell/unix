@@ -90,10 +90,6 @@ import qualified Data.ByteString.Char8 as BC
 
 import System.Posix.ByteString.FilePath
 
-#ifdef __HUGS__
-{-# CFILES cbits/HsUnix.c  #-}
-#endif
-
 -- | @'executeFile' cmd args env@ calls one of the
 --   @execv*@ family, depending on whether or not the current
 --   PATH is to be searched for the command, and whether or not an

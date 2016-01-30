@@ -88,10 +88,6 @@ import GHC.TopHandler   ( runIO )
 import GHC.IO ( unsafeUnmask, uninterruptibleMask_ )
 #endif
 
-#ifdef __HUGS__
-{-# CFILES cbits/HsUnix.c  #-}
-#endif
-
 -- -----------------------------------------------------------------------------
 -- Process environment
 

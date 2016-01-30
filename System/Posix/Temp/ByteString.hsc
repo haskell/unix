@@ -38,7 +38,7 @@ import System.Posix.Directory (createDirectory)
 import System.Posix.IO
 import System.Posix.Types
 
-#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+#if defined(__GLASGOW_HASKELL__)
 foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
   c_mkstemp :: CString -> IO CInt
 #endif
@@ -53,7 +53,7 @@ foreign import ccall unsafe "HsUnix.h __hscore_mkstemp"
 mkstemp :: ByteString -> IO (RawFilePath, Handle)
 mkstemp template' = do
   let template = template' `B.append` (BC.pack "XXXXXX")
-#if defined(__GLASGOW_HASKELL__) || defined(__HUGS__)
+#if defined(__GLASGOW_HASKELL__)
   withFilePath template $ \ ptr -> do
     fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
     name <- peekFilePath ptr
@@ -114,7 +114,7 @@ mkdtemp template' = do
   return name
 #endif
 
-#if (!defined(__GLASGOW_HASKELL__) && !defined(__HUGS__)) || !HAVE_MKDTEMP
+#if !defined(__GLASGOW_HASKELL__) || !HAVE_MKDTEMP
 
 foreign import ccall unsafe "mktemp"
   c_mktemp :: CString -> IO CString
