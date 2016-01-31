@@ -1,4 +1,6 @@
-{-# LANGUAGE NondecreasingIndentation, RecordWildCards #-}
+{-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE NondecreasingIndentation #-}
+{-# LANGUAGE RecordWildCards #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #else
@@ -182,7 +184,7 @@ open_ str how maybe_mode (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
                    WriteOnly -> (#const O_WRONLY)
                    ReadWrite -> (#const O_RDWR)
 
-foreign import ccall unsafe "__hscore_open"
+foreign import capi unsafe "HsUnix.h open"
    c_open :: CString -> CInt -> CMode -> IO CInt
 
 -- |Close this file descriptor.  May throw an exception if this is an
