@@ -131,5 +131,4 @@ library
         execvpe.h
     c-sources:
         cbits/HsUnix.c
-        cbits/dirUtils.c
         cbits/execvpe.c

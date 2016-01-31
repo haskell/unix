@@ -9,7 +9,7 @@
 #include "HsUnix.h"
 
 #ifdef HAVE_RTLDNEXT
-void *__hsunix_rtldNext (void) {return RTLD_NEXT;} 
+void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 #endif
 
 #ifdef HAVE_RTLDDEFAULT
@@ -71,3 +71,65 @@ HsInt __hsunix_long_path_size(void) {
 #endif
 }
 
+
+/*
+ * read an entry from the directory stream; opt for the
+ * re-entrant friendly way of doing this, if available.
+ */
+int __hscore_readdir( DIR *dirPtr, struct dirent **pDirEnt )
+{
+#if HAVE_READDIR_R
+  struct dirent* p;
+  int res;
+  static unsigned int nm_max = (unsigned int)-1;
+
+  if (pDirEnt == NULL) {
+    return -1;
+  }
+  if (nm_max == (unsigned int)-1) {
+#ifdef NAME_MAX
+    nm_max = NAME_MAX + 1;
+#else
+    nm_max = pathconf(".", _PC_NAME_MAX);
+    if (nm_max == -1) { nm_max = 255; }
+    nm_max++;
+#endif
+  }
+  p = (struct dirent*)malloc(sizeof(struct dirent) + nm_max);
+  if (p == NULL) return -1;
+  res = readdir_r(dirPtr, p, pDirEnt);
+  if (res != 0) {
+      *pDirEnt = NULL;
+      free(p);
+  }
+  else if (*pDirEnt == NULL) {
+    // end of stream
+    free(p);
+  }
+  return res;
+#else
+
+  if (pDirEnt == NULL) {
+    return -1;
+  }
+
+  *pDirEnt = readdir(dirPtr);
+  if (*pDirEnt == NULL) {
+    return -1;
+  } else {
+    return 0;
+  }
+#endif
+}
+
+char *__hscore_d_name( struct dirent* d )
+{
+  return (d->d_name);
+}
+
+void __hscore_free_dirent(struct dirent *dEnt)
+{
+#if HAVE_READDIR_R
+  free(dEnt);
+#endif
+}
