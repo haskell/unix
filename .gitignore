@@ -6,6 +6,7 @@ config.status
 configure
 dist/
 dist-install/
+dist-newstyle/
 ghc.mk
 include/HsUnixConfig.h
 include/HsUnixConfig.h.in
