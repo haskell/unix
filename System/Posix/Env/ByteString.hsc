@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# OPTIONS_GHC -fno-warn-trustworthy-safe #-}
@@ -98,13 +99,21 @@ getEnvironment = do
 -- from the environment.
 
 unsetEnv :: ByteString -> IO ()
-#ifdef HAVE_UNSETENV
-
+#if HAVE_UNSETENV
+# if !UNSETENV_RETURNS_VOID
 unsetEnv name = B.useAsCString name $ \ s ->
   throwErrnoIfMinus1_ "unsetenv" (c_unsetenv s)
 
-foreign import ccall unsafe "__hsunix_unsetenv"
+-- POSIX.1-2001 compliant unsetenv(3)
+foreign import capi unsafe "HsUnix.h unsetenv"
    c_unsetenv :: CString -> IO CInt
+# else
+unsetEnv name = B.useAsCString name c_unsetenv
+
+-- pre-POSIX unsetenv(3) returning @void@
+foreign import capi unsafe "HsUnix.h unsetenv"
+   c_unsetenv :: CString -> IO ()
+# endif
 #else
 unsetEnv name = putEnv (name ++ "=")
 #endif

@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #else
@@ -116,13 +117,21 @@ setEnvironment env = do
 -- from the environment.
 
 unsetEnv :: String -> IO ()
-#ifdef HAVE_UNSETENV
-
+#if HAVE_UNSETENV
+# if !UNSETENV_RETURNS_VOID
 unsetEnv name = withFilePath name $ \ s ->
   throwErrnoIfMinus1_ "unsetenv" (c_unsetenv s)
 
-foreign import ccall unsafe "__hsunix_unsetenv"
+-- POSIX.1-2001 compliant unsetenv(3)
+foreign import capi unsafe "HsUnix.h unsetenv"
    c_unsetenv :: CString -> IO CInt
+# else
+unsetEnv name = withFilePath name c_unsetenv
+
+-- pre-POSIX unsetenv(3) returning @void@
+foreign import capi unsafe "HsUnix.h unsetenv"
+   c_unsetenv :: CString -> IO ()
+# endif
 #else
 unsetEnv name = putEnv (name ++ "=")
 #endif

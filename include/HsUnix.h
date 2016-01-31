@@ -116,8 +116,6 @@ fall back to O_FSYNC, which should be the same */
 // push a SVR4 STREAMS module; do nothing if STREAMS not available
 int __hsunix_push_module(int fd, const char *module);
 
-int __hsunix_unsetenv(const char *name);
-
 /* A size that will contain many path names, but not necessarily all
  * (PATH_MAX is not defined on systems with unlimited path length,
  * e.g. the Hurd).

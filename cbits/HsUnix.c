@@ -36,18 +36,6 @@ int __hsunix_push_module(int fd, const char *module)
 #endif
 }
 
-#ifdef HAVE_UNSETENV
-int __hsunix_unsetenv(const char *name)
-{
-#ifdef UNSETENV_RETURNS_VOID
-    unsetenv(name);
-    return 0;
-#else
-    return unsetenv(name);
-#endif
-}
-#endif
-
 /* A size that will contain many path names, but not necessarily all
  * (PATH_MAX is not defined on systems with unlimited path length,
  * e.g. the Hurd).
