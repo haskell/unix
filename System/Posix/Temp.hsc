@@ -78,7 +78,7 @@ mkstemps prefix suffix = do
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
-mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform" 
+mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform"
 #endif
 
 #if HAVE_MKDTEMP

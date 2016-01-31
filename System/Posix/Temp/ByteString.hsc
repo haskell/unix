@@ -63,7 +63,7 @@ foreign import capi unsafe "HsUnix.h mkstemps"
   c_mkstemps :: CString -> CInt -> IO CInt
 #endif
 
--- |'mkstemps' - make a unique filename with a given prefix and suffix 
+-- |'mkstemps' - make a unique filename with a given prefix and suffix
 -- and open it for reading\/writing (only safe on GHC & Hugs).
 -- The returned 'RawFilePath' is the (possibly relative) path of
 -- the created file, which contains  6 random characters in between
@@ -79,7 +79,7 @@ mkstemps prefix suffix = do
     h <- fdToHandle (Fd fd)
     return (name, h)
 #else
-mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform" 
+mkstemps = error "System.Posix.Temp.mkstemps: not available on this platform"
 #endif
 
 #if HAVE_MKDTEMP

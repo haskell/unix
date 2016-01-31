@@ -35,11 +35,11 @@ import Foreign.C
 import Data.Bits
 #endif
 
-data ShmOpenFlags = ShmOpenFlags 
+data ShmOpenFlags = ShmOpenFlags
     { shmReadWrite :: Bool,
-      -- ^ If true, open the shm object read-write rather than read-only. 
+      -- ^ If true, open the shm object read-write rather than read-only.
       shmCreate :: Bool,
-      -- ^ If true, create the shm object if it does not exist. 
+      -- ^ If true, create the shm object if it does not exist.
       shmExclusive :: Bool,
       -- ^ If true, throw an exception if the shm object already exists.
       shmTrunc :: Bool
@@ -54,16 +54,16 @@ shmOpen name flags mode =
        cflags1 <- return $ cflags0 .|. (if shmReadWrite flags
                                         then #{const O_RDWR}
                                         else #{const O_RDONLY})
-       cflags2 <- return $ cflags1 .|. (if shmCreate flags then #{const O_CREAT} 
+       cflags2 <- return $ cflags1 .|. (if shmCreate flags then #{const O_CREAT}
                                         else 0)
-       cflags3 <- return $ cflags2 .|. (if shmExclusive flags 
-                                        then #{const O_EXCL} 
+       cflags3 <- return $ cflags2 .|. (if shmExclusive flags
+                                        then #{const O_EXCL}
                                         else 0)
-       cflags4 <- return $ cflags3 .|. (if shmTrunc flags then #{const O_TRUNC} 
+       cflags4 <- return $ cflags3 .|. (if shmTrunc flags then #{const O_TRUNC}
                                         else 0)
        withCAString name (shmOpen' cflags4)
     where shmOpen' cflags cname =
-              do fd <- throwErrnoIfMinus1 "shmOpen" $ 
+              do fd <- throwErrnoIfMinus1 "shmOpen" $
                        shm_open cname cflags mode
                  return $ Fd fd
 #else
