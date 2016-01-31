@@ -1,5 +1,4 @@
 {-# LANGUAGE CApiFFI #-}
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE Trustworthy #-}
 
 module System.Posix.Process.Internals (
@@ -26,7 +25,7 @@ data ProcessStatus
 
 -- this function disables the itimer, which would otherwise cause confusing
 -- signals to be sent to the new process.
-foreign import ccall unsafe "pPrPr_disableITimers"
+foreign import capi unsafe "Rts.h stopTimer"
   pPrPr_disableITimers :: IO ()
 
 foreign import ccall unsafe "__hsunix_execvpe"

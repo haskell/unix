@@ -22,7 +22,4 @@ execvpe(const char *name, char *const argv[], char *const envp[]);
 #endif
 #endif
 
-// implemented in cbits/ghcrts.c
-extern void pPrPr_disableITimers (void);
-
 #endif
