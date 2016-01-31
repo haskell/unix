@@ -10,7 +10,7 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- POSIX support
+-- <http://pubs.opengroup.org/onlinepubs/9699919799/ POSIX.1-2008> support
 --
 -----------------------------------------------------------------------------
 
