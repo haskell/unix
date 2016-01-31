@@ -49,14 +49,16 @@ library
         DeriveDataTypeable
         InterruptibleFFI
         NondecreasingIndentation
-        OverloadedStrings
         RankNTypes
         RecordWildCards
+        Safe
+        Trustworthy
 
-    if impl(ghc)
-        other-extensions:
-            Safe
-            Trustworthy
+    if os(windows)
+        -- This package currently supports neither Cygwin nor MinGW,
+        -- therefore os(windows) is effectively not supported.
+        build-depends: unbuildable<0
+        buildable: False
 
     build-depends:
         base        >= 4.5     && < 4.10,
