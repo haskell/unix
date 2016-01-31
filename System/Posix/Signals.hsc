@@ -290,6 +290,9 @@ foreign import ccall unsafe "killpg"
 raiseSignal :: Signal -> IO ()
 raiseSignal sig = throwErrnoIfMinus1_ "raiseSignal" (c_raise sig)
 
+-- See also note in GHC's rts/RtsUtils.c
+-- This is somewhat fragile because we need to keep the
+-- `#if`-conditional in sync with GHC's runtime.
 #if (defined(openbsd_HOST_OS) || defined(freebsd_HOST_OS) || defined(dragonfly_HOST_OS) || defined(netbsd_HOST_OS) || defined(darwin_HOST_OS))
 foreign import ccall unsafe "genericRaise"
   c_raise :: CInt -> IO CInt
