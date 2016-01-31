@@ -40,6 +40,10 @@ AC_CHECK_FUNCS([readdir_r])
 dnl not available on android so check for it
 AC_CHECK_FUNCS([telldir seekdir])
 
+dnl When available, _NSGetEnviron() (defined in <crt_externs.h>) is
+dnl the preferred way to access environ(7)
+AC_CHECK_FUNCS([_NSGetEnviron])
+
 dnl This is e.g. available as a GNU extension in glibc 2.11+
 AC_CHECK_DECLS([execvpe])
 AC_CHECK_FUNCS([execvpe])
