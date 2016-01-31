@@ -1,6 +1,6 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## **TBA**
+## 2.7.2.0  *Feb 2016*
 
   * Don't assume non-POSIX `WCOREDUMP(x)` macro exists
 
@@ -14,6 +14,10 @@
     configurations (GHC #8859)
 
   * Improve detection of `fdatasync(2)` (GHC #11137)
+
+  * Drop support for Hugs
+
+  * Drop support for Cygwin (and Windows in general)
 
 ## 2.7.1.0  *Dec 2014*
 
