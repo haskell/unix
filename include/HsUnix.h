@@ -113,12 +113,6 @@ fall back to O_FSYNC, which should be the same */
 # define WCOREDUMP(s) 0
 #endif
 
-#ifdef HAVE_PTSNAME
-char *__hsunix_ptsname(int fd);
-int __hsunix_grantpt(int fd);
-int __hsunix_unlockpt(int fd);
-#endif
-
 // push a SVR4 STREAMS module; do nothing if STREAMS not available
 int __hsunix_push_module(int fd, const char *module);
 

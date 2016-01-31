@@ -16,25 +16,14 @@ void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 
-#ifdef HAVE_PTSNAME
+#if HAVE_PTSNAME && (__GLASGOW_HASKELL__ < 800)
 // On Linux (and others), <stdlib.h> needs to be included while
 // `_XOPEN_SOURCE` is already defined. However, GHCs before GHC 8.0
 // didn't do that yet for CApiFFI, so we need this workaround here.
 
-char *__hsunix_ptsname(int fd)
-{
-    return ptsname(fd);
-}
-
-int __hsunix_grantpt(int fd)
-{
-    return grantpt(fd);
-}
-
-int __hsunix_unlockpt(int fd)
-{
-    return unlockpt(fd);
-}
+char *__hsunix_ptsname(int fd)   { return ptsname(fd);  }
+int   __hsunix_grantpt(int fd)   { return grantpt(fd);  }
+int   __hsunix_unlockpt(int fd)  { return unlockpt(fd); }
 #endif
 
 // push a SVR4 STREAMS module; do nothing if STREAMS not available
@@ -70,7 +59,6 @@ HsInt __hsunix_long_path_size(void) {
     return 4096;
 #endif
 }
-
 
 /*
  * read an entry from the directory stream; opt for the
