@@ -13,8 +13,8 @@
 -- Stability   :  provisional
 -- Portability :  non-portable (requires POSIX)
 --
--- DLOpen and friend
---  Derived from GModule.chs by M.Weber & M.Chakravarty which is part of c2hs
+-- @dlopen(3)@ and friends
+--  Derived from @GModule.chs@ by M.Weber & M.Chakravarty which is part of c2hs.
 --  I left the API more or less the same, mostly the flags are different.
 --
 -----------------------------------------------------------------------------
@@ -44,12 +44,12 @@ import Foreign.C.Types
 import Foreign.C.String ( CString )
 
 
--- |On some hosts (e.g. SuSe and Ubuntu Linux) 'RTLD_NEXT' (and
--- 'RTLD_DEFAULT') are not visible without setting the macro
--- '_GNU_SOURCE'. Since we don't want to define this macro, you can use
+-- |On some hosts (e.g. SuSe and Ubuntu Linux) @RTLD_NEXT@ (and
+-- @RTLD_DEFAULT@) are not visible without setting the macro
+-- @_GNU_SOURCE@. Since we don\'t want to define this macro, you can use
 -- the function 'haveRtldNext' to check wether the flag `Next` is
 -- available. Ideally, this will be optimized by the compiler so that it
--- should be as efficient as an #ifdef.
+-- should be as efficient as an @#ifdef@.
 --
 -- If you fail to test the flag and use it although it is undefined,
 -- 'packDL' will throw an error.
@@ -98,9 +98,9 @@ packRTLDFlag RTLD_LOCAL = #const RTLD_LOCAL
 
 -- |Flags for 'System.Posix.DynamicLinker.dlsym'. Notice that 'Next'
 -- might not be available on your particular platform! Use
--- `haveRtldNext`.
+-- 'haveRtldNext'.
 --
--- If 'RTLD_DEFAULT' is not defined on your platform, `packDL` `Default`
+-- If 'RTLD_DEFAULT' is not defined on your platform, 'packDL' 'Default'
 -- reduces to 'nullPtr'.
 
 data DL = Null | Next | Default | DLHandle (Ptr ()) deriving (Show)
