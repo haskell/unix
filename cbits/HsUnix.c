@@ -36,18 +36,6 @@ int __hsunix_push_module(int fd, const char *module)
 #endif
 }
 
-/* A size that will contain many path names, but not necessarily all
- * (PATH_MAX is not defined on systems with unlimited path length,
- * e.g. the Hurd).
- */
-HsInt __hsunix_long_path_size(void) {
-#ifdef PATH_MAX
-    return PATH_MAX;
-#else
-    return 4096;
-#endif
-}
-
 /*
  * read an entry from the directory stream; opt for the
  * re-entrant friendly way of doing this, if available.

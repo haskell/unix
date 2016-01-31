@@ -1,6 +1,10 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE NondecreasingIndentation #-}
+#if __GLASGOW_HASKELL__ >= 709
+{-# LANGUAGE Safe #-}
+#else
 {-# LANGUAGE Trustworthy #-}
+#endif
 
 -----------------------------------------------------------------------------
 -- |
@@ -17,6 +21,11 @@
 -----------------------------------------------------------------------------
 
 #include "HsUnix.h"
+
+-- hack copied from System.Posix.Files
+#if !defined(PATH_MAX)
+# define PATH_MAX 4096
+#endif
 
 module System.Posix.Directory.ByteString (
    -- * Creating and removing directories
@@ -116,7 +125,7 @@ foreign import ccall unsafe "__hscore_d_name"
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
 --   of the current working directory.
 getWorkingDirectory :: IO RawFilePath
-getWorkingDirectory = go long_path_size
+getWorkingDirectory = go (#const PATH_MAX)
   where
     go bytes = do
         r <- allocaBytes bytes $ \buf -> do
@@ -134,9 +143,6 @@ getWorkingDirectory = go long_path_size
 
 foreign import ccall unsafe "getcwd"
    c_getcwd   :: Ptr CChar -> CSize -> IO (Ptr CChar)
-
-foreign import ccall unsafe "__hsunix_long_path_size"
-  long_path_size :: Int
 
 -- | @changeWorkingDirectory dir@ calls @chdir@ to change
 --   the current working directory to @dir@.
