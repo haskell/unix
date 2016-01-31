@@ -89,9 +89,10 @@
 #include <signal.h>
 #endif
 
-/* in Signals.c */
+/* defined in rts/posix/Signals.c */
 extern HsInt nocldstop;
 
+/* defined in libc */
 extern char **environ;
 
 #ifdef HAVE_RTLDNEXT
@@ -105,7 +106,7 @@ void *__hsunix_rtldDefault (void);
 /* O_SYNC doesn't exist on Mac OS X and (at least some versions of) FreeBSD,
 fall back to O_FSYNC, which should be the same */
 #ifndef O_SYNC
-#define O_SYNC O_FSYNC
+# define O_SYNC O_FSYNC
 #endif
 
 // not part of POSIX, hence may not be always defined
