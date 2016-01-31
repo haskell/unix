@@ -25,6 +25,11 @@
 #define HSUNIX_EXECVPE_H_NO_COMPAT
 #include "execvpe.h"
 
+#if !defined(execvpe) && !HAVE_DECL_EXECVPE
+// On some archs such as AIX, the prototype may be missing
+int execvpe(const char *file, char *const argv[], char *const envp[]);
+#endif
+
 /*
  * We want the search semantics of execvp, but we want to provide our
  * own environment, like execve.  The following copyright applies to

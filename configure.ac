@@ -41,6 +41,7 @@ dnl not available on android so check for it
 AC_CHECK_FUNCS([telldir seekdir])
 
 dnl This is e.g. available as a GNU extension in glibc 2.11+
+AC_CHECK_DECLS([execvpe])
 AC_CHECK_FUNCS([execvpe])
 
 AC_CHECK_MEMBERS([struct stat.st_atim])
