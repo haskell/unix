@@ -1,7 +1,6 @@
 
 test('signals001',  normal, compile_and_run, ['-package unix -cpp'])
-test('signals002',  only_compiler_types(['ghc']),
-	compile_and_run, ['-package unix'])
+test('signals002', [], compile_and_run, ['-package unix'])
 test('fileexist01', normal, compile_and_run, ['-package unix'])
 test('forkprocess01', [ only_compiler_types(['ghc']),
                         extra_ways(['threaded1_ls']) ], # test #4512
@@ -28,9 +27,8 @@ test('resourceLimit', normal, compile_and_run, ['-package unix'])
 
 x86FreeBsdFail = when(platform('i386-unknown-freebsd'), expect_fail)
 
-test('queryfdoption01',
-    [omit_ways(['ghci']), only_compiler_types(['ghc']), x86FreeBsdFail],
-	compile_and_run, ['-package unix'])
+test('queryfdoption01', [omit_ways(['ghci']), x86FreeBsdFail], compile_and_run,
+     ['-package unix'])
 test('getEnvironment01', x86FreeBsdFail, compile_and_run, ['-package unix'])
 test('getEnvironment02', x86FreeBsdFail, compile_and_run, ['-package unix'])
 test('getGroupEntryForName', [x86FreeBsdFail, exit_code(1)], compile_and_run,
