@@ -2,9 +2,10 @@
 test('signals001',  normal, compile_and_run, ['-package unix -cpp'])
 test('signals002', [], compile_and_run, ['-package unix'])
 test('fileexist01', normal, compile_and_run, ['-package unix'])
-test('forkprocess01', [ only_compiler_types(['ghc']),
-                        extra_ways(['threaded1_ls']) ], # test #4512
-        compile_and_run, ['-package unix'])
+
+# test #4512
+test('forkprocess01', extra_ways(['threaded1_ls']), compile_and_run,
+     ['-package unix'])
 
 #
 # user001 may fail due to this bug in glibc:
