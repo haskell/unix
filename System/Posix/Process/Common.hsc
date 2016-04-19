@@ -301,7 +301,7 @@ foreign import ccall "forkProcess" forkProcessPrim :: StablePtr (IO ()) -> IO CP
 
 -- | Variant of 'forkProcess' in the style of 'forkIOWithUnmask'.
 --
--- /Since: 2.7.0.0/
+-- @since 2.7.0.0
 forkProcessWithUnmask :: ((forall a . IO a -> IO a) -> IO ()) -> IO ProcessID
 forkProcessWithUnmask action = forkProcess (action unsafeUnmask)
 

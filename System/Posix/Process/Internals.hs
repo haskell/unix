@@ -19,7 +19,7 @@ data ProcessStatus
                             -- signal, the @Bool@ is @True@ if a core
                             -- dump was produced
                             --
-                            -- /Since: 2.7.0.0/
+                            -- @since 2.7.0.0
    | Stopped Signal         -- ^ the process was stopped by a signal
    deriving (Eq, Ord, Show)
 

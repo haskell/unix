@@ -16,7 +16,7 @@
 --
 -- POSIX file control support
 --
--- /Since: 2.7.1.0/
+-- @since 2.7.1.0
 -----------------------------------------------------------------------------
 
 #include "HsUnix.h"
@@ -44,7 +44,7 @@ import GHC.IO.Exception ( unsupportedOperation )
 --
 -- For more details, see documentation of @posix_fadvise(2)@.
 --
--- /Since: 2.7.1.0/
+-- @since 2.7.1.0
 data Advice
   = AdviceNormal
   | AdviceRandom
@@ -61,7 +61,7 @@ data Advice
 --
 -- (use @#if HAVE_POSIX_FADVISE@ CPP guard to detect availability)
 --
--- /Since: 2.7.1.0/
+-- @since 2.7.1.0
 fileAdvise :: Fd -> FileOffset -> FileOffset -> Advice -> IO ()
 #if HAVE_POSIX_FADVISE
 fileAdvise fd off len adv = do
@@ -88,7 +88,7 @@ fileAdvise _ _ _ _ = return ()
 --
 -- (use @#if HAVE_POSIX_FALLOCATE@ CPP guard to detect availability).
 --
--- /Since: 2.7.1.0/
+-- @since 2.7.1.0
 fileAllocate :: Fd -> FileOffset -> FileOffset -> IO ()
 #if HAVE_POSIX_FALLOCATE
 fileAllocate fd off len = do

@@ -467,7 +467,7 @@ foreign import ccall unsafe "futimes"
 --
 -- Note: calls @futimens@ or @futimes@.
 --
--- /Since: 2.7.0.0/
+-- @since 2.7.0.0
 setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()
 #if HAVE_FUTIMENS
 setFdTimesHiRes (Fd fd) atime mtime =
@@ -488,7 +488,7 @@ setFdTimesHiRes =
 --
 -- Note: calls @futimes@.
 --
--- /Since: 2.7.0.0/
+-- @since 2.7.0.0
 touchFd :: Fd -> IO ()
 #if HAVE_FUTIMES
 touchFd (Fd fd) =
