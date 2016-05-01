@@ -1,5 +1,10 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.0.0  *May 2016*
+  * add support for O_NOFOLLOW, O_CLOEXEC, O_DIRECTORY and O_SYNC wrt #6 and #57
+
+  * Refactor API of `openFd` wrt #58, removing `Maybe FileMode` argument, which now must be passed as part of `OpenFileFlags`, e.g. `defaultFileFlags{ creat=(Just mode) }`
+
 ## 2.7.2.0  *Apr 2016*
 
   * Bundled with GHC 8.0.1
