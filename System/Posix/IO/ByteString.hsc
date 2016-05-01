@@ -76,13 +76,12 @@ import System.Posix.ByteString.FilePath
 -- for information on how to use the 'FileMode' type.
 openFd :: RawFilePath
        -> OpenMode
-       -> Maybe FileMode -- ^Just x => creates the file with the given modes, Nothing => the file must exist.
        -> OpenFileFlags
        -> IO Fd
-openFd name how maybe_mode flags = do
-   withFilePath name $ \str -> do
+openFd name how flags =
+   withFilePath name $ \str ->
      throwErrnoPathIfMinus1Retry "openFd" name $
-       open_ str how maybe_mode flags
+       open_ str how flags
 
 -- |Create and open this file in WriteOnly mode.  A special case of
 -- 'openFd'.  See 'System.Posix.Files' for information on how to use
@@ -90,4 +89,4 @@ openFd name how maybe_mode flags = do
 
 createFile :: RawFilePath -> FileMode -> IO Fd
 createFile name mode
-  = openFd name WriteOnly (Just mode) defaultFileFlags{ trunc=True }
+  = openFd name WriteOnly defaultFileFlags{ trunc=True, creat=(Just mode) }

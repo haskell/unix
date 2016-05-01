@@ -8,6 +8,13 @@
         CRDLY(CR0,CR1,CR2,CR2), TABDLY(TAB0,TAB1,TAB2,TAB3) BSDLY(BS0,BS1),
         VTDLY(VT0,VT1), FFDLY(FF0,FF1)
 
+  * Add support for `O_NOFOLLOW`, `O_CLOEXEC`, `O_DIRECTORY` and `O_SYNC`
+    (#6, #57)
+
+  * Refactor API of `openFd` removing `Maybe FileMode` argument,
+    which now must be passed as part of `OpenFileFlags`
+    (e.g. `defaultFileFlags { creat = Just mode }`)  (#58)
+
 ## 2.7.2.2  *May 2017*
 
   * Bundled with GHC 8.2.1
