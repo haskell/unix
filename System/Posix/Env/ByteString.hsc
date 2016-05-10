@@ -53,8 +53,8 @@ getEnv name = do
      else return Nothing
 
 -- |'getEnvDefault' is a wrapper around 'getEnv' where the
--- programmer can specify a fallback if the variable is not found
--- in the environment.
+-- programmer can specify a fallback as the second argument, which will be
+-- used if the variable is not found in the environment.
 
 getEnvDefault :: ByteString -> ByteString -> IO ByteString
 getEnvDefault name fallback = liftM (fromMaybe fallback) (getEnv name)
