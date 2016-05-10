@@ -53,14 +53,12 @@ import System.Posix.DynamicLinker.Prim
 #include "HsUnix.h"
 
 import Control.Exception        ( bracket )
-import Control.Monad    ( liftM )
 import Foreign
 import System.Posix.ByteString.FilePath
 
 dlopen :: RawFilePath -> [RTLDFlags] -> IO DL
-dlopen path flags = do
-  withFilePath path $ \ p -> do
-    liftM DLHandle $ throwDLErrorIf "dlopen" (== nullPtr) $ c_dlopen p (packRTLDFlags flags)
+dlopen path flags = withFilePath path $ \p -> DLHandle <$>
+  throwDLErrorIf "dlopen" (== nullPtr) (c_dlopen p (packRTLDFlags flags))
 
 withDL :: RawFilePath -> [RTLDFlags] -> (DL -> IO a) -> IO a
 withDL file flags f = bracket (dlopen file flags) (dlclose) f
