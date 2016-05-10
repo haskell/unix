@@ -46,7 +46,7 @@ getEnv ::
 getEnv name = do
   litstring <- withFilePath name c_getenv
   if litstring /= nullPtr
-     then liftM Just $ peekFilePath litstring
+     then Just <$> peekFilePath litstring
      else return Nothing
 
 -- |'getEnvDefault' is a wrapper around 'getEnv' where the
@@ -57,7 +57,7 @@ getEnvDefault ::
   String    {- ^ variable name                    -} ->
   String    {- ^ fallback value                   -} ->
   IO String {- ^ variable value or fallback value -}
-getEnvDefault name fallback = liftM (fromMaybe fallback) (getEnv name)
+getEnvDefault name fallback = fromMaybe fallback <$> getEnv name
 
 foreign import ccall unsafe "getenv"
    c_getenv :: CString -> IO CString

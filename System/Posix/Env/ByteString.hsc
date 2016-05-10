@@ -33,7 +33,6 @@ module System.Posix.Env.ByteString (
 
 import Foreign
 import Foreign.C
-import Control.Monad    ( liftM )
 import Data.Maybe       ( fromMaybe )
 
 import qualified Data.ByteString as B
@@ -48,18 +47,18 @@ getEnv ::
 getEnv name = do
   litstring <- B.useAsCString name c_getenv
   if litstring /= nullPtr
-     then liftM Just $ B.packCString litstring
+     then Just <$> B.packCString litstring
      else return Nothing
 
 -- |'getEnvDefault' is a wrapper around 'getEnv' where the
--- programmer can specify a fallback if the variable is not found
--- in the environment.
+-- programmer can specify a fallback as the second argument, which will be
+-- used if the variable is not found in the environment.
 
 getEnvDefault ::
   ByteString    {- ^ variable name                    -} ->
   ByteString    {- ^ fallback value                   -} ->
   IO ByteString {- ^ variable value or fallback value -}
-getEnvDefault name fallback = liftM (fromMaybe fallback) (getEnv name)
+getEnvDefault name fallback = fromMaybe fallback <$> getEnv name
 
 foreign import ccall unsafe "getenv"
    c_getenv :: CString -> IO CString
@@ -173,7 +172,7 @@ getArgs =
   alloca $ \ p_argc ->
   alloca $ \ p_argv -> do
    getProgArgv p_argc p_argv
-   p    <- fromIntegral `liftM` peek p_argc
+   p    <- fromIntegral <$> peek p_argc
    argv <- peek p_argv
    peekArray (p - 1) (advancePtr argv 1) >>= mapM B.packCString
 
