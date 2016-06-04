@@ -229,7 +229,7 @@ createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
-  throwErrnoPathIfMinus1_ "createLink" name1 (c_link s1 s2)
+  throwErrnoIfMinus1_ ("createLink "++name1++" to "++name2) (c_link s1 s2)
 
 -- | @removeLink path@ removes the link named @path@.
 --
@@ -253,7 +253,8 @@ createSymbolicLink :: FilePath -> FilePath -> IO ()
 createSymbolicLink file1 file2 =
   withFilePath file1 $ \s1 ->
   withFilePath file2 $ \s2 ->
-  throwErrnoPathIfMinus1_ "createSymbolicLink" file1 (c_symlink s1 s2)
+  throwErrnoIfMinus1_ ("createSymbolicLink "++file1++" to "++file2)
+    (c_symlink s1 s2)
 
 foreign import ccall unsafe "symlink"
   c_symlink :: CString -> CString -> IO CInt
@@ -291,7 +292,7 @@ rename :: FilePath -> FilePath -> IO ()
 rename name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
-  throwErrnoPathIfMinus1_ "rename" name1 (c_rename s1 s2)
+  throwErrnoIfMinus1_ ("rename "++name1++" to "++name2) (c_rename s1 s2)
 
 foreign import ccall unsafe "rename"
    c_rename :: CString -> CString -> IO CInt
