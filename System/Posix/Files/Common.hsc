@@ -231,6 +231,11 @@ setFileCreationMask mask = c_umask mask
 -- 'FileStatus' type.
 --
 -- Note: see @chmod@.
+--
+-- Limitations: Support for high resolution timestamps is filesystem dependent:
+--
+-- - HFS+ volumes on OS X only support whole-second times.
+--
 newtype FileStatus = FileStatus (ForeignPtr CStat)
 
 -- | ID of the device on which this file resides.
@@ -252,15 +257,18 @@ specialDeviceID  :: FileStatus -> DeviceID
 fileSize         :: FileStatus -> FileOffset
 -- | Time of last access.
 accessTime       :: FileStatus -> EpochTime
--- | Time of last access in sub-second resolution.
+-- | Time of last access in sub-second resolution. Depends on the timestamp resolution of the
+-- underlying filesystem.
 accessTimeHiRes  :: FileStatus -> POSIXTime
 -- | Time of last modification.
 modificationTime :: FileStatus -> EpochTime
--- | Time of last modification in sub-second resolution.
+-- | Time of last modification in sub-second resolution. Depends on the timestamp resolution of the
+-- underlying filesystem.
 modificationTimeHiRes :: FileStatus -> POSIXTime
 -- | Time of last status change (i.e. owner, group, link count, mode, etc.).
 statusChangeTime :: FileStatus -> EpochTime
 -- | Time of last status change (i.e. owner, group, link count, mode, etc.) in sub-second resolution.
+-- Depends on the timestamp resolution of the underlying filesystem.
 statusChangeTimeHiRes :: FileStatus -> POSIXTime
 
 deviceID (FileStatus stat) =
@@ -465,7 +473,11 @@ foreign import ccall unsafe "futimes"
 -- This operation is not supported on all platforms. On these platforms,
 -- this function will raise an exception.
 --
--- Note: calls @futimens@ or @futimes@.
+-- Note: calls @futimens@ or @futimes@. Support for high resolution timestamps
+--   is filesystem dependent with the following limitations:
+--
+-- - HFS+ volumes on OS X truncate the sub-second part of the timestamp.
+--
 --
 -- @since 2.7.0.0
 setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()
