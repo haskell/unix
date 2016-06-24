@@ -11,19 +11,19 @@ test('forkprocess01', extra_ways(['threaded1_ls']), compile_and_run,
 # user001 may fail due to this bug in glibc:
 #   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=466647
 #
-# user001 may also fail on GNU/Linux when using a terminal emulator that doesn't
-# write login records to /var/run/utmp. Running:
-#   $ logname
-# should print your login name. If it doesn't, the getLoginName test in user001
-# will fail, and that's why you are here. Try xterm.
-#
 # Ticket #1487. The glibc implementation of getlogin, which is called by
 # getLoginName, requires that a terminal is connected to filedescriptor 0.
 # See: https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/unix/getlogin.c
-# Therefore, we use the no_stdin option, and have to omit the 'ghci' way,
-# because it relies on redirecting stdin from file.
+# Therefore we have to omit the 'ghci' way, because it relies on redirecting
+# stdin from file.
 #
-test('user001', [no_stdin, omit_ways(['ghci'])], compile_and_run, ['-package unix'])
+# But getLoginName also fails on GNU/Linux when using a terminal emulator
+# that doesn't write login records to /var/run/utmp. Running:
+#   $ logname
+# should print your login name. If it doesn't, the getLoginName test in user001
+# would fail, so we disabled that test.
+#
+test('user001', omit_ways(['ghci']), compile_and_run, ['-package unix'])
 test('resourceLimit', normal, compile_and_run, ['-package unix'])
 
 x86FreeBsdFail = when(platform('i386-unknown-freebsd'), expect_fail)
