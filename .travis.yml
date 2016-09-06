@@ -31,7 +31,7 @@ install:
 
 script:
  - autoreconf -i
- - cabal configure -v2
+ - cabal configure
  - cabal build
  - cabal check || [ "$CABALVER" == "1.16" ]
  - cabal sdist
