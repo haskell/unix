@@ -37,12 +37,29 @@ int __hsunix_push_module(int fd, const char *module)
 }
 
 /*
+ * GNU glibc 2.23 and later deprecate `readdir_r` in favour of plain old
+ * `readdir` which in some upcoming POSIX standard is going to required to be
+ * re-entrant.
+ * Eventually we want to drop `readder_r` all together, but want to be
+ * compatible with older unixen which may not have a re-entrant `readdir`.
+ * Solution is to make systems with *known* re-entrant `readir` use that and use
+ * `readdir_r` whereever we have it and don't *know* that `readdir` is
+ * re-entrant.
+ */
+
+#if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
+#define USE_READDIR_R 0
+#else
+#define USE_READDIR_R 1
+#endif
+
+/*
  * read an entry from the directory stream; opt for the
  * re-entrant friendly way of doing this, if available.
  */
 int __hscore_readdir( DIR *dirPtr, struct dirent **pDirEnt )
 {
-#if HAVE_READDIR_R
+#if HAVE_READDIR_R && USE_READDIR_R
   struct dirent* p;
   int res;
   static unsigned int nm_max = (unsigned int)-1;
