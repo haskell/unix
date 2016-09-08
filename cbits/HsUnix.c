@@ -110,7 +110,7 @@ char *__hscore_d_name( struct dirent* d )
 
 void __hscore_free_dirent(struct dirent *dEnt)
 {
-#if HAVE_READDIR_R
+#if HAVE_READDIR_R && USE_READDIR_R
   free(dEnt);
 #endif
 }
