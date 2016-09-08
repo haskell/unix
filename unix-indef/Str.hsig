@@ -1,0 +1,59 @@
+signature Str where
+
+import Foreign.C.String (CString)
+
+-- | An abstract, string-like type.  It may or may not be Unicode
+-- encoded.
+data Str
+
+-- Note, all occurrences of 'CString' here are assumed to have
+-- the locale 'GHC.IO.Encoding.getFileSystemEncoding';
+-- i.e., when decoding into Unicode, it uses PEP 383 to represent otherwise
+-- unrepresentable byte sequences.
+
+-- | Marshal a 'Str' into a NUL terminated C string using temporary
+-- storage.
+--
+-- * if 'Str' is Unicode, it is encoded to bytes using PEP 383
+--   ('GHC.IO.Encoding.getFileSystemEncoding'), which will interpret
+--   special use of surrogates as otherwise unrepresentable bytes.
+--
+-- * the 'Str' may /not/ contain any NUL characters. However, it may
+--   optionally be NUL terminated.
+--
+-- * the memory is freed when the subcomputation terminates (either
+--   normally or via an exception), so the pointer to the temporary
+--   storage must /not/ be used after this.
+--
+useAsOSString :: Str -> (CString -> IO a) -> IO a
+
+-- | Marshal a 'Str' into a NUL terminated C string. However, it may
+--   optionally be NUL terminated.
+--
+-- * if 'Str' is Unicode, it is encoded to bytes using PEP 383
+--   ('GHC.IO.Encoding.getFileSystemEncoding'), which will interpret
+--   special use of surrogates as otherwise unrepresentable bytes.
+--
+-- * the 'Str' may /not/ contain any NUL characters
+--
+-- * new storage is allocated for the C string and must be
+--   explicitly freed using 'Foreign.Marshal.Alloc.free' or
+--   'Foreign.Marshal.Alloc.finalizerFree'.
+--
+newOSString :: Str -> IO CString
+
+-- | Marshal a NUL terminated C string into a 'Str'.
+--
+-- * if 'Str' is Unicode, we will decode using PEP 383
+--   ('GHC.IO.Encoding.getFileSystemEncoding'), which decode
+--   otherwise uninterpretable bytes as surrogate sequences,
+--   which can be round-tripped back.
+--
+packOSString :: CString -> IO Str
+
+break :: (Char -> Bool) -> Str -> (Str, Str)
+tail :: Str -> Str
+head :: Str -> Char
+unpack :: Str -> String -- or call this toString?
+append :: Str -> Str -> Str
+pack :: String -> Str
