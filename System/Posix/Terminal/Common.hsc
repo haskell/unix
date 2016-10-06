@@ -68,6 +68,7 @@ module System.Posix.Terminal.Common (
 
 import Data.Bits
 import Data.Char
+import Data.Word
 import Foreign.C.Error ( throwErrnoIfMinus1, throwErrnoIfMinus1_ )
 import Foreign.C.Types
 import Foreign.ForeignPtr ( ForeignPtr, withForeignPtr, mallocForeignPtrBytes )
@@ -329,6 +330,7 @@ data BaudRate
   | B38400
   | B57600
   | B115200
+  | BOther Word64
 
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do
@@ -550,6 +552,7 @@ baud2Word B115200 = (#const B115200)
 #else
 baud2Word B115200 = error "B115200 not available on this system"
 #endif
+baud2Word (BOther x) = CSpeed x
 
 -- And convert a word back to a baud rate
 -- We really need some cpp macros here.
@@ -578,7 +581,7 @@ word2Baud x =
 #ifdef B115200
     else if x == (#const B115200) then B115200
 #endif
-    else error "unknown baud rate"
+    else case x of CSpeed y -> BOther y
 
 -- Clear termios i_flag
 
