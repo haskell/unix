@@ -50,7 +50,9 @@ import qualified GHC.Foreign as GHC (newCString)
 
 -- |'getEnv' looks up a variable in the environment.
 
-getEnv :: String -> IO (Maybe String)
+getEnv ::
+  String            {- ^ variable name  -} ->
+  IO (Maybe String) {- ^ variable value -}
 getEnv name = do
   litstring <- withFilePath name c_getenv
   if litstring /= nullPtr
@@ -61,7 +63,10 @@ getEnv name = do
 -- programmer can specify a fallback if the variable is not found
 -- in the environment.
 
-getEnvDefault :: String -> String -> IO String
+getEnvDefault ::
+  String    {- ^ variable name                    -} ->
+  String    {- ^ fallback value                   -} ->
+  IO String {- ^ variable value or fallback value -}
 getEnvDefault name fallback = liftM (fromMaybe fallback) (getEnv name)
 
 foreign import ccall unsafe "getenv"
@@ -94,7 +99,7 @@ foreign import ccall unsafe "&environ"
 -- |'getEnvironment' retrieves the entire environment as a
 -- list of @(key,value)@ pairs.
 
-getEnvironment :: IO [(String,String)]
+getEnvironment :: IO [(String,String)] {- ^ @[(key,value)]@ -}
 getEnvironment = do
   env <- getEnvironmentPrim
   return $ map (dropEq.(break ((==) '='))) env
@@ -105,7 +110,9 @@ getEnvironment = do
 -- |'setEnvironment' resets the entire environment to the given list of
 -- @(key,value)@ pairs.
 
-setEnvironment :: [(String,String)] -> IO ()
+setEnvironment ::
+  [(String,String)] {- ^ @[(key,value)]@ -} ->
+  IO ()
 setEnvironment env = do
   clearEnv
   forM_ env $ \(key,value) ->
@@ -114,7 +121,7 @@ setEnvironment env = do
 -- |The 'unsetEnv' function deletes all instances of the variable name
 -- from the environment.
 
-unsetEnv :: String -> IO ()
+unsetEnv :: String {- ^ variable name -} -> IO ()
 #if HAVE_UNSETENV
 # if !UNSETENV_RETURNS_VOID
 unsetEnv name = withFilePath name $ \ s ->
@@ -137,7 +144,7 @@ unsetEnv name = putEnv (name ++ "=")
 -- |'putEnv' function takes an argument of the form @name=value@
 -- and is equivalent to @setEnv(key,value,True{-overwrite-})@.
 
-putEnv :: String -> IO ()
+putEnv :: String {- ^ "key=value" -} -> IO ()
 putEnv keyvalue = do s <- newFilePath keyvalue
                      -- Do not free `s` after calling putenv.
                      -- According to SUSv2, the string passed to putenv
@@ -159,7 +166,11 @@ foreign import ccall unsafe "putenv"
      not reset, otherwise it is reset to the given value.
 -}
 
-setEnv :: String -> String -> Bool {-overwrite-} -> IO ()
+setEnv ::
+  String {- ^ variable name  -} ->
+  String {- ^ variable value -} ->
+  Bool   {- ^ overwrite      -} ->
+  IO ()
 #ifdef HAVE_SETENV
 setEnv key value ovrwrt = do
   withFilePath key $ \ keyP ->
