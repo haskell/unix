@@ -59,6 +59,9 @@ module System.Posix.Files (
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
+    fileBlockSize,
+    fileBlocks,
+
     -- * Creation
     createNamedPipe,
     createDevice,
