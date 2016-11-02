@@ -56,6 +56,9 @@ module System.Posix.Files.Common (
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
+    fileBlockSize,
+    fileBlocks,
+
     -- * Setting file sizes
     setFdSize,
 
@@ -255,6 +258,14 @@ specialDeviceID  :: FileStatus -> DeviceID
 -- | Size of the file in bytes. If this file is a symbolic link the size is
 -- the length of the pathname it contains.
 fileSize         :: FileStatus -> FileOffset
+-- | Number of blocks allocated for this file, in units of
+-- 512-bytes. Returns @Nothing@ if @st_blocks@ is not supported on this
+-- platform.
+fileBlocks       :: FileStatus -> Maybe CBlkCnt
+-- | Gives the preferred block size for efficient filesystem I/O in
+-- bytes. Returns @Nothing@ if @st_blocksize@ is not supported on this
+-- platform.
+fileBlockSize    :: FileStatus -> Maybe CBlkSize
 -- | Time of last access.
 accessTime       :: FileStatus -> EpochTime
 -- | Time of last access in sub-second resolution. Depends on the timestamp resolution of the
@@ -293,6 +304,19 @@ modificationTime (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_mtime)
 statusChangeTime (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_ctime)
+
+#ifdef HAVE_STRUCT_STAT_ST_BLOCKS
+fileBlocks (FileStatus stat) =
+  Just $ unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_blocks)
+#else
+fileBlocks _ = Nothing
+#endif
+#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
+fileBlockSize (FileStatus stat) =
+  Just $ unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_blksize)
+#else
+fileBlockSize _ = Nothing
+#endif
 
 accessTimeHiRes (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ \stat_ptr -> do
