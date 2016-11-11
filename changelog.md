@@ -1,8 +1,10 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## 2.7.2.1  *Sep 2016*
+## 2.7.2.1  *Nov 2016*
 
   * Don't use `readdir_r` if its deprecated.
+
+  * Add argument documentation for Env modules
 
 ## 2.7.2.0  *Apr 2016*
 

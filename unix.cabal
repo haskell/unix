@@ -1,5 +1,5 @@
 name:           unix
-version:        2.7.2.0
+version:        2.7.2.1
 -- NOTE: Don't forget to update ./changelog.md
 license:        BSD3
 license-file:   LICENSE
