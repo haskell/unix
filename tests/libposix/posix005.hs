@@ -2,20 +2,23 @@
 import System.IO
 import System.Posix.Env
 
+printEnv :: IO ()
+printEnv = getEnvironment >>= print . sort
+
 main = do
     hSetBuffering stdout NoBuffering
     term <- getEnv "TERM"
     maybe (return ()) putStrLn term
     setEnvironment [("one","1"),("two","2")]
-    getEnvironment >>= print
+    printEnv
     setEnv "foo" "bar" True
-    getEnvironment >>= print
+    printEnv
     setEnv "foo" "baz" True
-    getEnvironment >>= print
+    printEnv
     setEnv "fu" "bar" True
-    getEnvironment >>= print
+    printEnv
     unsetEnv "foo"
-    getEnvironment >>= print
+    printEnv
     clearEnv
-    getEnvironment >>= print
+    printEnv
 
