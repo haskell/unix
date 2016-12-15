@@ -1,4 +1,4 @@
-
+import Data.List (sort)
 import System.IO
 import System.Posix.Env
 
