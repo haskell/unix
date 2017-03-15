@@ -15,6 +15,12 @@
 --
 -----------------------------------------------------------------------------
 
+-- see https://android.googlesource.com/platform/bionic/+/9ae59c0/libc/bionic/pathconf.c#37
+#if !defined(_POSIX_VDISABLE) && defined(__ANDROID__)
+#define _POSIX_VDISABLE -1
+#endif
+
+
 module System.Posix.Terminal.Common (
   -- * Terminal support
 
