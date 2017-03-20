@@ -37,8 +37,10 @@ AC_CHECK_FUNCS([nanosleep])
 AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
 AC_CHECK_FUNCS([readdir_r])
+
 dnl not available on android so check for it
-AC_CHECK_FUNCS([telldir seekdir])
+AC_CANONICAL_TARGET
+AS_CASE([$target_os],[*-android*],[],[AC_CHECK_FUNCS([telldir seekdir])])
 
 dnl When available, _NSGetEnviron() (defined in <crt_externs.h>) is
 dnl the preferred way to access environ(7)
