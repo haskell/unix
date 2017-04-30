@@ -1,6 +1,17 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.7.2.2  *May 2017*
+
+  * Bundled with GHC 8.2.1
+
+  * Improve Autoconf detection of `telldir`/`seekdir` and define
+    `_POSIX_VDISABLE` if missing for Android (#91,#90)
+
+  * Fix error message of `createSymbolicLink` (#84)
+
 ## 2.7.2.1  *Nov 2016*
+
+  * Bundled with GHC 8.0.2
 
   * Don't use `readdir_r` if its deprecated.
 
