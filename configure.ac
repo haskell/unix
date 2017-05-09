@@ -73,7 +73,8 @@ AC_CHECK_FUNCS([utimensat futimens])
 AC_CHECK_FUNCS([lutimes futimes])
 
 # Additional temp functions
-AC_CHECK_FUNCS([mkstemps mkdtemp])
+dnl androids bionic doesn't have mkstemps
+AS_CASE([$target_os],[*-android*],[AC_CHECK_FUNCS([mkdtemp])],[AC_CHECK_FUNCS([mkstemps mkdtemp])])
 
 # Functions for file synchronization and allocation control
 AC_CHECK_FUNCS([fsync])
