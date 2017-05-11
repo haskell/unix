@@ -178,7 +178,7 @@ AC_EGREP_CPP(yes,
   AC_DEFINE([HAVE_RTLDNEXT], [1], [Define to 1 if we can see RTLD_NEXT in dlfcn.h.])
 ], [
   AC_MSG_RESULT(no)
-  ])    
+  ])
 
 AC_MSG_CHECKING(for RTLD_DEFAULT from dlfcn.h)
 AC_EGREP_CPP(yes,
@@ -192,7 +192,7 @@ AC_EGREP_CPP(yes,
   AC_DEFINE([HAVE_RTLDDEFAULT], [1], [Define to 1 if RTLD_DEFAULT is available.])
 ], [
   AC_MSG_RESULT(no)
-  ])    
+  ])
 
 AC_CHECK_FUNCS(openpty,,
    AC_CHECK_LIB(util,openpty,
@@ -233,5 +233,20 @@ AC_SEARCH_LIBS(sem_close, pthread,
 
 AC_SUBST([EXTRA_LIBS])
 AC_CONFIG_FILES([unix.buildinfo])
+
+
+AC_EGREP_CPP(we_are_using_clang,
+[
+#ifdef __clang__
+we_are_using_clang
+#endif
+],
+[AC_MSG_RESULT([yes])
+IS_CLANG="yes"],
+[AC_MSG_RESULT([no])])
+
+if test x"$IS_CLANG" == x"yes" ; then
+  CFLAGS="$CFLAGS -Wno-implicit-function-declaration"
+fi
 
 AC_OUTPUT
