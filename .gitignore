@@ -10,6 +10,7 @@ configure
 dist/
 dist-install/
 dist-newstyle/
+ghc.environment.*
 ghc.mk
 include/HsUnixConfig.h
 include/HsUnixConfig.h.in
