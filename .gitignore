@@ -1,6 +1,9 @@
 # Specific generated files
 GNUmakefile
 autom4te.cache/
+.cabal-sandbox/
+cabal.project.local
+cabal.sandbox.config
 config.log
 config.status
 configure
