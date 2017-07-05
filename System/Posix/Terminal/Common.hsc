@@ -117,10 +117,27 @@ data TerminalMode
 
         -- output flags
    | ProcessOutput              -- OPOST
-        -- ToDo: ONLCR, OCRNL, ONOCR, ONLRET, OFILL,
-        --       NLDLY(NL0,NL1), CRDLY(CR0,CR1,CR2,CR2)
-        --       TABDLY(TAB0,TAB1,TAB2,TAB3)
-        --       BSDLY(BS0,BS1), VTDLY(VT0,VT1), FFDLY(FF0,FF1)
+   | MapLFtoCRLF                -- ONLCR
+   | OutputMapCRtoLF            -- OCRNL
+   | NoCRAtColumnZero           -- ONOCR
+   | ReturnMeansLF              -- ONLRET
+   | SendFillOnDelay            -- OFILL
+   | LFDelayMask0               -- NLDLY(NL0)
+   | LFDelayMask1               -- NLDLY(NL1)
+   | CRDelayMask0               -- CRDLY(CR0)
+   | CRDelayMask1               -- CRDLY(CR1)
+   | CRDelayMask2               -- CRDLY(CR2)
+   | CRDelayMask3               -- CRDLY(CR3)
+   | TabDelayMask0              -- TABDLY(TAB0)
+   | TabDelayMask1              -- TABDLY(TAB1)
+   | TabDelayMask2              -- TABDLY(TAB2)
+   | TabDelayMask3              -- TABDLY(TAB3)
+   | BackspaceDelayMask0        -- BSDLY(BS0)
+   | BackspaceDelayMask1        -- BSDLY(BS1)
+   | VerticalTabDelayMask0      -- VTDLY(VT0)
+   | VerticalTabDelayMask1      -- VTDLY(VT1)
+   | FormfeedDelayMask0         -- FFDLY(FF0)
+   | FormfeedDelayMask1         -- FFDLY(FF1)
 
         -- control flags
    | LocalMode                  -- CLOCAL
@@ -154,6 +171,27 @@ withoutMode termios StartStopInput = clearInputFlag (#const IXOFF) termios
 withoutMode termios StartStopOutput = clearInputFlag (#const IXON) termios
 withoutMode termios MarkParityErrors = clearInputFlag (#const PARMRK) termios
 withoutMode termios ProcessOutput = clearOutputFlag (#const OPOST) termios
+withoutMode termios MapLFtoCRLF = clearOutputFlag (#const ONLCR) termios
+withoutMode termios OutputMapCRtoLF = clearOutputFlag (#const OCRNL) termios
+withoutMode termios NoCRAtColumnZero = clearOutputFlag (#const ONOCR) termios
+withoutMode termios ReturnMeansLF = clearOutputFlag (#const ONLRET) termios
+withoutMode termios SendFillOnDelay = clearOutputFlag (#const OFILL) termios
+withoutMode termios LFDelayMask0 = clearOutputFlag (#const NL0) termios
+withoutMode termios LFDelayMask1 = clearOutputFlag (#const NL1) termios
+withoutMode termios CRDelayMask0 = clearOutputFlag (#const CR0) termios
+withoutMode termios CRDelayMask1 = clearOutputFlag (#const CR1) termios
+withoutMode termios CRDelayMask2 = clearOutputFlag (#const CR2) termios
+withoutMode termios CRDelayMask3 = clearOutputFlag (#const CR3) termios
+withoutMode termios TabDelayMask0 = clearOutputFlag (#const TAB0) termios
+withoutMode termios TabDelayMask1 = clearOutputFlag (#const TAB1) termios
+withoutMode termios TabDelayMask2 = clearOutputFlag (#const TAB2) termios
+withoutMode termios TabDelayMask3 = clearOutputFlag (#const TAB3) termios
+withoutMode termios BackspaceDelayMask0 = clearOutputFlag (#const BS0) termios
+withoutMode termios BackspaceDelayMask1 = clearOutputFlag (#const BS1) termios
+withoutMode termios VerticalTabDelayMask0 = clearOutputFlag (#const VT0) termios
+withoutMode termios VerticalTabDelayMask1 = clearOutputFlag (#const VT1) termios
+withoutMode termios FormfeedDelayMask0 = clearOutputFlag (#const FF0) termios
+withoutMode termios FormfeedDelayMask1 = clearOutputFlag (#const FF1) termios
 withoutMode termios LocalMode = clearControlFlag (#const CLOCAL) termios
 withoutMode termios ReadEnable = clearControlFlag (#const CREAD) termios
 withoutMode termios TwoStopBits = clearControlFlag (#const CSTOPB) termios
@@ -183,6 +221,27 @@ withMode termios StartStopInput = setInputFlag (#const IXOFF) termios
 withMode termios StartStopOutput = setInputFlag (#const IXON) termios
 withMode termios MarkParityErrors = setInputFlag (#const PARMRK) termios
 withMode termios ProcessOutput = setOutputFlag (#const OPOST) termios
+withMode termios MapLFtoCRLF = setOutputFlag (#const ONLCR) termios
+withMode termios OutputMapCRtoLF = setOutputFlag (#const OCRNL) termios
+withMode termios NoCRAtColumnZero = setOutputFlag (#const ONOCR) termios
+withMode termios ReturnMeansLF = setOutputFlag (#const ONLRET) termios
+withMode termios SendFillOnDelay = setOutputFlag (#const OFILL) termios
+withMode termios LFDelayMask0 = setOutputFlag (#const NL0) termios
+withMode termios LFDelayMask1 = setOutputFlag (#const NL1) termios
+withMode termios CRDelayMask0 = setOutputFlag (#const CR0) termios
+withMode termios CRDelayMask1 = setOutputFlag (#const CR1) termios
+withMode termios CRDelayMask2 = setOutputFlag (#const CR2) termios
+withMode termios CRDelayMask3 = setOutputFlag (#const CR3) termios
+withMode termios TabDelayMask0 = setOutputFlag (#const TAB0) termios
+withMode termios TabDelayMask1 = setOutputFlag (#const TAB1) termios
+withMode termios TabDelayMask2 = setOutputFlag (#const TAB2) termios
+withMode termios TabDelayMask3 = setOutputFlag (#const TAB3) termios
+withMode termios BackspaceDelayMask0 = setOutputFlag (#const BS0) termios
+withMode termios BackspaceDelayMask1 = setOutputFlag (#const BS1) termios
+withMode termios VerticalTabDelayMask0 = setOutputFlag (#const VT0) termios
+withMode termios VerticalTabDelayMask1 = setOutputFlag (#const VT1) termios
+withMode termios FormfeedDelayMask0 = setOutputFlag (#const FF0) termios
+withMode termios FormfeedDelayMask1 = setOutputFlag (#const FF1) termios
 withMode termios LocalMode = setControlFlag (#const CLOCAL) termios
 withMode termios ReadEnable = setControlFlag (#const CREAD) termios
 withMode termios TwoStopBits = setControlFlag (#const CSTOPB) termios
@@ -212,6 +271,27 @@ terminalMode StartStopInput = testInputFlag (#const IXOFF)
 terminalMode StartStopOutput = testInputFlag (#const IXON)
 terminalMode MarkParityErrors = testInputFlag (#const PARMRK)
 terminalMode ProcessOutput = testOutputFlag (#const OPOST)
+terminalMode MapLFtoCRLF = testOutputFlag (#const ONLCR)
+terminalMode OutputMapCRtoLF = testOutputFlag (#const OCRNL)
+terminalMode NoCRAtColumnZero = testOutputFlag (#const ONOCR)
+terminalMode ReturnMeansLF = testOutputFlag (#const ONLRET)
+terminalMode SendFillOnDelay = testOutputFlag (#const OFILL)
+terminalMode LFDelayMask0 = testOutputFlag (#const NL0)
+terminalMode LFDelayMask1 = testOutputFlag (#const NL1)
+terminalMode CRDelayMask0 = testOutputFlag (#const CR0)
+terminalMode CRDelayMask1 = testOutputFlag (#const CR1)
+terminalMode CRDelayMask2 = testOutputFlag (#const CR2)
+terminalMode CRDelayMask3 = testOutputFlag (#const CR3)
+terminalMode TabDelayMask0 = testOutputFlag (#const TAB0)
+terminalMode TabDelayMask1 = testOutputFlag (#const TAB1)
+terminalMode TabDelayMask2 = testOutputFlag (#const TAB2)
+terminalMode TabDelayMask3 = testOutputFlag (#const TAB3)
+terminalMode BackspaceDelayMask0 = testOutputFlag (#const BS0)
+terminalMode BackspaceDelayMask1 = testOutputFlag (#const BS1)
+terminalMode VerticalTabDelayMask0 = testOutputFlag (#const VT0)
+terminalMode VerticalTabDelayMask1 = testOutputFlag (#const VT1)
+terminalMode FormfeedDelayMask0 = testOutputFlag (#const FF0)
+terminalMode FormfeedDelayMask1 = testOutputFlag (#const FF1)
 terminalMode LocalMode = testControlFlag (#const CLOCAL)
 terminalMode ReadEnable = testControlFlag (#const CREAD)
 terminalMode TwoStopBits = testControlFlag (#const CSTOPB)
