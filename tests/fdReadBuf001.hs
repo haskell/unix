@@ -21,7 +21,7 @@ main = do
            r <- fdReadBuf rd p block
            let (chunk,rest) = splitAt (fromIntegral r) text
            chars <- peekArray (fromIntegral r) p
-           when (chars /= chunk) $ error "mismatch"
+           when (chars /= chunk) $ error $ "mismatch: expected="++show chunk++", found="++show chars
            when (null rest) $ exitWith ExitSuccess
            loop rest
     loop bytes
