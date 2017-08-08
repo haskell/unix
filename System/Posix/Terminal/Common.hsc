@@ -103,60 +103,61 @@ withTerminalAttributes (TerminalAttributes termios) = withForeignPtr termios
 
 data TerminalMode
         -- input flags
-   = InterruptOnBreak           -- BRKINT
-   | MapCRtoLF                  -- ICRNL
-   | IgnoreBreak                -- IGNBRK
-   | IgnoreCR                   -- IGNCR
-   | IgnoreParityErrors         -- IGNPAR
-   | MapLFtoCR                  -- INLCR
-   | CheckParity                -- INPCK
-   | StripHighBit               -- ISTRIP
-   | StartStopInput             -- IXOFF
-   | StartStopOutput            -- IXON
-   | MarkParityErrors           -- PARMRK
+   = InterruptOnBreak           -- ^ BRKINT
+   | MapCRtoLF                  -- ^ ICRNL
+   | IgnoreBreak                -- ^ IGNBRK
+   | IgnoreCR                   -- ^ IGNCR
+   | IgnoreParityErrors         -- ^ IGNPAR
+   | MapLFtoCR                  -- ^ INLCR
+   | CheckParity                -- ^ INPCK
+   | StripHighBit               -- ^ ISTRIP
+   | StartStopInput             -- ^ IXOFF
+   | StartStopOutput            -- ^ IXON
+   | MarkParityErrors           -- ^ PARMRK
 
         -- output flags
-   | ProcessOutput              -- OPOST
-   | MapLFtoCRLF                -- ONLCR
-   | OutputMapCRtoLF            -- OCRNL
-   | NoCRAtColumnZero           -- ONOCR
-   | ReturnMeansLF              -- ONLRET
-   | SendFillOnDelay            -- OFILL
-   | LFDelayMask0               -- NLDLY(NL0)
-   | LFDelayMask1               -- NLDLY(NL1)
-   | CRDelayMask0               -- CRDLY(CR0)
-   | CRDelayMask1               -- CRDLY(CR1)
-   | CRDelayMask2               -- CRDLY(CR2)
-   | CRDelayMask3               -- CRDLY(CR3)
-   | TabDelayMask0              -- TABDLY(TAB0)
-   | TabDelayMask1              -- TABDLY(TAB1)
-   | TabDelayMask2              -- TABDLY(TAB2)
-   | TabDelayMask3              -- TABDLY(TAB3)
-   | BackspaceDelayMask0        -- BSDLY(BS0)
-   | BackspaceDelayMask1        -- BSDLY(BS1)
-   | VerticalTabDelayMask0      -- VTDLY(VT0)
-   | VerticalTabDelayMask1      -- VTDLY(VT1)
-   | FormfeedDelayMask0         -- FFDLY(FF0)
-   | FormfeedDelayMask1         -- FFDLY(FF1)
+   | ProcessOutput              -- ^ OPOST
+   | MapLFtoCRLF                -- ^ ONLCR
+   | OutputMapCRtoLF            -- ^ OCRNL
+   | NoCRAtColumnZero           -- ^ ONOCR
+   | ReturnMeansLF              -- ^ ONLRET
+   | FillIsDEL                  -- ^ OFDEL
+   | SendFillOnDelay            -- ^ OFILL
+   | LFDelayMask0               -- ^ NLDLY(NL0)
+   | LFDelayMask1               -- ^ NLDLY(NL1)
+   | CRDelayMask0               -- ^ CRDLY(CR0)
+   | CRDelayMask1               -- ^ CRDLY(CR1)
+   | CRDelayMask2               -- ^ CRDLY(CR2)
+   | CRDelayMask3               -- ^ CRDLY(CR3)
+   | TabDelayMask0              -- ^ TABDLY(TAB0)
+   | TabDelayMask1              -- ^ TABDLY(TAB1)
+   | TabDelayMask2              -- ^ TABDLY(TAB2)
+   | TabDelayMask3              -- ^ TABDLY(TAB3)
+   | BackspaceDelayMask0        -- ^ BSDLY(BS0)
+   | BackspaceDelayMask1        -- ^ BSDLY(BS1)
+   | VerticalTabDelayMask0      -- ^ VTDLY(VT0)
+   | VerticalTabDelayMask1      -- ^ VTDLY(VT1)
+   | FormfeedDelayMask0         -- ^ FFDLY(FF0)
+   | FormfeedDelayMask1         -- ^ FFDLY(FF1)
 
         -- control flags
-   | LocalMode                  -- CLOCAL
-   | ReadEnable                 -- CREAD
-   | TwoStopBits                -- CSTOPB
-   | HangupOnClose              -- HUPCL
-   | EnableParity               -- PARENB
-   | OddParity                  -- PARODD
+   | LocalMode                  -- ^ CLOCAL
+   | ReadEnable                 -- ^ CREAD
+   | TwoStopBits                -- ^ CSTOPB
+   | HangupOnClose              -- ^ HUPCL
+   | EnableParity               -- ^ PARENB
+   | OddParity                  -- ^ PARODD
 
         -- local modes
-   | EnableEcho                 -- ECHO
-   | EchoErase                  -- ECHOE
-   | EchoKill                   -- ECHOK
-   | EchoLF                     -- ECHONL
-   | ProcessInput               -- ICANON
-   | ExtendedFunctions          -- IEXTEN
-   | KeyboardInterrupts         -- ISIG
-   | NoFlushOnInterrupt         -- NOFLSH
-   | BackgroundWriteInterrupt   -- TOSTOP
+   | EnableEcho                 -- ^ ECHO
+   | EchoErase                  -- ^ ECHOE
+   | EchoKill                   -- ^ ECHOK
+   | EchoLF                     -- ^ ECHONL
+   | ProcessInput               -- ^ ICANON
+   | ExtendedFunctions          -- ^ IEXTEN
+   | KeyboardInterrupts         -- ^ ISIG
+   | NoFlushOnInterrupt         -- ^ NOFLSH
+   | BackgroundWriteInterrupt   -- ^ TOSTOP
 
 withoutMode :: TerminalAttributes -> TerminalMode -> TerminalAttributes
 withoutMode termios InterruptOnBreak = clearInputFlag (#const BRKINT) termios
@@ -175,6 +176,7 @@ withoutMode termios MapLFtoCRLF = clearOutputFlag (#const ONLCR) termios
 withoutMode termios OutputMapCRtoLF = clearOutputFlag (#const OCRNL) termios
 withoutMode termios NoCRAtColumnZero = clearOutputFlag (#const ONOCR) termios
 withoutMode termios ReturnMeansLF = clearOutputFlag (#const ONLRET) termios
+withoutMode termios FillIsDEL = clearOutputFlag (#const OFDEL) termios
 withoutMode termios SendFillOnDelay = clearOutputFlag (#const OFILL) termios
 withoutMode termios LFDelayMask0 = clearOutputFlag (#const NL0) termios
 withoutMode termios LFDelayMask1 = clearOutputFlag (#const NL1) termios
@@ -225,6 +227,7 @@ withMode termios MapLFtoCRLF = setOutputFlag (#const ONLCR) termios
 withMode termios OutputMapCRtoLF = setOutputFlag (#const OCRNL) termios
 withMode termios NoCRAtColumnZero = setOutputFlag (#const ONOCR) termios
 withMode termios ReturnMeansLF = setOutputFlag (#const ONLRET) termios
+withMode termios FillIsDEL = setOutputFlag (#const OFDEL) termios
 withMode termios SendFillOnDelay = setOutputFlag (#const OFILL) termios
 withMode termios LFDelayMask0 = setOutputFlag (#const NL0) termios
 withMode termios LFDelayMask1 = setOutputFlag (#const NL1) termios
@@ -275,6 +278,7 @@ terminalMode MapLFtoCRLF = testOutputFlag (#const ONLCR)
 terminalMode OutputMapCRtoLF = testOutputFlag (#const OCRNL)
 terminalMode NoCRAtColumnZero = testOutputFlag (#const ONOCR)
 terminalMode ReturnMeansLF = testOutputFlag (#const ONLRET)
+terminalMode FillIsDEL = testOutputFlag (#const OFDEL)
 terminalMode SendFillOnDelay = testOutputFlag (#const OFILL)
 terminalMode LFDelayMask0 = testOutputFlag (#const NL0)
 terminalMode LFDelayMask1 = testOutputFlag (#const NL1)
