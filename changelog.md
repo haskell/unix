@@ -1,5 +1,13 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.0.0
+
+  * Added terminal output flags to `System.Posix.Terminal.Common.TerminalMode`
+
+        IXANY, ONLCR, OCRNL, ONOCR, ONLRET, OFDEL, OFILL, NLDLY(NL0,NL1),
+        CRDLY(CR0,CR1,CR2,CR2), TABDLY(TAB0,TAB1,TAB2,TAB3) BSDLY(BS0,BS1),
+        VTDLY(VT0,VT1), FFDLY(FF0,FF1)
+
 ## 2.7.2.2  *May 2017*
 
   * Bundled with GHC 8.2.1

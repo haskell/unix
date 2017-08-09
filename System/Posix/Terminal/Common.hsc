@@ -103,61 +103,106 @@ withTerminalAttributes (TerminalAttributes termios) = withForeignPtr termios
 
 data TerminalMode
         -- input flags
-   = InterruptOnBreak           -- ^ BRKINT
-   | MapCRtoLF                  -- ^ ICRNL
-   | IgnoreBreak                -- ^ IGNBRK
-   | IgnoreCR                   -- ^ IGNCR
-   | IgnoreParityErrors         -- ^ IGNPAR
-   | MapLFtoCR                  -- ^ INLCR
-   | CheckParity                -- ^ INPCK
-   | StripHighBit               -- ^ ISTRIP
-   | StartStopInput             -- ^ IXOFF
-   | StartStopOutput            -- ^ IXON
-   | MarkParityErrors           -- ^ PARMRK
+   = InterruptOnBreak           -- ^ @BRKINT@ - Signal interrupt on break
+   | MapCRtoLF                  -- ^ @ICRNL@ - Map CR to NL on input
+   | IgnoreBreak                -- ^ @IGNBRK@ - Ignore break condition
+   | IgnoreCR                   -- ^ @IGNCR@ - Ignore CR
+   | IgnoreParityErrors         -- ^ @IGNPAR@ - Ignore characters with parity errors
+   | MapLFtoCR                  -- ^ @INLCR@ - Map NL to CR on input
+   | CheckParity                -- ^ @INPCK@ - Enable input parity check
+   | StripHighBit               -- ^ @ISTRIP@ - Strip character
+   | RestartOnAny               -- ^ @IXANY@ - Enable any character to restart output
+   | StartStopInput             -- ^ @IXOFF@ - Enable start/stop input control
+   | StartStopOutput            -- ^ @IXON@ - Enable start/stop output control
+   | MarkParityErrors           -- ^ @PARMRK@ - Mark parity errors
 
         -- output flags
-   | ProcessOutput              -- ^ OPOST
-   | MapLFtoCRLF                -- ^ ONLCR
-   | OutputMapCRtoLF            -- ^ OCRNL
-   | NoCRAtColumnZero           -- ^ ONOCR
-   | ReturnMeansLF              -- ^ ONLRET
-   | FillIsDEL                  -- ^ OFDEL
-   | SendFillOnDelay            -- ^ OFILL
-   | LFDelayMask0               -- ^ NLDLY(NL0)
-   | LFDelayMask1               -- ^ NLDLY(NL1)
-   | CRDelayMask0               -- ^ CRDLY(CR0)
-   | CRDelayMask1               -- ^ CRDLY(CR1)
-   | CRDelayMask2               -- ^ CRDLY(CR2)
-   | CRDelayMask3               -- ^ CRDLY(CR3)
-   | TabDelayMask0              -- ^ TABDLY(TAB0)
-   | TabDelayMask1              -- ^ TABDLY(TAB1)
-   | TabDelayMask2              -- ^ TABDLY(TAB2)
-   | TabDelayMask3              -- ^ TABDLY(TAB3)
-   | BackspaceDelayMask0        -- ^ BSDLY(BS0)
-   | BackspaceDelayMask1        -- ^ BSDLY(BS1)
-   | VerticalTabDelayMask0      -- ^ VTDLY(VT0)
-   | VerticalTabDelayMask1      -- ^ VTDLY(VT1)
-   | FormfeedDelayMask0         -- ^ FFDLY(FF0)
-   | FormfeedDelayMask1         -- ^ FFDLY(FF1)
+   | ProcessOutput              -- ^ @OPOST@ - Post-process output
+   | MapLFtoCRLF                -- ^ @ONLCR@ - (XSI) Map NL to CR-NL on output
+                                --
+                                -- @since 2.8.0.0
+   | OutputMapCRtoLF            -- ^ @OCRNL@ - (XSI) Map CR to NL on output
+                                --
+                                -- @since 2.8.0.0
+   | NoCRAtColumnZero           -- ^ @ONOCR@ - (XSI) No CR output at column 0
+                                --
+                                -- @since 2.8.0.0
+   | ReturnMeansLF              -- ^ @ONLRET@ - (XSI) NL performs CR function
+                                --
+                                -- @since 2.8.0.0
+   | FillIsDEL                  -- ^ @OFDEL@ - (XSI) Fill is DEL
+                                --
+                                -- @since 2.8.0.0
+   | SendFillOnDelay            -- ^ @OFILL@ - (XSI) Use fill characters for delay
+                                --
+                                -- @since 2.8.0.0
+   | LFDelayMask0               -- ^ @NLDLY(NL0)@ - (XSI) Select newline delay: type 0
+                                --
+                                -- @since 2.8.0.0
+   | LFDelayMask1               -- ^ @NLDLY(NL1)@ - (XSI) Select newline delay: type 1
+                                --
+                                -- @since 2.8.0.0
+   | CRDelayMask0               -- ^ @CRDLY(CR0)@ - (XSI) Select carriage-return delays: type 0
+                                --
+                                -- @since 2.8.0.0
+   | CRDelayMask1               -- ^ @CRDLY(CR1)@ - (XSI) Select carriage-return delays: type 1
+                                --
+                                -- @since 2.8.0.0
+   | CRDelayMask2               -- ^ @CRDLY(CR2)@ - (XSI) Select carriage-return delays: type 2
+                                --
+                                -- @since 2.8.0.0
+   | CRDelayMask3               -- ^ @CRDLY(CR3)@ - (XSI) Select carriage-return delays: type 3
+                                --
+                                -- @since 2.8.0.0
+   | TabDelayMask0              -- ^ @TABDLY(TAB0)@ - (XSI) Select horizontal-tab delays: type 0
+                                --
+                                -- @since 2.8.0.0
+   | TabDelayMask1              -- ^ @TABDLY(TAB1)@ - (XSI) Select horizontal-tab delays: type 1
+                                --
+                                -- @since 2.8.0.0
+   | TabDelayMask2              -- ^ @TABDLY(TAB2)@ - (XSI) Select horizontal-tab delays: type 2
+                                --
+                                -- @since 2.8.0.0
+   | TabDelayMask3              -- ^ @TABDLY(TAB3)@ - (XSI) Select horizontal-tab delays: type 3
+                                --
+                                -- @since 2.8.0.0
+   | BackspaceDelayMask0        -- ^ @BSDLY(BS0)@ - (XSI) Select backspace delays: type 0
+                                --
+                                -- @since 2.8.0.0
+   | BackspaceDelayMask1        -- ^ @BSDLY(BS1)@ - (XSI) Select backspace delays: type 1
+                                --
+                                -- @since 2.8.0.0
+   | VerticalTabDelayMask0      -- ^ @VTDLY(VT0)@ - (XSI) Select vertical-tab delays: type 0
+                                --
+                                -- @since 2.8.0.0
+   | VerticalTabDelayMask1      -- ^ @VTDLY(VT1)@ - (XSI) Select vertical-tab delays: type 1
+                                --
+                                -- @since 2.8.0.0
+   | FormfeedDelayMask0         -- ^ @FFDLY(FF0)@ - (XSI) Select form-feed delays: type 0
+                                --
+                                -- @since 2.8.0.0
+   | FormfeedDelayMask1         -- ^ @FFDLY(FF1)@ - (XSI) Select form-feed delays: type 1
+                                --
+                                -- @since 2.8.0.0
 
         -- control flags
-   | LocalMode                  -- ^ CLOCAL
-   | ReadEnable                 -- ^ CREAD
-   | TwoStopBits                -- ^ CSTOPB
-   | HangupOnClose              -- ^ HUPCL
-   | EnableParity               -- ^ PARENB
-   | OddParity                  -- ^ PARODD
+   | LocalMode                  -- ^ @CLOCAL@ - Ignore modem status lines
+   | ReadEnable                 -- ^ @CREAD@ - Enable receiver
+   | TwoStopBits                -- ^ @CSTOPB@ - Send two stop bits, else one
+   | HangupOnClose              -- ^ @HUPCL@ - Hang up on last close
+   | EnableParity               -- ^ @PARENB@ - Parity enable
+   | OddParity                  -- ^ @PARODD@ - Odd parity, else even
 
         -- local modes
-   | EnableEcho                 -- ^ ECHO
-   | EchoErase                  -- ^ ECHOE
-   | EchoKill                   -- ^ ECHOK
-   | EchoLF                     -- ^ ECHONL
-   | ProcessInput               -- ^ ICANON
-   | ExtendedFunctions          -- ^ IEXTEN
-   | KeyboardInterrupts         -- ^ ISIG
-   | NoFlushOnInterrupt         -- ^ NOFLSH
-   | BackgroundWriteInterrupt   -- ^ TOSTOP
+   | EnableEcho                 -- ^ @ECHO@ - Enable echo
+   | EchoErase                  -- ^ @ECHOE@ - Echo erase character as error-correcting backspace
+   | EchoKill                   -- ^ @ECHOK@ - Echo KILL
+   | EchoLF                     -- ^ @ECHONL@ - Echo NL
+   | ProcessInput               -- ^ @ICANON@ - Canonical input (erase and kill processing)
+   | ExtendedFunctions          -- ^ @IEXTEN@ - Enable extended input character processing
+   | KeyboardInterrupts         -- ^ @ISIG@ - Enable signals
+   | NoFlushOnInterrupt         -- ^ @NOFLSH@ - Disable flush after interrupt or quit
+   | BackgroundWriteInterrupt   -- ^ @TOSTOP@ - Send @SIGTTOU@ for background output
 
 withoutMode :: TerminalAttributes -> TerminalMode -> TerminalAttributes
 withoutMode termios InterruptOnBreak = clearInputFlag (#const BRKINT) termios
@@ -168,6 +213,7 @@ withoutMode termios IgnoreParityErrors = clearInputFlag (#const IGNPAR) termios
 withoutMode termios MapLFtoCR = clearInputFlag (#const INLCR) termios
 withoutMode termios CheckParity = clearInputFlag (#const INPCK) termios
 withoutMode termios StripHighBit = clearInputFlag (#const ISTRIP) termios
+withoutMode termios RestartOnAny = clearInputFlag (#const IXANY) termios
 withoutMode termios StartStopInput = clearInputFlag (#const IXOFF) termios
 withoutMode termios StartStopOutput = clearInputFlag (#const IXON) termios
 withoutMode termios MarkParityErrors = clearInputFlag (#const PARMRK) termios
@@ -219,6 +265,7 @@ withMode termios IgnoreParityErrors = setInputFlag (#const IGNPAR) termios
 withMode termios MapLFtoCR = setInputFlag (#const INLCR) termios
 withMode termios CheckParity = setInputFlag (#const INPCK) termios
 withMode termios StripHighBit = setInputFlag (#const ISTRIP) termios
+withMode termios RestartOnAny = setInputFlag (#const IXANY) termios
 withMode termios StartStopInput = setInputFlag (#const IXOFF) termios
 withMode termios StartStopOutput = setInputFlag (#const IXON) termios
 withMode termios MarkParityErrors = setInputFlag (#const PARMRK) termios
@@ -270,6 +317,7 @@ terminalMode IgnoreParityErrors = testInputFlag (#const IGNPAR)
 terminalMode MapLFtoCR = testInputFlag (#const INLCR)
 terminalMode CheckParity = testInputFlag (#const INPCK)
 terminalMode StripHighBit = testInputFlag (#const ISTRIP)
+terminalMode RestartOnAny = testInputFlag (#const IXANY)
 terminalMode StartStopInput = testInputFlag (#const IXOFF)
 terminalMode StartStopOutput = testInputFlag (#const IXON)
 terminalMode MarkParityErrors = testInputFlag (#const PARMRK)
