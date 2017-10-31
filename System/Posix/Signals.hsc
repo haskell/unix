@@ -118,148 +118,231 @@ import GHC.Conc hiding (Signal)
 nullSignal :: Signal
 nullSignal = 0
 
+-- | Process abort signal.
 sigABRT   :: CInt
 sigABRT   = CONST_SIGABRT
+
+-- | Alarm clock.
 sigALRM   :: CInt
 sigALRM   = CONST_SIGALRM
+
+-- | Access to an undefined portion of a memory object.
 sigBUS    :: CInt
 sigBUS    = CONST_SIGBUS
+
+-- | Child process terminated, stopped, or continued.
 sigCHLD   :: CInt
 sigCHLD   = CONST_SIGCHLD
+
+-- | Continue executing, if stopped.
 sigCONT   :: CInt
 sigCONT   = CONST_SIGCONT
+
+-- | Erroneous arithmetic operation.
 sigFPE    :: CInt
 sigFPE    = CONST_SIGFPE
+
+-- | Hangup.
 sigHUP    :: CInt
 sigHUP    = CONST_SIGHUP
+
+-- | Illegal instruction.
 sigILL    :: CInt
 sigILL    = CONST_SIGILL
+
+-- | Terminal interrupt signal.
 sigINT    :: CInt
 sigINT    = CONST_SIGINT
+
+-- | Kill (cannot be caught or ignored).
 sigKILL   :: CInt
 sigKILL   = CONST_SIGKILL
+
+-- | Write on a pipe with no one to read it.
 sigPIPE   :: CInt
 sigPIPE   = CONST_SIGPIPE
+
+-- | Terminal quit signal.
 sigQUIT   :: CInt
 sigQUIT   = CONST_SIGQUIT
+
+-- | Invalid memory reference.
 sigSEGV   :: CInt
 sigSEGV   = CONST_SIGSEGV
+
+-- | Stop executing (cannot be caught or ignored).
 sigSTOP   :: CInt
 sigSTOP   = CONST_SIGSTOP
+
+-- | Termination signal.
 sigTERM   :: CInt
 sigTERM   = CONST_SIGTERM
+
+-- | Terminal stop signal.
 sigTSTP   :: CInt
 sigTSTP   = CONST_SIGTSTP
+
+-- | Background process attempting read.
 sigTTIN   :: CInt
 sigTTIN   = CONST_SIGTTIN
+
+-- | Background process attempting write.
 sigTTOU   :: CInt
 sigTTOU   = CONST_SIGTTOU
+
+-- | User-defined signal 1.
 sigUSR1   :: CInt
 sigUSR1   = CONST_SIGUSR1
+
+-- | User-defined signal 2.
 sigUSR2   :: CInt
 sigUSR2   = CONST_SIGUSR2
+
 #if CONST_SIGPOLL != -1
+-- | Pollable event.
 sigPOLL   :: CInt
 sigPOLL   = CONST_SIGPOLL
 #endif
+
+-- | Profiling timer expired.
 sigPROF   :: CInt
 sigPROF   = CONST_SIGPROF
+
+-- | Bad system call.
 sigSYS    :: CInt
 sigSYS    = CONST_SIGSYS
+
+-- | Trace/breakpoint trap.
 sigTRAP   :: CInt
 sigTRAP   = CONST_SIGTRAP
+
+-- | High bandwidth data is available at a socket.
 sigURG    :: CInt
 sigURG    = CONST_SIGURG
+
+-- | Virtual timer expired.
 sigVTALRM :: CInt
 sigVTALRM = CONST_SIGVTALRM
+
+-- | CPU time limit exceeded.
 sigXCPU   :: CInt
 sigXCPU   = CONST_SIGXCPU
+
+-- | File size limit exceeded.
 sigXFSZ   :: CInt
 sigXFSZ   = CONST_SIGXFSZ
 
+-- | Alias for 'sigABRT'.
 internalAbort ::Signal
 internalAbort = sigABRT
 
+-- | Alias for 'sigALRM'.
 realTimeAlarm :: Signal
 realTimeAlarm = sigALRM
 
+-- | Alias for 'sigBUS'.
 busError :: Signal
 busError = sigBUS
 
+-- | Alias for 'sigCHLD'.
 processStatusChanged :: Signal
 processStatusChanged = sigCHLD
 
+-- | Alias for 'sigCONT'.
 continueProcess :: Signal
 continueProcess = sigCONT
 
+-- | Alias for 'sigFPE'.
 floatingPointException :: Signal
 floatingPointException = sigFPE
 
+-- | Alias for 'sigHUP'.
 lostConnection :: Signal
 lostConnection = sigHUP
 
+-- | Alias for 'sigILL'.
 illegalInstruction :: Signal
 illegalInstruction = sigILL
 
+-- | Alias for 'sigINT'.
 keyboardSignal :: Signal
 keyboardSignal = sigINT
 
+-- | Alias for 'sigKILL'.
 killProcess :: Signal
 killProcess = sigKILL
 
+-- | Alias for 'sigPIPE'.
 openEndedPipe :: Signal
 openEndedPipe = sigPIPE
 
+-- | Alias for 'sigQUIT'.
 keyboardTermination :: Signal
 keyboardTermination = sigQUIT
 
+-- | Alias for 'sigSEGV'.
 segmentationViolation :: Signal
 segmentationViolation = sigSEGV
 
+-- | Alias for 'sigSTOP'.
 softwareStop :: Signal
 softwareStop = sigSTOP
 
+-- | Alias for 'sigTERM'.
 softwareTermination :: Signal
 softwareTermination = sigTERM
 
+-- | Alias for 'sigTSTP'.
 keyboardStop :: Signal
 keyboardStop = sigTSTP
 
+-- | Alias for 'sigTTIN'.
 backgroundRead :: Signal
 backgroundRead = sigTTIN
 
+-- | Alias for 'sigTTOU'.
 backgroundWrite :: Signal
 backgroundWrite = sigTTOU
 
+-- | Alias for 'sigUSR1'.
 userDefinedSignal1 :: Signal
 userDefinedSignal1 = sigUSR1
 
+-- | Alias for 'sigUSR2'.
 userDefinedSignal2 :: Signal
 userDefinedSignal2 = sigUSR2
 
 #if CONST_SIGPOLL != -1
+-- | Alias for 'sigPOLL'.
 pollableEvent :: Signal
 pollableEvent = sigPOLL
 #endif
 
+-- | Alias for 'sigPROF'.
 profilingTimerExpired :: Signal
 profilingTimerExpired = sigPROF
 
+-- | Alias for 'sigSYS'.
 badSystemCall :: Signal
 badSystemCall = sigSYS
 
+-- | Alias for 'sigTRAP'.
 breakpointTrap :: Signal
 breakpointTrap = sigTRAP
 
+-- | Alias for 'sigURG'.
 urgentDataAvailable :: Signal
 urgentDataAvailable = sigURG
 
+-- | Alias for 'sigVTALRM'.
 virtualTimerExpired :: Signal
 virtualTimerExpired = sigVTALRM
 
+-- | Alias for 'sigXCPU'.
 cpuTimeLimitExceeded :: Signal
 cpuTimeLimitExceeded = sigXCPU
 
+-- | Alias for 'sigXFSZ'.
 fileSizeLimitExceeded :: Signal
 fileSizeLimitExceeded = sigXFSZ
 
