@@ -130,58 +130,10 @@ data TerminalMode
    | ReturnMeansLF              -- ^ @ONLRET@ - (XSI) NL performs CR function
                                 --
                                 -- @since 2.8.0.0
-   | FillIsDEL                  -- ^ @OFDEL@ - (XSI) Fill is DEL
-                                --
-                                -- @since 2.8.0.0
-   | SendFillOnDelay            -- ^ @OFILL@ - (XSI) Use fill characters for delay
-                                --
-                                -- @since 2.8.0.0
-   | LFDelayMask0               -- ^ @NLDLY(NL0)@ - (XSI) Select newline delay: type 0
-                                --
-                                -- @since 2.8.0.0
-   | LFDelayMask1               -- ^ @NLDLY(NL1)@ - (XSI) Select newline delay: type 1
-                                --
-                                -- @since 2.8.0.0
-   | CRDelayMask0               -- ^ @CRDLY(CR0)@ - (XSI) Select carriage-return delays: type 0
-                                --
-                                -- @since 2.8.0.0
-   | CRDelayMask1               -- ^ @CRDLY(CR1)@ - (XSI) Select carriage-return delays: type 1
-                                --
-                                -- @since 2.8.0.0
-   | CRDelayMask2               -- ^ @CRDLY(CR2)@ - (XSI) Select carriage-return delays: type 2
-                                --
-                                -- @since 2.8.0.0
-   | CRDelayMask3               -- ^ @CRDLY(CR3)@ - (XSI) Select carriage-return delays: type 3
-                                --
-                                -- @since 2.8.0.0
    | TabDelayMask0              -- ^ @TABDLY(TAB0)@ - (XSI) Select horizontal-tab delays: type 0
                                 --
                                 -- @since 2.8.0.0
-   | TabDelayMask1              -- ^ @TABDLY(TAB1)@ - (XSI) Select horizontal-tab delays: type 1
-                                --
-                                -- @since 2.8.0.0
-   | TabDelayMask2              -- ^ @TABDLY(TAB2)@ - (XSI) Select horizontal-tab delays: type 2
-                                --
-                                -- @since 2.8.0.0
    | TabDelayMask3              -- ^ @TABDLY(TAB3)@ - (XSI) Select horizontal-tab delays: type 3
-                                --
-                                -- @since 2.8.0.0
-   | BackspaceDelayMask0        -- ^ @BSDLY(BS0)@ - (XSI) Select backspace delays: type 0
-                                --
-                                -- @since 2.8.0.0
-   | BackspaceDelayMask1        -- ^ @BSDLY(BS1)@ - (XSI) Select backspace delays: type 1
-                                --
-                                -- @since 2.8.0.0
-   | VerticalTabDelayMask0      -- ^ @VTDLY(VT0)@ - (XSI) Select vertical-tab delays: type 0
-                                --
-                                -- @since 2.8.0.0
-   | VerticalTabDelayMask1      -- ^ @VTDLY(VT1)@ - (XSI) Select vertical-tab delays: type 1
-                                --
-                                -- @since 2.8.0.0
-   | FormfeedDelayMask0         -- ^ @FFDLY(FF0)@ - (XSI) Select form-feed delays: type 0
-                                --
-                                -- @since 2.8.0.0
-   | FormfeedDelayMask1         -- ^ @FFDLY(FF1)@ - (XSI) Select form-feed delays: type 1
                                 --
                                 -- @since 2.8.0.0
 
@@ -222,24 +174,8 @@ withoutMode termios MapLFtoCRLF = clearOutputFlag (#const ONLCR) termios
 withoutMode termios OutputMapCRtoLF = clearOutputFlag (#const OCRNL) termios
 withoutMode termios NoCRAtColumnZero = clearOutputFlag (#const ONOCR) termios
 withoutMode termios ReturnMeansLF = clearOutputFlag (#const ONLRET) termios
-withoutMode termios FillIsDEL = clearOutputFlag (#const OFDEL) termios
-withoutMode termios SendFillOnDelay = clearOutputFlag (#const OFILL) termios
-withoutMode termios LFDelayMask0 = clearOutputFlag (#const NL0) termios
-withoutMode termios LFDelayMask1 = clearOutputFlag (#const NL1) termios
-withoutMode termios CRDelayMask0 = clearOutputFlag (#const CR0) termios
-withoutMode termios CRDelayMask1 = clearOutputFlag (#const CR1) termios
-withoutMode termios CRDelayMask2 = clearOutputFlag (#const CR2) termios
-withoutMode termios CRDelayMask3 = clearOutputFlag (#const CR3) termios
 withoutMode termios TabDelayMask0 = clearOutputFlag (#const TAB0) termios
-withoutMode termios TabDelayMask1 = clearOutputFlag (#const TAB1) termios
-withoutMode termios TabDelayMask2 = clearOutputFlag (#const TAB2) termios
 withoutMode termios TabDelayMask3 = clearOutputFlag (#const TAB3) termios
-withoutMode termios BackspaceDelayMask0 = clearOutputFlag (#const BS0) termios
-withoutMode termios BackspaceDelayMask1 = clearOutputFlag (#const BS1) termios
-withoutMode termios VerticalTabDelayMask0 = clearOutputFlag (#const VT0) termios
-withoutMode termios VerticalTabDelayMask1 = clearOutputFlag (#const VT1) termios
-withoutMode termios FormfeedDelayMask0 = clearOutputFlag (#const FF0) termios
-withoutMode termios FormfeedDelayMask1 = clearOutputFlag (#const FF1) termios
 withoutMode termios LocalMode = clearControlFlag (#const CLOCAL) termios
 withoutMode termios ReadEnable = clearControlFlag (#const CREAD) termios
 withoutMode termios TwoStopBits = clearControlFlag (#const CSTOPB) termios
@@ -274,24 +210,8 @@ withMode termios MapLFtoCRLF = setOutputFlag (#const ONLCR) termios
 withMode termios OutputMapCRtoLF = setOutputFlag (#const OCRNL) termios
 withMode termios NoCRAtColumnZero = setOutputFlag (#const ONOCR) termios
 withMode termios ReturnMeansLF = setOutputFlag (#const ONLRET) termios
-withMode termios FillIsDEL = setOutputFlag (#const OFDEL) termios
-withMode termios SendFillOnDelay = setOutputFlag (#const OFILL) termios
-withMode termios LFDelayMask0 = setOutputFlag (#const NL0) termios
-withMode termios LFDelayMask1 = setOutputFlag (#const NL1) termios
-withMode termios CRDelayMask0 = setOutputFlag (#const CR0) termios
-withMode termios CRDelayMask1 = setOutputFlag (#const CR1) termios
-withMode termios CRDelayMask2 = setOutputFlag (#const CR2) termios
-withMode termios CRDelayMask3 = setOutputFlag (#const CR3) termios
 withMode termios TabDelayMask0 = setOutputFlag (#const TAB0) termios
-withMode termios TabDelayMask1 = setOutputFlag (#const TAB1) termios
-withMode termios TabDelayMask2 = setOutputFlag (#const TAB2) termios
 withMode termios TabDelayMask3 = setOutputFlag (#const TAB3) termios
-withMode termios BackspaceDelayMask0 = setOutputFlag (#const BS0) termios
-withMode termios BackspaceDelayMask1 = setOutputFlag (#const BS1) termios
-withMode termios VerticalTabDelayMask0 = setOutputFlag (#const VT0) termios
-withMode termios VerticalTabDelayMask1 = setOutputFlag (#const VT1) termios
-withMode termios FormfeedDelayMask0 = setOutputFlag (#const FF0) termios
-withMode termios FormfeedDelayMask1 = setOutputFlag (#const FF1) termios
 withMode termios LocalMode = setControlFlag (#const CLOCAL) termios
 withMode termios ReadEnable = setControlFlag (#const CREAD) termios
 withMode termios TwoStopBits = setControlFlag (#const CSTOPB) termios
@@ -326,24 +246,8 @@ terminalMode MapLFtoCRLF = testOutputFlag (#const ONLCR)
 terminalMode OutputMapCRtoLF = testOutputFlag (#const OCRNL)
 terminalMode NoCRAtColumnZero = testOutputFlag (#const ONOCR)
 terminalMode ReturnMeansLF = testOutputFlag (#const ONLRET)
-terminalMode FillIsDEL = testOutputFlag (#const OFDEL)
-terminalMode SendFillOnDelay = testOutputFlag (#const OFILL)
-terminalMode LFDelayMask0 = testOutputFlag (#const NL0)
-terminalMode LFDelayMask1 = testOutputFlag (#const NL1)
-terminalMode CRDelayMask0 = testOutputFlag (#const CR0)
-terminalMode CRDelayMask1 = testOutputFlag (#const CR1)
-terminalMode CRDelayMask2 = testOutputFlag (#const CR2)
-terminalMode CRDelayMask3 = testOutputFlag (#const CR3)
 terminalMode TabDelayMask0 = testOutputFlag (#const TAB0)
-terminalMode TabDelayMask1 = testOutputFlag (#const TAB1)
-terminalMode TabDelayMask2 = testOutputFlag (#const TAB2)
 terminalMode TabDelayMask3 = testOutputFlag (#const TAB3)
-terminalMode BackspaceDelayMask0 = testOutputFlag (#const BS0)
-terminalMode BackspaceDelayMask1 = testOutputFlag (#const BS1)
-terminalMode VerticalTabDelayMask0 = testOutputFlag (#const VT0)
-terminalMode VerticalTabDelayMask1 = testOutputFlag (#const VT1)
-terminalMode FormfeedDelayMask0 = testOutputFlag (#const FF0)
-terminalMode FormfeedDelayMask1 = testOutputFlag (#const FF1)
 terminalMode LocalMode = testControlFlag (#const CLOCAL)
 terminalMode ReadEnable = testControlFlag (#const CREAD)
 terminalMode TwoStopBits = testControlFlag (#const CSTOPB)
