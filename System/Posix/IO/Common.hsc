@@ -134,20 +134,34 @@ data OpenMode = ReadOnly | WriteOnly | ReadWrite
 data OpenFileFlags =
  OpenFileFlags {
     append    :: Bool,           -- ^ O_APPEND
-    exclusive :: Bool,           -- ^ O_EXCL, result is undefined if O_CREAT is Nothing
+    exclusive :: Bool,           -- ^ O_EXCL
+                                 --
+                                 -- __NOTE__: Result is undefined if 'creat' is 'Nothing'.
     noctty    :: Bool,           -- ^ O_NOCTTY
     nonBlock  :: Bool,           -- ^ O_NONBLOCK
     trunc     :: Bool,           -- ^ O_TRUNC
     nofollow  :: Bool,           -- ^ O_NOFOLLOW
+                                 --
+                                 -- @since 2.8.0.0
     creat     :: Maybe FileMode, -- ^ O_CREAT
+                                 --
+                                 -- @since 2.8.0.0
     cloexec   :: Bool,           -- ^ O_CLOEXEC
+                                 --
+                                 -- @since 2.8.0.0
     directory :: Bool,           -- ^ O_DIRECTORY
+                                 --
+                                 -- @since 2.8.0.0
     sync      :: Bool            -- ^ O_SYNC
+                                 --
+                                 -- @since 2.8.0.0
  }
 
 
--- |Default values for the 'OpenFileFlags' type. False for each of
--- append, exclusive, noctty, nonBlock, and trunc.
+-- | Default values for the 'OpenFileFlags' type.
+--
+-- Each field of 'OpenFileFlags' is either 'False' or 'Nothing'
+-- respectively.
 defaultFileFlags :: OpenFileFlags
 defaultFileFlags =
  OpenFileFlags {
