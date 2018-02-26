@@ -221,6 +221,12 @@ foreign import capi unsafe "HsUnix.h open"
 
 closeFd :: Fd -> IO ()
 closeFd (Fd fd) = throwErrnoIfMinus1_ "closeFd" (c_close fd)
+-- Here we don't to retry on EINTR because according to
+--  http://pubs.opengroup.org/onlinepubs/9699919799/functions/close.html
+-- "with errno set to [EINTR] [...] the state of fildes is unspecified"
+-- and on Linux, already the first close() removes the FD from the process's
+-- FD table so closing a second time is invalid
+-- (see http://man7.org/linux/man-pages/man2/close.2.html#NOTES).
 
 foreign import ccall unsafe "HsUnix.h close"
    c_close :: CInt -> IO CInt
