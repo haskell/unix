@@ -70,7 +70,7 @@ getStatus f = do
   fs  <- getFileStatus f
   ls  <- getSymbolicLinkStatus f
 
-  fd  <- openFd f ReadOnly Nothing defaultFileFlags
+  fd  <- openFd f ReadOnly defaultFileFlags
   fs' <- getFdStatus fd
 
   when (statusElements fs /= statusElements fs') $
