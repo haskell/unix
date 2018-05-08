@@ -24,7 +24,7 @@ module System.Posix.IO.Common (
     -- ** Opening and closing files
     OpenMode(..),
     OpenFileFlags(..), defaultFileFlags,
-    open_,
+    openat_,
     closeFd,
 
     -- ** Reading\/writing data
@@ -176,19 +176,20 @@ defaultFileFlags =
   }
 
 
--- |Open and optionally create this file.  See 'System.Posix.Files'
--- for information on how to use the 'FileMode' type.
-open_  :: CString
-       -> OpenMode
-       -> OpenFileFlags
-       -> IO Fd
-open_ str how (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
+-- |Open and optionally create a file relative to an optional
+-- directory file descriptor.
+openat_  :: Maybe Fd -- ^ Optional directory file descriptor
+         -> CString -- ^ Pathname to open
+         -> OpenMode -- ^ Read-only, read-write or write-only
+         -> OpenFileFlags -- ^ Append, exclusive, etc.
+         -> IO Fd
+openat_ fdMay str how (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
                                 nonBlockFlag truncateFlag nofollowFlag
                                 creatFlag cloexecFlag directoryFlag
-                                syncFlag) = do
-    fd <- c_open str all_flags mode_w
-    return (Fd fd)
+                                syncFlag) =
+    Fd <$> c_openat c_fd str all_flags mode_w
   where
+    c_fd = maybe (#const AT_FDCWD) (\ (Fd fd) -> fd) fdMay
     all_flags  = creat .|. flags .|. open_mode
 
     flags =
@@ -211,8 +212,8 @@ open_ str how (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
                    WriteOnly -> (#const O_WRONLY)
                    ReadWrite -> (#const O_RDWR)
 
-foreign import capi unsafe "HsUnix.h open"
-   c_open :: CString -> CInt -> CMode -> IO CInt
+foreign import capi unsafe "HsUnix.h openat"
+   c_openat :: CInt -> CString -> CInt -> CMode -> IO CInt
 
 -- |Close this file descriptor.  May throw an exception if this is an
 -- invalid descriptor.

@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE Safe, CApiFFI #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -18,6 +18,7 @@
 
 module System.Posix.Directory.Common (
        DirStream(..), CDir, CDirent, DirStreamOffset(..),
+       unsafeOpenDirStreamFd,
        rewindDirStream,
        closeDirStream,
 #ifdef HAVE_SEEKDIR
@@ -37,6 +38,19 @@ newtype DirStream = DirStream (Ptr CDir)
 
 data {-# CTYPE "DIR" #-} CDir
 data {-# CTYPE "struct dirent" #-} CDirent
+
+-- | @unsafeOpenDirStreamFd fd@ calls @fdopendir@ to obtain a directory stream
+--   for @fd@. @fd@ must not be otherwise used after this; see
+--   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/fdopendir.html POSIX>.
+unsafeOpenDirStreamFd :: Fd -> IO DirStream
+unsafeOpenDirStreamFd (Fd fd) = DirStream <$> throwErrnoIfNull "openDirStreamFd" (c_fdopendir fd)
+
+-- NOTE: It is /critical/ to use "capi" and "dirent.h" here, because system
+-- headers on e.g. MacOS alias this function, and linking directly to the
+-- "fdopendir" symbol in libc leads to a crash!
+--
+foreign import capi unsafe "dirent.h fdopendir"
+    c_fdopendir :: CInt -> IO (Ptr CDir)
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
 --   the directory stream @dp@ at the beginning of the directory.
