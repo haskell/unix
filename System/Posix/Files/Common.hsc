@@ -520,7 +520,7 @@ foreign import ccall unsafe "fchown"
 -- Note: calls @ftruncate@.
 setFdSize :: Fd -> FileOffset -> IO ()
 setFdSize (Fd fd) off =
-  throwErrnoIfMinus1_ "setFdSize" (c_ftruncate fd off)
+  throwErrnoIfMinus1_ "setFdSize" (c_ftruncate fd (fromIntegral off))
 
 -- -----------------------------------------------------------------------------
 -- pathconf()/fpathconf() support

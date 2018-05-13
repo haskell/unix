@@ -432,11 +432,10 @@ installHandler :: Signal
                -> Maybe SignalSet       -- ^ other signals to block
                -> IO Handler            -- ^ old handler
 
-#ifdef __PARALLEL_HASKELL__
+##if defined(__PARALLEL_HASKELL__)
 installHandler =
   error "installHandler: not available for Parallel Haskell"
-#else
-
+##else
 installHandler sig handler _maybe_mask = do
   ensureIOManagerIsRunning  -- for the threaded RTS
 
@@ -524,7 +523,7 @@ unmarshalSigInfo fp = do
         siginfoError  = Errno errno,
         siginfoSpecific = extra }
 
-#endif /* !__PARALLEL_HASKELL__ */
+##endif /* !__PARALLEL_HASKELL__ */
 
 -- -----------------------------------------------------------------------------
 -- Alarms
