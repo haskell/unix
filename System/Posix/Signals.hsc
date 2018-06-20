@@ -389,7 +389,17 @@ type Signal = CInt
 
 -- | The actions to perform when a signal is received.
 data Handler = Default
+                 -- ^ Sets the disposition of the signal to @SIG_DFL@, which
+                 -- means we want the default action associated with the
+                 -- signal. For example, the default action for @SIGTERM@ (and
+                 -- various other signals) is to terminate the process.
              | Ignore
+                 -- ^ Set the disposition of the signal to @SIG_IGN@, which
+                 -- means we want to /ignore/ the signal.  Ignored signals will
+                 -- not be delivered to the process, and if also /blocked/ will
+                 -- not be added to the pending set for later delivery (if/when
+                 -- unblocked).  Some signals (e.g. @SIGSTOP@ and @SIGKILL@)
+                 -- cannot be caught or ignored.
              -- not yet: | Hold
              | Catch (IO ())
              | CatchOnce (IO ())
