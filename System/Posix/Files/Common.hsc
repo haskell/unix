@@ -49,7 +49,7 @@ module System.Posix.Files.Common (
     getFdStatus,
     -- ** Querying file status
     deviceID, fileID, fileMode, linkCount, fileOwner, fileGroup,
-    specialDeviceID, fileSize, accessTime, modificationTime,
+    specialDeviceID, fileSize, blockSize, blocksCount, accessTime, modificationTime,
     statusChangeTime,
     accessTimeHiRes, modificationTimeHiRes, statusChangeTimeHiRes,
     setFdTimesHiRes, touchFd,
@@ -250,6 +250,10 @@ specialDeviceID  :: FileStatus -> DeviceID
 -- | Size of the file in bytes. If this file is a symbolic link the size is
 -- the length of the pathname it contains.
 fileSize         :: FileStatus -> FileOffset
+-- | BlockSize for file
+blockSize        :: FileStatus -> CBlkSize
+-- | Number of blocks
+blocksCount        :: FileStatus -> CBlkCnt
 -- | Time of last access.
 accessTime       :: FileStatus -> EpochTime
 -- | Time of last access in sub-second resolution.
@@ -279,6 +283,10 @@ specialDeviceID (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_rdev)
 fileSize (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_size)
+blockSize (FileStatus stat) =
+  unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_blksize)
+blocksCount (FileStatus stat) =
+  unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_blocks)
 accessTime (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_atime)
 modificationTime (FileStatus stat) =

@@ -57,7 +57,7 @@ module System.Posix.Files (
     getFileStatus, getFdStatus, getSymbolicLinkStatus,
     -- ** Querying file status
     deviceID, fileID, fileMode, linkCount, fileOwner, fileGroup,
-    specialDeviceID, fileSize, accessTime, modificationTime,
+    specialDeviceID, fileSize, blockSize, blocksCount, accessTime, modificationTime,
     statusChangeTime,
     accessTimeHiRes, modificationTimeHiRes, statusChangeTimeHiRes,
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
