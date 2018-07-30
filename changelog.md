@@ -15,6 +15,8 @@
     which now must be passed as part of `OpenFileFlags`
     (e.g. `defaultFileFlags { creat = Just mode }`)  (#58)
 
+  * Remove deprecated `execvpe(3)` legacy-emulation CPP macro
+
 ## 2.7.2.2  *May 2017*
 
   * Bundled with GHC 8.2.1

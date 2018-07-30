@@ -22,7 +22,6 @@
 #include <string.h>
 #include <errno.h>
 
-#define HSUNIX_EXECVPE_H_NO_COMPAT
 #include "execvpe.h"
 
 #if !defined(execvpe) && !HAVE_DECL_EXECVPE
