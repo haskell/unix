@@ -111,11 +111,17 @@ unpackRLimit other
 
 packRLimit :: ResourceLimit -> Bool -> CRLim
 packRLimit ResourceLimitInfinity _     = (#const RLIM_INFINITY)
-#ifdef RLIM_SAVED_CUR
+#if defined(RLIM_SAVED_CUR)
 packRLimit ResourceLimitUnknown  True  = (#const RLIM_SAVED_CUR)
 #endif
-#ifdef RLIM_SAVED_MAX
+#if defined(RLIM_SAVED_MAX)
 packRLimit ResourceLimitUnknown  False = (#const RLIM_SAVED_MAX)
+#endif
+#if ! defined(RLIM_SAVED_MAX) && !defined(RLIM_SAVED_CUR)
+packRLimit ResourceLimitUnknown  _     =
+    error
+      $ "System.Posix.Resource.packRLimit: " ++
+        "ResourceLimitUnknown but RLIM_SAVED_MAX/RLIM_SAVED_CUR not defined by platform"
 #endif
 packRLimit (ResourceLimit other) _     = fromIntegral other
 
