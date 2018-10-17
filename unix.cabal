@@ -11,14 +11,14 @@ bug-reports:    https://github.com/haskell/unix/issues
 synopsis:       POSIX functionality
 category:       System
 build-type:     Configure
-tested-with:    GHC==8.6.1,
-                GHC==8.4.3, GHC==8.4.2, GHC==8.4.1,
-                GHC==8.2.2, GHC==8.2.1,
-                GHC==8.0.2, GHC==8.0.1,
-                GHC==7.10.3, GHC==7.10.2, GHC==7.10.1,
-                GHC==7.8.4, GHC==7.8.3, GHC==7.8.2, GHC==7.8.1,
-                GHC==7.6.3, GHC==7.6.2, GHC==7.6.1,
-                GHC==7.4.2, GHC==7.4.1
+tested-with:    GHC==8.6.*,
+                GHC==8.4.*,
+                GHC==8.2.*,
+                GHC==8.0.*,
+                GHC==7.10.*,
+                GHC==7.8.*,
+                GHC==7.6.*,
+                GHC==7.4.*
 description:
     This package gives you access to the set of operating system
     services standardised by
