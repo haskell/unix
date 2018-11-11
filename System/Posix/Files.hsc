@@ -228,7 +228,7 @@ createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
-  throwErrnoIfMinus1_ ("createLink "++name1++" to "++name2) (c_link s1 s2)
+  throwErrnoIfMinus1_ ("createLink (target: "++name1++") (linkpath: "++name2++")") (c_link s1 s2)
 
 -- | @removeLink path@ removes the link named @path@.
 --
@@ -241,18 +241,18 @@ removeLink name =
 -- -----------------------------------------------------------------------------
 -- Symbolic Links
 
--- | @createSymbolicLink file1 file2@ creates a symbolic link named @file2@
--- which points to the file @file1@.
+-- | @createSymbolicLink name1 name2@ creates a symbolic link named @name2@
+-- which points to the file @name1@.
 --
 -- Symbolic links are interpreted at run-time as if the contents of the link
 -- had been substituted into the path being followed to find a file or directory.
 --
 -- Note: calls @symlink@.
 createSymbolicLink :: FilePath -> FilePath -> IO ()
-createSymbolicLink file1 file2 =
-  withFilePath file1 $ \s1 ->
-  withFilePath file2 $ \s2 ->
-  throwErrnoIfMinus1_ ("createSymbolicLink "++file1++" to "++file2) (c_symlink s1 s2)
+createSymbolicLink name1 name2 =
+  withFilePath name1 $ \s1 ->
+  withFilePath name2 $ \s2 ->
+  throwErrnoIfMinus1_ ("createSymbolicLink (target: "++name1++") (linkpath: "++name2++")") (c_symlink s1 s2)
 
 foreign import ccall unsafe "symlink"
   c_symlink :: CString -> CString -> IO CInt
