@@ -52,7 +52,7 @@ module System.Posix.Files.Common (
     specialDeviceID, fileSize, accessTime, modificationTime,
     statusChangeTime,
     accessTimeHiRes, modificationTimeHiRes, statusChangeTimeHiRes,
-    setFdTimesHiRes, touchFd,
+    setFdTimesHiRes, touchFd, blockSize, blockCount,
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
@@ -262,6 +262,10 @@ modificationTimeHiRes :: FileStatus -> POSIXTime
 statusChangeTime :: FileStatus -> EpochTime
 -- | Time of last status change (i.e. owner, group, link count, mode, etc.) in sub-second resolution.
 statusChangeTimeHiRes :: FileStatus -> POSIXTime
+-- | A file system-specific preferred I/O block size for this object. In some file system types, this may vary from file to file.
+blockSize        :: FileStatus -> BlockSize
+-- | Number of blocks allocated for the file.
+blockCount       :: FileStatus -> BlockCount
 
 deviceID (FileStatus stat) =
   unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_dev)
@@ -354,6 +358,11 @@ statusChangeTimeHiRes (FileStatus stat) =
     let frac = 0
 #endif
     return $ fromRational $ toRational sec + frac
+
+blockSize (FileStatus stat) =
+  unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_blksize)
+blockCount (FileStatus stat) =
+  unsafePerformIO $ withForeignPtr stat $ (#peek struct stat, st_blocks)
 
 -- | Checks if this file is a block device.
 isBlockDevice     :: FileStatus -> Bool

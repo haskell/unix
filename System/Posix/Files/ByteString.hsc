@@ -60,6 +60,7 @@ module System.Posix.Files.ByteString (
     specialDeviceID, fileSize, accessTime, modificationTime,
     statusChangeTime,
     accessTimeHiRes, modificationTimeHiRes, statusChangeTimeHiRes,
+    blockSize, blockCount,
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
