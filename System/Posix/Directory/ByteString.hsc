@@ -45,7 +45,7 @@ module System.Posix.Directory.ByteString (
    seekDirStream,
 #endif
 
-   -- * The working dirctory
+   -- * The working directory
    getWorkingDirectory,
    changeWorkingDirectory,
    changeWorkingDirectoryFd,
