@@ -68,7 +68,7 @@ data {-# CTYPE "struct passwd" #-} CPasswd
 data {-# CTYPE "struct group"  #-} CGroup
 
 -- -----------------------------------------------------------------------------
--- user environemnt
+-- user environment
 
 -- | @getRealUserID@ calls @getuid@ to obtain the real @UserID@
 --   associated with the current process.
