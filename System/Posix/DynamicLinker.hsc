@@ -65,8 +65,8 @@ dlopen path flags = do
   withFilePath path $ \ p -> do
     liftM DLHandle $ throwDLErrorIf "dlopen" (== nullPtr) $ c_dlopen p (packRTLDFlags flags)
 
-withDL :: String -> [RTLDFlags] -> (DL -> IO a) -> IO a
+withDL :: FilePath -> [RTLDFlags] -> (DL -> IO a) -> IO a
 withDL file flags f = bracket (dlopen file flags) (dlclose) f
 
-withDL_ :: String -> [RTLDFlags] -> (DL -> IO a) -> IO ()
+withDL_ :: FilePath -> [RTLDFlags] -> (DL -> IO a) -> IO ()
 withDL_ file flags f = withDL file flags f >> return ()
