@@ -11,7 +11,8 @@ bug-reports:    https://github.com/haskell/unix/issues
 synopsis:       POSIX functionality
 category:       System
 build-type:     Configure
-tested-with:    GHC==8.6.*,
+tested-with:    GHC==8.8.*
+                GHC==8.6.*,
                 GHC==8.4.*,
                 GHC==8.2.*,
                 GHC==8.0.*,
