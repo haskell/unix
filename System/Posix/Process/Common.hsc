@@ -383,9 +383,14 @@ readWaitStatus wstatp = do
 
 -- | @'exitImmediately' status@ calls @_exit@ to terminate the process
 --   with the indicated exit @status@.
---   The operation never returns.
-exitImmediately :: ExitCode -> IO ()
-exitImmediately exitcode = c_exit (exitcode2Int exitcode)
+--   The operation never returns. Since it does not use the Haskell exception
+--   system and it cannot be caught.
+exitImmediately :: ExitCode -> IO a
+exitImmediately status = do
+    _ <- c_exit (exitcode2Int status)
+    -- The above will exit the program, but need the following to satisfy
+    -- the type signature.
+    exitImmediately status
   where
     exitcode2Int ExitSuccess = 0
     exitcode2Int (ExitFailure n) = fromIntegral n
