@@ -1,6 +1,6 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## 2.8.0.0
+## 2.8.0.0 *UNRELEASED*
 
   * Added terminal output flags to `System.Posix.Terminal.Common.TerminalMode`
 
@@ -16,6 +16,9 @@
     (e.g. `defaultFileFlags { creat = Just mode }`)  (#58)
 
   * Remove deprecated `execvpe(3)` legacy-emulation CPP macro
+
+  * Generalise return type of `exitImmediately` from `ExitCode -> IO ()` to
+    `∀a. ExitCode -> IO a` (#130)
 
 ## 2.7.2.2  *May 2017*
 

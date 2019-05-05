@@ -385,6 +385,11 @@ readWaitStatus wstatp = do
 --   with the indicated exit @status@.
 --   The operation never returns. Since it does not use the Haskell exception
 --   system and it cannot be caught.
+--
+--   Note: Prior to @unix-2.8.0.0@ the type-signature of 'exitImmediately' was
+--   @ExitCode -> IO ()@.
+--
+-- @since 2.8.0.0
 exitImmediately :: ExitCode -> IO a
 exitImmediately status = do
     _ <- c_exit (exitcode2Int status)
