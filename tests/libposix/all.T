@@ -1,4 +1,4 @@
-test('posix002', [ reqlib('unix'), omit_ways(prof_ways) ],
+test('posix002', [ reqlib('unix'), omit_ways(prof_ways), fragile_for(16550, ['threaded2']) ],
                  compile_and_run, [''])
 
 # Skip on mingw32: assumes existence of 'pwd' and /tmp
