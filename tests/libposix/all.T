@@ -13,4 +13,5 @@ test('posix006', reqlib('unix'), compile_and_run, [''])
 test('posix009', [ omit_ways(threaded_ways), reqlib('unix') ], compile_and_run, [''])
 test('posix010', reqlib('unix'), compile_and_run, [''])
 
-test('posix014', [ reqlib('unix') ], compile_and_run, [''])
+test('posix014', [ reqlib('unix'), omit_ways(prof_ways) ],
+                 compile_and_run, [''])
