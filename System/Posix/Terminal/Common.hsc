@@ -353,6 +353,7 @@ withMinInput termios count = unsafePerformIO $ do
     pokeElemOff c_cc (#const VMIN) (fromIntegral count :: CCc)
 
 data BaudRate
+  -- These are the standard rates stipulated by POSIX:
   = B0
   | B50
   | B75
@@ -369,8 +370,22 @@ data BaudRate
   | B9600
   | B19200
   | B38400
+  -- These are non-standard rates that are often present on modern Unixes:
   | B57600
   | B115200
+  | B230400
+  | B460800
+  | B500000
+  | B576000
+  | B921600
+  | B1000000
+  | B1152000
+  | B1500000
+  | B2000000
+  | B2500000
+  | B3000000
+  | B3500000
+  | B4000000
 
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do
@@ -592,35 +607,139 @@ baud2Word B115200 = (#const B115200)
 #else
 baud2Word B115200 = error "B115200 not available on this system"
 #endif
+#ifdef B230400
+baud2Word B230400 = (#const B230400)
+#else
+baud2Word B230400 = error "B230400 not available on this system"
+#endif
+#ifdef B460800
+baud2Word B460800 = (#const B460800)
+#else
+baud2Word B460800 = error "B460800 not available on this system"
+#endif
+#ifdef B500000
+baud2Word B500000 = (#const B500000)
+#else
+baud2Word B500000 = error "B500000 not available on this system"
+#endif
+#ifdef B576000
+baud2Word B576000 = (#const B576000)
+#else
+baud2Word B576000 = error "B576000 not available on this system"
+#endif
+#ifdef B921600
+baud2Word B921600 = (#const B921600)
+#else
+baud2Word B921600 = error "B921600 not available on this system"
+#endif
+#ifdef B1000000
+baud2Word B1000000 = (#const B1000000)
+#else
+baud2Word B1000000 = error "B1000000 not available on this system"
+#endif
+#ifdef B1152000
+baud2Word B1152000 = (#const B1152000)
+#else
+baud2Word B1152000 = error "B1152000 not available on this system"
+#endif
+#ifdef B1500000
+baud2Word B1500000 = (#const B1500000)
+#else
+baud2Word B1500000 = error "B1500000 not available on this system"
+#endif
+#ifdef B2000000
+baud2Word B2000000 = (#const B2000000)
+#else
+baud2Word B2000000 = error "B2000000 not available on this system"
+#endif
+#ifdef B2500000
+baud2Word B2500000 = (#const B2500000)
+#else
+baud2Word B2500000 = error "B2500000 not available on this system"
+#endif
+#ifdef B3000000
+baud2Word B3000000 = (#const B3000000)
+#else
+baud2Word B3000000 = error "B3000000 not available on this system"
+#endif
+#ifdef B3500000
+baud2Word B3500000 = (#const B3500000)
+#else
+baud2Word B3500000 = error "B3500000 not available on this system"
+#endif
+#ifdef B4000000
+baud2Word B4000000 = (#const B4000000)
+#else
+baud2Word B4000000 = error "B4000000 not available on this system"
+#endif
 
 -- And convert a word back to a baud rate
 -- We really need some cpp macros here.
 
 word2Baud :: CSpeed -> BaudRate
-word2Baud x =
-    if x == (#const B0) then B0
-    else if x == (#const B50) then B50
-    else if x == (#const B75) then B75
-    else if x == (#const B110) then B110
-    else if x == (#const B134) then B134
-    else if x == (#const B150) then B150
-    else if x == (#const B200) then B200
-    else if x == (#const B300) then B300
-    else if x == (#const B600) then B600
-    else if x == (#const B1200) then B1200
-    else if x == (#const B1800) then B1800
-    else if x == (#const B2400) then B2400
-    else if x == (#const B4800) then B4800
-    else if x == (#const B9600) then B9600
-    else if x == (#const B19200) then B19200
-    else if x == (#const B38400) then B38400
+word2Baud x = case x of
+    (#const B0) -> B0
+    (#const B50) -> B50
+    (#const B75) -> B75
+    (#const B110) -> B110
+    (#const B134) -> B134
+    (#const B150) -> B150
+    (#const B200) -> B200
+    (#const B300) -> B300
+    (#const B600) -> B600
+    (#const B1200) -> B1200
+    (#const B1800) -> B1800
+    (#const B2400) -> B2400
+    (#const B4800) -> B4800
+    (#const B9600) -> B9600
+    (#const B19200) -> B19200
+    (#const B38400) -> B38400
 #ifdef B57600
-    else if x == (#const B57600) then B57600
+    (#const B57600) -> B57600
 #endif
 #ifdef B115200
-    else if x == (#const B115200) then B115200
+    (#const B115200) -> B115200
 #endif
-    else error "unknown baud rate"
+#ifdef B230400
+    (#const B230400) -> B230400
+#endif
+#ifdef B460800
+    (#const B460800) -> B460800
+#endif
+#ifdef B500000
+    (#const B500000) -> B500000
+#endif
+#ifdef B576000
+    (#const B576000) -> B576000
+#endif
+#ifdef B921600
+    (#const B921600) -> B921600
+#endif
+#ifdef B1000000
+    (#const B1000000) -> B1000000
+#endif
+#ifdef B1152000
+    (#const B1152000) -> B1152000
+#endif
+#ifdef B1500000
+    (#const B1500000) -> B1500000
+#endif
+#ifdef B2000000
+    (#const B2000000) -> B2000000
+#endif
+#ifdef B2500000
+    (#const B2500000) -> B2500000
+#endif
+#ifdef B3000000
+    (#const B3000000) -> B3000000
+#endif
+#ifdef B3500000
+    (#const B3500000) -> B3500000
+#endif
+#ifdef B4000000
+    (#const B4000000) -> B4000000
+#endif
+    _                 -> error "unknown baud rate"
 
 -- Clear termios i_flag
 
