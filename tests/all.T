@@ -4,7 +4,11 @@ test('signals002', [], compile_and_run, ['-package unix'])
 test('fileexist01', normal, compile_and_run, ['-package unix'])
 
 # test #4512
-test('forkprocess01', extra_ways(['threaded1_ls']), compile_and_run,
+test('forkprocess01',
+     [extra_ways(['threaded1_ls']),
+      # the forked process breaks the .hp file
+      omit_ways(prof_ways)],
+     compile_and_run,
      ['-package unix'])
 
 #
@@ -69,6 +73,6 @@ test('T3816', normal, compile_and_run, ['-package unix'])
 
 test('processGroup001', normal, compile_and_run, ['-package unix'])
 test('processGroup002', normal, compile_and_run, ['-package unix'])
-test('executeFile001', omit_ways(prof_ways + ['threaded2']), compile_and_run, ['-package unix'])
+test('executeFile001', omit_ways(prof_ways + concurrent_ways), compile_and_run, ['-package unix'])
 
 test('T8108', normal, compile_and_run, ['-package unix'])
