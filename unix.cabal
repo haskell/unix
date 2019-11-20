@@ -51,13 +51,20 @@ source-repository head
     type:     git
     location: https://github.com/haskell/unix.git
 
+flag unsafe
+     description: Declare all FFI calls 'unsafe'. This results in faster
+                  performance, but calls that block in the kernel might
+                  result in overly long GC or other hard to debug issues.
+     default:     True
+
 library
     default-language: Haskell2010
+    default-extensions:
+        CPP
+        InterruptibleFFI
     other-extensions:
         CApiFFI
-        CPP
         DeriveDataTypeable
-        InterruptibleFFI
         NondecreasingIndentation
         RankNTypes
         RecordWildCards
@@ -130,6 +137,12 @@ library
         System.Posix.Terminal.Common
 
     ghc-options: -Wall
+
+    cpp-options: -DFFI_UNSAFE=unsafe
+    if flag(unsafe)
+        cpp-options: -DFFI_SAFE=unsafe -DFFI_INTR=unsafe
+    else
+        cpp-options: -DFFI_SAFE=safe -DFFI_INTR=interruptible
 
     include-dirs: include
     includes:
