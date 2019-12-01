@@ -129,6 +129,7 @@ stdOutput  = Fd (#const STDOUT_FILENO)
 stdError   = Fd (#const STDERR_FILENO)
 
 data OpenMode = ReadOnly | WriteOnly | ReadWrite
+              deriving (Show, Eq, Ord)
 
 -- |Correspond to some of the int flags from C's fcntl.h.
 data OpenFileFlags =
@@ -156,6 +157,7 @@ data OpenFileFlags =
                                  --
                                  -- @since 2.8.0.0
  }
+ deriving (Show, Eq, Ord)
 
 
 -- | Default values for the 'OpenFileFlags' type.
