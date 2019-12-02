@@ -19,6 +19,8 @@
 
   * Generalise return type of `exitImmediately` from `ExitCode -> IO ()` to
     `∀a. ExitCode -> IO a` (#130)
+    
+  * Add `Read`, `Show`, `Eq`, and `Ord` typeclass instances to `OpenFileFlags` and `OpenMode`. (#75, #141)
 
 ## 2.7.2.2  *May 2017*
 
