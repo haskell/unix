@@ -1,4 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE Trustworthy #-}
 
 -----------------------------------------------------------------------------
@@ -48,7 +50,82 @@ module System.Posix.Terminal.Common (
   minInput,
   withMinInput,
 
-  BaudRate(..),
+  BaudRate
+    ( ..
+    , B0
+    , B50
+    , B75
+    , B110
+    , B134
+    , B150
+    , B200
+    , B300
+    , B600
+    , B1200
+    , B1800
+    , B2400
+    , B4800
+    , B9600
+    , B19200
+    , B38400
+#ifdef B7200
+    , B7200
+#endif
+#ifdef B14400
+    , B14400
+#endif
+#ifdef B28800
+    , B28800
+#endif
+#ifdef B57600
+    , B57600
+#endif
+#ifdef B76800
+    , B76800
+#endif
+#ifdef B115200
+    , B115200
+#endif
+#ifdef B230400
+    , B230400
+#endif
+#ifdef B460800
+    , B460800
+#endif
+#ifdef B500000
+    , B500000
+#endif
+#ifdef B576000
+    , B576000
+#endif
+#ifdef B921600
+    , B921600
+#endif
+#ifdef B1000000
+    , B1000000
+#endif
+#ifdef B1152000
+    , B1152000
+#endif
+#ifdef B1500000
+    , B1500000
+#endif
+#ifdef B2000000
+    , B2000000
+#endif
+#ifdef B2500000
+    , B2500000
+#endif
+#ifdef B3000000
+    , B3000000
+#endif
+#ifdef B3500000
+    , B3500000
+#endif
+#ifdef B4000000
+    , B4000000
+#endif
+    ),
   inputSpeed,
   withInputSpeed,
   outputSpeed,
@@ -352,53 +429,178 @@ withMinInput termios count = unsafePerformIO $ do
     let c_cc = (#ptr struct termios, c_cc) p
     pokeElemOff c_cc (#const VMIN) (fromIntegral count :: CCc)
 
-data BaudRate
-  -- These are the standard rates stipulated by POSIX:
-  = B0
-  | B50
-  | B75
-  | B110
-  | B134
-  | B150
-  | B200
-  | B300
-  | B600
-  | B1200
-  | B1800
-  | B2400
-  | B4800
-  | B9600
-  | B19200
-  | B38400
-  -- These are non-standard rates that are often present on modern Unixes:
-  | B57600
-  | B115200
-  | B230400
-  | B460800
-  | B500000
-  | B576000
-  | B921600
-  | B1000000
-  | B1152000
-  | B1500000
-  | B2000000
-  | B2500000
-  | B3000000
-  | B3500000
-  | B4000000
+-- | Serial line baudrate.  The set of supported speeds is system-dependent.
+-- Portable use of the provided pattern synonyms that are outside the list
+-- mandated by POSIX requires @#ifdef@ guards.
+--
+-- Applications may need to be prepared to encounter speeds not known at
+-- compile time, these can be handled generically via the 'BaudRate'
+-- constructor.  In other words, the provided pattern synonyms are not
+-- necessarily a @COMPLETE@ set.
+--
+-- All non-zero /pseudo-terminal/ baud rates are functionally equivalent, and
+-- the @pty@ driver may accept any speed within a suitable range.  Requested
+-- speeds may be rounded up or down to fit into the supported range.
+--
+newtype BaudRate = BaudRate CSpeed deriving (Eq, Ord, Show, Enum, Real, Num)
+
+-- | Hang up
+pattern B0 :: BaudRate
+pattern B0 = BaudRate (#const B0)
+-- | 50 baud
+pattern B50 :: BaudRate
+pattern B50 = BaudRate (#const B50)
+-- | 75 baud
+pattern B75 :: BaudRate
+pattern B75 = BaudRate (#const B75)
+-- | 110 baud
+pattern B110 :: BaudRate
+pattern B110 = BaudRate (#const B110)
+-- | 134.5 baud
+pattern B134 :: BaudRate
+pattern B134 = BaudRate (#const B134)
+-- | 150 baud
+pattern B150 :: BaudRate
+pattern B150 = BaudRate (#const B150)
+-- | 200 baud
+pattern B200 :: BaudRate
+pattern B200 = BaudRate (#const B200)
+-- | 300 baud
+pattern B300 :: BaudRate
+pattern B300 = BaudRate (#const B300)
+-- | 600 baud
+pattern B600 :: BaudRate
+pattern B600 = BaudRate (#const B600)
+-- | 1200 baud
+pattern B1200 :: BaudRate
+pattern B1200 = BaudRate (#const B1200)
+-- | 1800 baud
+pattern B1800 :: BaudRate
+pattern B1800 = BaudRate (#const B1800)
+-- | 2400 baud
+pattern B2400 :: BaudRate
+pattern B2400 = BaudRate (#const B2400)
+-- | 4800 baud
+pattern B4800 :: BaudRate
+pattern B4800 = BaudRate (#const B4800)
+-- | 9600 baud
+pattern B9600 :: BaudRate
+pattern B9600 = BaudRate (#const B9600)
+-- | 19200 baud
+pattern B19200 :: BaudRate
+pattern B19200 = BaudRate (#const B19200)
+-- | 38400 baud
+pattern B38400 :: BaudRate
+pattern B38400 = BaudRate (#const B38400)
+
+#ifdef B7200
+-- | 7200 baud, non-POSIX system-dependent extension
+pattern B7200 :: BaudRate
+pattern B7200 = BaudRate (#const B7200)
+#endif
+#ifdef B14400
+-- | 14400 baud, non-POSIX system-dependent extension
+pattern B14400 :: BaudRate
+pattern B14400 = BaudRate (#const B14400)
+#endif
+#ifdef B28800
+-- | 28800 baud, non-POSIX system-dependent extension
+pattern B28800 :: BaudRate
+pattern B28800 = BaudRate (#const B28800)
+#endif
+#ifdef B57600
+-- | 57600 baud, non-POSIX system-dependent extension
+pattern B57600 :: BaudRate
+pattern B57600 = BaudRate (#const B57600)
+#endif
+#ifdef B76800
+-- | 76800 baud, non-POSIX system-dependent extension
+pattern B76800 :: BaudRate
+pattern B76800 = BaudRate (#const B76800)
+#endif
+#ifdef B115200
+-- | 115200 baud, non-POSIX system-dependent extension
+pattern B115200 :: BaudRate
+pattern B115200 = BaudRate (#const B115200)
+#endif
+#ifdef B230400
+-- | 230400 baud, non-POSIX system-dependent extension
+pattern B230400 :: BaudRate
+pattern B230400 = BaudRate (#const B230400)
+#endif
+#ifdef B460800
+-- | 460800 baud, non-POSIX system-dependent extension
+pattern B460800 :: BaudRate
+pattern B460800 = BaudRate (#const B460800)
+#endif
+#ifdef B500000
+-- | 500000 baud, non-POSIX system-dependent extension
+pattern B500000 :: BaudRate
+pattern B500000 = BaudRate (#const B500000)
+#endif
+#ifdef B576000
+-- | 576000 baud, non-POSIX system-dependent extension
+pattern B576000 :: BaudRate
+pattern B576000 = BaudRate (#const B576000)
+#endif
+#ifdef B921600
+-- | 921600 baud, non-POSIX system-dependent extension
+pattern B921600 :: BaudRate
+pattern B921600 = BaudRate (#const B921600)
+#endif
+#ifdef B1000000
+-- | 1000000 baud, non-POSIX system-dependent extension
+pattern B1000000 :: BaudRate
+pattern B1000000 = BaudRate (#const B1000000)
+#endif
+#ifdef B1152000
+-- | 1152000 baud, non-POSIX system-dependent extension
+pattern B1152000 :: BaudRate
+pattern B1152000 = BaudRate (#const B1152000)
+#endif
+#ifdef B1500000
+-- | 1500000 baud, non-POSIX system-dependent extension
+pattern B1500000 :: BaudRate
+pattern B1500000 = BaudRate (#const B1500000)
+#endif
+#ifdef B2000000
+-- | 2000000 baud, non-POSIX system-dependent extension
+pattern B2000000 :: BaudRate
+pattern B2000000 = BaudRate (#const B2000000)
+#endif
+#ifdef B2500000
+-- | 2500000 baud, non-POSIX system-dependent extension
+pattern B2500000 :: BaudRate
+pattern B2500000 = BaudRate (#const B2500000)
+#endif
+#ifdef B3000000
+-- | 3000000 baud, non-POSIX system-dependent extension
+pattern B3000000 :: BaudRate
+pattern B3000000 = BaudRate (#const B3000000)
+#endif
+#ifdef B3500000
+-- | 3500000 baud, non-POSIX system-dependent extension
+pattern B3500000 :: BaudRate
+pattern B3500000 = BaudRate (#const B3500000)
+#endif
+#ifdef B4000000
+-- | 4000000 baud, non-POSIX system-dependent extension
+pattern B4000000 :: BaudRate
+pattern B4000000 = BaudRate (#const B4000000)
+#endif
 
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do
   withTerminalAttributes termios $ \p -> do
     w <- c_cfgetispeed p
-    return (word2Baud w)
+    return (BaudRate w)
 
 foreign import capi unsafe "termios.h cfgetispeed"
   c_cfgetispeed :: Ptr CTermios -> IO CSpeed
 
 withInputSpeed :: TerminalAttributes -> BaudRate -> TerminalAttributes
-withInputSpeed termios br = unsafePerformIO $ do
-  withNewTermios termios $ \p -> c_cfsetispeed p (baud2Word br)
+withInputSpeed termios (BaudRate br) = unsafePerformIO $ do
+  withNewTermios termios $ \p -> c_cfsetispeed p br
 
 foreign import capi unsafe "termios.h cfsetispeed"
   c_cfsetispeed :: Ptr CTermios -> CSpeed -> IO CInt
@@ -408,14 +610,14 @@ outputSpeed :: TerminalAttributes -> BaudRate
 outputSpeed termios = unsafePerformIO $ do
   withTerminalAttributes termios $ \p ->  do
     w <- c_cfgetospeed p
-    return (word2Baud w)
+    return (BaudRate w)
 
 foreign import capi unsafe "termios.h cfgetospeed"
   c_cfgetospeed :: Ptr CTermios -> IO CSpeed
 
 withOutputSpeed :: TerminalAttributes -> BaudRate -> TerminalAttributes
-withOutputSpeed termios br = unsafePerformIO $ do
-  withNewTermios termios $ \p -> c_cfsetospeed p (baud2Word br)
+withOutputSpeed termios (BaudRate br) = unsafePerformIO $ do
+  withNewTermios termios $ \p -> c_cfsetospeed p br
 
 foreign import capi unsafe "termios.h cfsetospeed"
   c_cfsetospeed :: Ptr CTermios -> CSpeed -> IO CInt
@@ -577,169 +779,6 @@ cc2Word Quit      = (#const VQUIT)
 cc2Word Suspend   = (#const VSUSP)
 cc2Word Start     = (#const VSTART)
 cc2Word Stop      = (#const VSTOP)
-
--- Convert Haskell BaudRate to unsigned integral type (Word)
-
-baud2Word :: BaudRate -> CSpeed
-baud2Word B0 = (#const B0)
-baud2Word B50 = (#const B50)
-baud2Word B75 = (#const B75)
-baud2Word B110 = (#const B110)
-baud2Word B134 = (#const B134)
-baud2Word B150 = (#const B150)
-baud2Word B200 = (#const B200)
-baud2Word B300 = (#const B300)
-baud2Word B600 = (#const B600)
-baud2Word B1200 = (#const B1200)
-baud2Word B1800 = (#const B1800)
-baud2Word B2400 = (#const B2400)
-baud2Word B4800 = (#const B4800)
-baud2Word B9600 = (#const B9600)
-baud2Word B19200 = (#const B19200)
-baud2Word B38400 = (#const B38400)
-#ifdef B57600
-baud2Word B57600 = (#const B57600)
-#else
-baud2Word B57600 = error "B57600 not available on this system"
-#endif
-#ifdef B115200
-baud2Word B115200 = (#const B115200)
-#else
-baud2Word B115200 = error "B115200 not available on this system"
-#endif
-#ifdef B230400
-baud2Word B230400 = (#const B230400)
-#else
-baud2Word B230400 = error "B230400 not available on this system"
-#endif
-#ifdef B460800
-baud2Word B460800 = (#const B460800)
-#else
-baud2Word B460800 = error "B460800 not available on this system"
-#endif
-#ifdef B500000
-baud2Word B500000 = (#const B500000)
-#else
-baud2Word B500000 = error "B500000 not available on this system"
-#endif
-#ifdef B576000
-baud2Word B576000 = (#const B576000)
-#else
-baud2Word B576000 = error "B576000 not available on this system"
-#endif
-#ifdef B921600
-baud2Word B921600 = (#const B921600)
-#else
-baud2Word B921600 = error "B921600 not available on this system"
-#endif
-#ifdef B1000000
-baud2Word B1000000 = (#const B1000000)
-#else
-baud2Word B1000000 = error "B1000000 not available on this system"
-#endif
-#ifdef B1152000
-baud2Word B1152000 = (#const B1152000)
-#else
-baud2Word B1152000 = error "B1152000 not available on this system"
-#endif
-#ifdef B1500000
-baud2Word B1500000 = (#const B1500000)
-#else
-baud2Word B1500000 = error "B1500000 not available on this system"
-#endif
-#ifdef B2000000
-baud2Word B2000000 = (#const B2000000)
-#else
-baud2Word B2000000 = error "B2000000 not available on this system"
-#endif
-#ifdef B2500000
-baud2Word B2500000 = (#const B2500000)
-#else
-baud2Word B2500000 = error "B2500000 not available on this system"
-#endif
-#ifdef B3000000
-baud2Word B3000000 = (#const B3000000)
-#else
-baud2Word B3000000 = error "B3000000 not available on this system"
-#endif
-#ifdef B3500000
-baud2Word B3500000 = (#const B3500000)
-#else
-baud2Word B3500000 = error "B3500000 not available on this system"
-#endif
-#ifdef B4000000
-baud2Word B4000000 = (#const B4000000)
-#else
-baud2Word B4000000 = error "B4000000 not available on this system"
-#endif
-
--- And convert a word back to a baud rate
--- We really need some cpp macros here.
-
-word2Baud :: CSpeed -> BaudRate
-word2Baud x = case x of
-    (#const B0) -> B0
-    (#const B50) -> B50
-    (#const B75) -> B75
-    (#const B110) -> B110
-    (#const B134) -> B134
-    (#const B150) -> B150
-    (#const B200) -> B200
-    (#const B300) -> B300
-    (#const B600) -> B600
-    (#const B1200) -> B1200
-    (#const B1800) -> B1800
-    (#const B2400) -> B2400
-    (#const B4800) -> B4800
-    (#const B9600) -> B9600
-    (#const B19200) -> B19200
-    (#const B38400) -> B38400
-#ifdef B57600
-    (#const B57600) -> B57600
-#endif
-#ifdef B115200
-    (#const B115200) -> B115200
-#endif
-#ifdef B230400
-    (#const B230400) -> B230400
-#endif
-#ifdef B460800
-    (#const B460800) -> B460800
-#endif
-#ifdef B500000
-    (#const B500000) -> B500000
-#endif
-#ifdef B576000
-    (#const B576000) -> B576000
-#endif
-#ifdef B921600
-    (#const B921600) -> B921600
-#endif
-#ifdef B1000000
-    (#const B1000000) -> B1000000
-#endif
-#ifdef B1152000
-    (#const B1152000) -> B1152000
-#endif
-#ifdef B1500000
-    (#const B1500000) -> B1500000
-#endif
-#ifdef B2000000
-    (#const B2000000) -> B2000000
-#endif
-#ifdef B2500000
-    (#const B2500000) -> B2500000
-#endif
-#ifdef B3000000
-    (#const B3000000) -> B3000000
-#endif
-#ifdef B3500000
-    (#const B3500000) -> B3500000
-#endif
-#ifdef B4000000
-    (#const B4000000) -> B4000000
-#endif
-    _                 -> error "unknown baud rate"
 
 -- Clear termios i_flag
 
