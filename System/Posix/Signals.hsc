@@ -383,14 +383,18 @@ installHandler sig handler _maybe_mask = do
             CatchOnce     action -> setHandler sig (Just (const action,dyn))
             CatchInfo     action -> setHandler sig (Just (getinfo action,dyn))
             CatchInfoOnce action -> setHandler sig (Just (getinfo action,dyn))
+#if __GLASGOW_HASKELL__ < 811
             _                    -> error "installHandler"
+#endif
 
         let action = case handler of
                 Catch _         -> STG_SIG_HAN
                 CatchOnce _     -> STG_SIG_RST
                 CatchInfo _     -> STG_SIG_HAN
                 CatchInfoOnce _ -> STG_SIG_RST
+#if __GLASGOW_HASKELL__ < 811
                 _               -> error "installHandler"
+#endif
 
         old_action <- stg_sig_install sig action nullPtr
                    -- mask is pointless, so leave it NULL
