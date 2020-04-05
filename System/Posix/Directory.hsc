@@ -34,6 +34,7 @@ module System.Posix.Directory (
    -- * Reading directories
    DirStream,
    openDirStream,
+   fdOpenDirStream,
    readDirStream,
    rewindDirStream,
    closeDirStream,
@@ -83,6 +84,16 @@ openDirStream name =
 
 foreign import capi unsafe "HsUnix.h opendir"
    c_opendir :: CString  -> IO (Ptr CDir)
+
+-- | @fdOpenDirStream dir@ calls @fdopendir@ to obtain a
+--   directory stream for @dirfd@.
+fdOpenDirStream :: Fd -> IO DirStream
+fdOpenDirStream (Fd fd) = do
+  dirp <- throwErrnoIfNullRetry "fdOpenDirStream" $ c_fdopendir fd
+  return (DirStream dirp)
+
+foreign import capi unsafe "HsUnix.h fdopendir"
+   c_fdopendir :: CInt  -> IO (Ptr CDir)
 
 -- | @readDirStream dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
