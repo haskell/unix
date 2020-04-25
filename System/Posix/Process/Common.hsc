@@ -94,7 +94,7 @@ getProcessID = c_getpid
 foreign import ccall unsafe "getpid"
    c_getpid :: IO CPid
 
--- | 'getProcessID' calls @getppid@ to obtain the 'ProcessID' for
+-- | 'getParentProcessID' calls @getppid@ to obtain the 'ProcessID' for
 --   the parent of the current process.
 getParentProcessID :: IO ProcessID
 getParentProcessID = c_getppid
