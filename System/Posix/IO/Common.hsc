@@ -237,7 +237,15 @@ foreign import ccall unsafe "HsUnix.h close"
 -- Converting file descriptors to/from Handles
 
 -- | Extracts the 'Fd' from a 'Handle'.  This function has the side effect
--- of closing the 'Handle' and flushing its write buffer, if necessary.
+-- of closing the 'Handle' (and flushing its write buffer, if necessary),
+-- without closing the underlying 'Fd'.
+--
+-- __Warning:__ This means you take over ownership of the underlying 'Fd'.
+-- 'hClose` on the 'Handle' will no longer have any effect.
+-- This will break common patterns to avoid file descriptor leaks,
+-- such as using 'hClose' in the cleanup action of @Control.Exception.bracket@,
+-- making it a silent no-op.
+-- Be sure to close the returned 'Fd' yourself to not leak it.
 handleToFd :: Handle -> IO Fd
 
 -- | Converts an 'Fd' into a 'Handle' that can be used with the
