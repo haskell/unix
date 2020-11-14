@@ -1,2 +1,6 @@
 ghc-head:      True
 unconstrained: False
+
+constraint-set bytestring-0.11
+  ghc: == 8.6.5
+  constraints: bytestring ==0.11.0.0
