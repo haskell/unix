@@ -351,7 +351,11 @@ setFileTimes name atime mtime = do
 
 -- | Like 'setFileTimes' but timestamps can have sub-second resolution.
 --
--- Note: calls @utimensat@ or @utimes@.
+-- Note: calls @utimensat@ or @utimes@. Support for high resolution timestamps
+--   is filesystem dependent with the following limitations:
+--
+-- - HFS+ volumes on OS X truncate the sub-second part of the timestamp.
+--
 setFileTimesHiRes :: RawFilePath -> POSIXTime -> POSIXTime -> IO ()
 #ifdef HAVE_UTIMENSAT
 setFileTimesHiRes name atime mtime =
@@ -370,7 +374,11 @@ setFileTimesHiRes name atime mtime =
 -- This operation is not supported on all platforms. On these platforms,
 -- this function will raise an exception.
 --
--- Note: calls @utimensat@ or @lutimes@.
+-- Note: calls @utimensat@ or @lutimes@. Support for high resolution timestamps
+--   is filesystem dependent with the following limitations:
+--
+-- - HFS+ volumes on OS X truncate the sub-second part of the timestamp.
+--
 setSymbolicLinkTimesHiRes :: RawFilePath -> POSIXTime -> POSIXTime -> IO ()
 #if HAVE_UTIMENSAT
 setSymbolicLinkTimesHiRes name atime mtime =
