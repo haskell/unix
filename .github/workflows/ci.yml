@@ -1,0 +1,93 @@
+name: ci
+on:
+  push:
+    branches:
+      - master
+      - 2.7
+  pull_request: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-old:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        ghc: ['7.8.4', '7.6.3', '7.4.2']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      name: Cache cabal stuff
+      with:
+        path: |
+          ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
+          dist-newstyle
+        key: ${{ runner.os }}-${{ matrix.ghc }}
+    - name: Install GHC
+      run: |
+        sudo add-apt-repository ppa:hvr/ghc -y
+        sudo apt-get update
+        sudo apt-get install ghc-${{ matrix.ghc }}
+    - name: Build
+      run: |
+        autoreconf -i
+        cabal sdist -z -o .
+        cabal get unix-*.tar.gz
+        cd unix-*/
+        cabal build -w /opt/ghc/bin/ghc-${{ matrix.ghc }} all
+    - name: Haddock
+      run: cabal haddock -w /opt/ghc/bin/ghc-${{ matrix.ghc }}
+
+  build:
+    needs: build-old
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+        ghc: ['8.10', '8.8', '8.6', '8.4', '8.2', '8.0', '7.10']
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-haskell@v1
+      id: setup-haskell-cabal
+      with:
+        ghc-version: ${{ matrix.ghc }}
+    - uses: actions/cache@v2
+      name: Cache cabal stuff
+      with:
+        path: |
+          ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
+          dist-newstyle
+        key: ${{ runner.os }}-${{ matrix.ghc }}
+    - name: Build
+      run: |
+        autoreconf -i
+        cabal sdist -z -o .
+        cabal get unix-*.tar.gz
+        cd unix-*/
+        cabal build all
+    - name: Haddock
+      run: cabal haddock
+
+  build-freebsd:
+    needs: build
+    # See https://github.com/vmactions/freebsd-vm#under-the-hood.
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      id: build-freebsd
+      uses: vmactions/freebsd-vm@v0.0.9
+      with:
+        usesh: true
+        prepare: pkg install -y ghc hs-cabal-install git autoconf
+        run: |
+          autoreconf -i
+          cabal sdist -z -o .
+          cabal get unix-*.tar.gz
+          cd unix-*/
+          cabal build all
