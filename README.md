@@ -1,4 +1,4 @@
-The `unix` Package  [![Hackage](https://img.shields.io/hackage/v/unix.svg)](https://hackage.haskell.org/package/unix) [![Build Status](https://travis-ci.org/haskell/unix.svg)](https://travis-ci.org/haskell/unix)
+The `unix` Package  [![Hackage](https://img.shields.io/hackage/v/unix.svg)](https://hackage.haskell.org/package/unix) [![GitHub Build Status](https://github.com/haskell/unix/workflows/ci/badge.svg)](https://github.com/haskell/unix/actions?query=workflow%3Aci)
 ==================
 
 See [`unix` on Hackage](http://hackage.haskell.org/package/unix) for
