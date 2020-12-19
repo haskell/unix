@@ -1,8 +1,13 @@
-{-# LANGUAGE OverloadedStrings #-}
 
 -- GHC trac #2969
 
-import System.Posix.ByteString
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+
+module FileStatus (main) where
+
+import System.Posix.Files
+import System.Posix.Directory
+import System.Posix.IO
 import Control.Exception as E
 import Control.Monad
 
@@ -13,13 +18,13 @@ main = do
   testSymlink fs ds
   cleanup
 
-regular      = "regular2"
-dir          = "dir2"
-link_regular = "link-regular2"
-link_dir     = "link-dir2"
+regular      = "regular"
+dir          = "dir"
+link_regular = "link-regular"
+link_dir     = "link-dir"
 
 testRegular = do
-  createFile regular ownerReadMode
+  _ <- createFile regular ownerReadMode
   (fs, _) <- getStatus regular
   let expected = (False,False,False,True,False,False,False)
       actual   = snd (statusElements fs)
