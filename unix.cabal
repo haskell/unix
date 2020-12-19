@@ -142,3 +142,71 @@ library
     c-sources:
         cbits/HsUnix.c
         cbits/execvpe.c
+
+test-suite unix-tests
+    hs-source-dirs: tests
+    main-is: Test.hs
+    other-modules:
+        FileStatus
+        FileStatusByteString
+        Signals001
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, tasty, tasty-hunit, unix
+    ghc-options: -Wall -with-rtsopts=-V0
+
+test-suite FdReadBuf001
+    hs-source-dirs: tests
+    main-is: FdReadBuf001.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall -threaded
+
+test-suite ForkProcess01
+    hs-source-dirs: tests
+    main-is: ForkProcess01.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Signals002
+    hs-source-dirs: tests
+    main-is: Signals002.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Signals004
+    hs-source-dirs: tests
+    main-is: Signals004.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Posix004
+    hs-source-dirs: tests
+    main-is: Posix004.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Posix009
+    hs-source-dirs: tests
+    main-is: Posix009.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall -with-rtsopts=-V0
+
+test-suite Posix014
+    hs-source-dirs: tests
+    main-is: Posix014.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall

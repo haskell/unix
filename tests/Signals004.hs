@@ -1,3 +1,7 @@
+{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+
+module Main where
+
 import Control.Concurrent
 import System.Posix
 import Control.Monad
@@ -13,7 +17,7 @@ sigs = 400
 main = do
   c <- newChan
   m <- newEmptyMVar
-  installHandler sigUSR1 (handler c) Nothing
+  _ <- installHandler sigUSR1 (handler c) Nothing
   replicateM_ installers (forkIO $ do replicateM_ 1000 (install c); putMVar m ())
   replicateM_ sigs (forkIO $ raiseSignal sigUSR1)
   replicateM_ installers (takeMVar m)
