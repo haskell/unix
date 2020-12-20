@@ -38,7 +38,8 @@ jobs:
         cabal sdist -z -o .
         cabal get unix-*.tar.gz
         cd unix-*/
-        cabal build -w /opt/ghc/bin/ghc-${{ matrix.ghc }} all
+        cabal update
+        cabal test -w /opt/ghc/bin/ghc-${{ matrix.ghc }} all
     - name: Haddock
       run: cabal haddock -w /opt/ghc/bin/ghc-${{ matrix.ghc }}
 
@@ -69,7 +70,8 @@ jobs:
         cabal sdist -z -o .
         cabal get unix-*.tar.gz
         cd unix-*/
-        cabal build all
+        cabal update
+        cabal test all --test-show-details=direct
     - name: Haddock
       run: cabal haddock
 
@@ -90,4 +92,5 @@ jobs:
           cabal sdist -z -o .
           cabal get unix-*.tar.gz
           cd unix-*/
-          cabal build all
+          cabal update
+          cabal test all --test-show-details=direct
