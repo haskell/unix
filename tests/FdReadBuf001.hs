@@ -2,7 +2,7 @@ module Main where
 
 import System.Posix
 import Control.Monad
-import Foreign
+import Foreign hiding (void)
 import Control.Concurrent
 import Data.Char
 import System.Exit
@@ -13,10 +13,10 @@ main = do
       block = 512
   (rd,wr) <- createPipe
   let bytes = take size (map (fromIntegral.ord) (cycle ['a'..'z']))
-  _ <- allocaBytes size $ \p -> do
-    pokeArray p bytes
-    forkIO $ do r <- fdWriteBuf wr p (fromIntegral size)
-                when (fromIntegral r /= size) $ error "fdWriteBuf failed"
+  void $ forkIO $ allocaBytes size $ \p -> do
+        pokeArray p bytes
+        r <- fdWriteBuf wr p (fromIntegral size)
+        when (fromIntegral r /= size) $ error "fdWriteBuf failed"
   allocaBytes block $ \p -> do
     let loop text = do
            r <- fdReadBuf rd p (fromIntegral block)
