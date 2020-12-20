@@ -14,7 +14,7 @@ jobs:
   build-old:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         ghc: ['7.8.4', '7.6.3', '7.4.2']
@@ -45,10 +45,9 @@ jobs:
       run: cabal haddock -w /opt/ghc/bin/ghc-${{ matrix.ghc }}
 
   build:
-    needs: build-old
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macOS-latest]
         ghc: ['8.10', '8.8', '8.6', '8.4', '8.2', '8.0', '7.10']
@@ -78,7 +77,6 @@ jobs:
       run: cabal haddock
 
   build-freebsd:
-    needs: build
     # See https://github.com/vmactions/freebsd-vm#under-the-hood.
     runs-on: macos-latest
     steps:
