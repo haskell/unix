@@ -38,7 +38,6 @@ main = defaultMain $ testGroup "All"
   , signals001
   , t1185
   , t3816
-  , t8108
   , user001
   , posix002
   , posix005
@@ -162,12 +161,6 @@ t3816 = testCase "T3816" $ do
     @? "should be non-empty"
   not . null <$> getAllGroupEntries
     @? "should be non-empty"
-
-t8108 :: TestTree
-t8108 = testCase "T8108" $ do
-  void $ forkIO $ forever $ getGroupEntryForID 0
-  void $ forkIO $ forever $ getGroupEntryForID 0
-  threadDelay 3000000
 
 user001 :: TestTree
 user001 = testCase "user001" $ do
