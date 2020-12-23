@@ -210,3 +210,11 @@ test-suite Posix014
     default-language: Haskell2010
     build-depends: base, unix
     ghc-options: -Wall
+
+test-suite T8108
+    hs-source-dirs: tests
+    main-is: T8108.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
