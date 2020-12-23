@@ -208,7 +208,7 @@ getGroupEntryForID gid =
    doubleAllocWhileERANGE "getGroupEntryForID" "group" grBufSize unpackGroupEntry $
      c_getgrgid_r gid pgr
 
-foreign import capi unsafe "HsUnix.h getgrgid_r"
+foreign import capi safe "HsUnix.h getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
                  -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
@@ -227,7 +227,7 @@ getGroupEntryForName name =
       doubleAllocWhileERANGE "getGroupEntryForName" "group" grBufSize unpackGroupEntry $
         c_getgrnam_r pstr pgr
 
-foreign import capi unsafe "HsUnix.h getgrnam_r"
+foreign import capi safe "HsUnix.h getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
                  -> CSize -> Ptr (Ptr CGroup) -> IO CInt
 #else
@@ -255,12 +255,9 @@ getAllGroupEntries =
                      else do thisentry <- unpackGroupEntry ppw
                              worker (thisentry : accum)
 
-foreign import ccall unsafe "getgrent"
-  c_getgrent :: IO (Ptr CGroup)
-foreign import ccall unsafe "setgrent"
-  c_setgrent :: IO ()
-foreign import ccall unsafe "endgrent"
-  c_endgrent :: IO ()
+foreign import ccall safe "getgrent" c_getgrent :: IO (Ptr CGroup)
+foreign import ccall safe "setgrent" c_setgrent :: IO ()
+foreign import ccall safe "endgrent" c_endgrent :: IO ()
 #else
 getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
 #endif
@@ -317,7 +314,7 @@ getUserEntryForID uid =
     doubleAllocWhileERANGE "getUserEntryForID" "user" pwBufSize unpackUserEntry $
       c_getpwuid_r uid ppw
 
-foreign import capi unsafe "HsUnix.h getpwuid_r"
+foreign import capi safe "HsUnix.h getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd ->
                         CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #else
@@ -336,7 +333,7 @@ getUserEntryForName name =
       doubleAllocWhileERANGE "getUserEntryForName" "user" pwBufSize unpackUserEntry $
         c_getpwnam_r pstr ppw
 
-foreign import capi unsafe "HsUnix.h getpwnam_r"
+foreign import capi safe "HsUnix.h getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
                -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
 #else
@@ -358,12 +355,9 @@ getAllUserEntries =
                      else do thisentry <- unpackUserEntry ppw
                              worker (thisentry : accum)
 
-foreign import capi unsafe "HsUnix.h getpwent"
-  c_getpwent :: IO (Ptr CPasswd)
-foreign import capi unsafe "HsUnix.h setpwent"
-  c_setpwent :: IO ()
-foreign import capi unsafe "HsUnix.h endpwent"
-  c_endpwent :: IO ()
+foreign import ccall safe "getpwent" c_getpwent :: IO (Ptr CPasswd)
+foreign import ccall safe "setpwent" c_setpwent :: IO ()
+foreign import ccall safe "endpwent" c_endpwent :: IO ()
 #else
 getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 #endif
