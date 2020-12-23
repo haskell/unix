@@ -34,7 +34,6 @@ main = defaultMain $ testGroup "All"
   , processGroup001
   , processGroup002
   , queryFdOption01
-  , resourceLimit
   , signals001
   , t1185
   , t3816
@@ -119,18 +118,6 @@ queryFdOption01 = testCase "queryFdOption01" $ do
   setFdOption stdOutput NonBlockingRead True
   queryFdOption stdOutput NonBlockingRead
     @? "should be non-blocking"
-
-resourceLimit :: TestTree
-resourceLimit = testCase "resourceLimit" $ do
-  let soft = 5
-      hard = 10
-  setResourceLimit ResourceCPUTime
-    (ResourceLimits (ResourceLimit soft) (ResourceLimit hard))
-  r <- getResourceLimit ResourceCPUTime
-  let (ResourceLimit s) = softLimit r
-  let (ResourceLimit h) = hardLimit r
-  s @?= soft
-  h @?= hard
 
 signals001 :: TestTree
 signals001 = testCase "signals001" Signals001.main
