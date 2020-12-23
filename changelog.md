@@ -2,6 +2,18 @@
 
 ## 2.8.0.0 *UNRELEASED*
 
+  * Deal with FreeBSD getpwnam_r(3), ... thread safety.  On FreeBSD these
+    are not in fact safe for overlapped execution with a sequence of
+    getpwent(3) or getgrent(3) calls when multiple "green" threads share
+    the same underlying OS thread.  The *ent(3) calls now run in bound
+    threads or else locks are used to avoid overlapped execution.
+
+  * Make passwd/group FFI functions "safe", these are not low-latency APIs.
+
+  * Drop support for non-thread-safe getpwnam(3) and getpwuid(3).  All
+    supported platforms have getpwnam_r(3) and getpwuid_r(3).  This was
+    already the case for the getgr(nam|gid) calls.
+
   * Added terminal output flags to `System.Posix.Terminal.Common.TerminalMode`
 
         IXANY, ONLCR, OCRNL, ONOCR, ONLRET, OFDEL, OFILL, NLDLY(NL0,NL1),
