@@ -54,10 +54,11 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 
-#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
-import Control.Concurrent.MVar  ( MVar, newMVar, withMVar )
+#if defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
+#if defined(freebsd_HOST_OS)
+import Control.Concurrent (runInBoundThread, rtsSupportsBoundThreads)
 #endif
-#ifdef HAVE_GETPWENT
+import Control.Concurrent.MVar ( MVar, newMVar, withMVar )
 import Control.Exception
 #endif
 import Control.Monad
@@ -66,6 +67,114 @@ import System.IO.Error
 -- internal types
 data {-# CTYPE "struct passwd" #-} CPasswd
 data {-# CTYPE "struct group"  #-} CGroup
+
+-- -----------------------------------------------------------------------------
+-- Thread safety of passwd/group database access APIs:
+--
+-- All supported unix platforms have @get(pw|gr)(nam|[ug]id)_r(3)@, which
+-- store the result in a caller provided buffer, which solves the most
+-- immediate thread-safety issues.
+--
+-- Things are more complicated for getpwent(3) and getgrent(3).
+--
+-- * On Linux systems, these read a global open file, opened via
+--   setpwent(3) and closed via endpwent(3).  Only one thread at
+--   a time can safely iterate through the file.
+--
+-- * On MacOS (through Catalina 10.15), there is no getpwent_r(3) or
+--   getgrent_r(3), so a lock is also required for safe buffer sharing.
+--
+-- * On FreeBSD, in the default configuration with passwd lookups configured
+--   in nsswitch.conf to use "compat" rather than "files", the getpwnam_r(3)
+--   and getpwuid_r(3) functions reset the iterator index used by getpwent(3).
+--   A bug [report](https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=252094)
+--   has been filed to track this long-standing issue.  A similar issue affects
+--   getgrent(3), this time regardless of the nsswitch.conf setting.  This too
+--   should be fixed at some point in the future.  The state in question is
+--   thread-specific, so both issues only affect overlapping use of the @*ent@
+--   and @*(nam|[ug]id)_r(3)@ functions in the /same/ thread.
+--
+-- * Despite rather similar manpages for getpwent(3) and getpwnam(3), ... as
+--   on FreeBSD, the above issue is not seen on NetBSD or MacOS.
+--
+--   This is not an issue with 1-to-1 thread models, where the code executing
+--   @get(pw|gr)ent@ has exclusive use of its thread, but it is a real issue
+--   for Haskell with its many-to-1 green threads, because multiple `forkIO`
+--   threads may take turns using the same underlying OS thread, breaking the
+--   thread-safety of the @*_r@ functions, which mutate the file-offset of the
+--   open file shared with any overlapping execution of @*ent(3)@ in the same
+--   thread.
+--
+-- Consequently, correct portable support for @get(pw|gr)ent(3)@ is rather
+-- non-trivial.  In the threaded runtime, we can run these functions in a
+-- /bound thread/ (via 'forkOS'), thereby avoiding the FreeBSD issues.  We
+-- still need a lock to serialise multiple threads calling these functions
+-- on at least MacOS for lack of @_r@ equivalents.  While on FreeBSD we could
+-- use @getpwent_r(3)@ and @getgrent_r(3)@ in a bound thread without any
+-- locks, implementing this special case is likely not worthwhile.
+--
+-- In the non-threaded runtime, `forkOS` is not available, and so on FreeBSD
+-- systems we have to also lock the @*(nam|[ug]id)_r(3)@ functions to avoid
+-- concurrent use with @*ent(3)@.
+--
+-- FWIW, the below Perl one-liners will quickly show whether interleaved calls
+-- of getpwuid() or getgrgid() disturb iteration through all the entries. If
+-- each line of output is distinct, there is likely no issue.  If the same
+-- passwd or group entry repeats multiple times, the system is affected.
+--
+-- > for ($i=0;$i<3;++$i) {getpwuid(0); print join(":",getpwent()),"\n"}
+-- > for ($i=0;$i<3;++$i) {getgrgid(0); print join(":",getgrent()),"\n"}
+--
+-- XXX: It has been suggested, not without some merit, that attempts to
+-- enumerate /all/ users or /all/ groups are fundamentally flawed.  Modern
+-- unix systems have a variety nsswitch backends, some of which instantiate
+-- users on demand or may enumerate slowly or not at all.  We could shed a
+-- lot of complexity by deprecating the "get all" functions and simply
+-- always returning an empty list.
+--
+data LKUPTYPE = GETONE | GETALL
+
+#if defined(HAVE_GETPWENT)
+pwlock :: MVar ()
+pwlock = unsafePerformIO $ newMVar ()
+{-# NOINLINE pwlock #-}
+
+lockpw :: LKUPTYPE -> IO a -> IO a
+#if defined(freebsd_HOST_OS)
+lockpw GETONE
+    | rtsSupportsBoundThreads = id
+    | otherwise = withMVar pwlock . const
+lockpw GETALL
+    | rtsSupportsBoundThreads = runInBoundThread . withMVar pwlock . const
+    | otherwise = withMVar pwlock . const
+#else
+lockpw GETONE = id
+lockpw GETALL = withMVar pwlock . const
+#endif
+#else
+lockpw _ = id
+#endif
+
+#if defined(HAVE_GETGRENT)
+grlock :: MVar ()
+grlock = unsafePerformIO $ newMVar ()
+{-# NOINLINE grlock #-}
+
+lockgr :: LKUPTYPE -> IO a -> IO a
+#if defined(freebsd_HOST_OS)
+lockgr GETONE
+    | rtsSupportsBoundThreads = id
+    | otherwise = withMVar grlock . const
+lockgr GETALL
+    | rtsSupportsBoundThreads = runInBoundThread . withMVar grlock . const
+    | otherwise = withMVar grlock . const
+#else
+lockgr GETONE = id
+lockgr GETALL = withMVar grlock . const
+#endif
+#else
+lockgr _ = id
+#endif
 
 -- -----------------------------------------------------------------------------
 -- user environment
@@ -125,7 +234,6 @@ setGroups groups = do
 
 foreign import ccall unsafe "setgroups"
   c_setgroups :: CInt -> Ptr CGid -> IO CInt
-
 
 
 -- | @getLoginName@ calls @getlogin@ to obtain the login name
@@ -203,10 +311,10 @@ data GroupEntry =
 --   if no such group exists.
 getGroupEntryForID :: GroupID -> IO GroupEntry
 #ifdef HAVE_GETGRGID_R
-getGroupEntryForID gid =
-  allocaBytes (#const sizeof(struct group)) $ \pgr ->
-   doubleAllocWhileERANGE "getGroupEntryForID" "group" grBufSize unpackGroupEntry $
-     c_getgrgid_r gid pgr
+getGroupEntryForID gid = lockgr GETONE $
+    allocaBytes (#const sizeof(struct group)) $ \pgr ->
+        doubleAllocWhileERANGE "getGroupEntryForID" "group"
+            grBufSize unpackGroupEntry $ c_getgrgid_r gid pgr
 
 foreign import capi safe "HsUnix.h getgrgid_r"
   c_getgrgid_r :: CGid -> Ptr CGroup -> CString
@@ -221,11 +329,11 @@ getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 --   if no such group exists.
 getGroupEntryForName :: String -> IO GroupEntry
 #ifdef HAVE_GETGRNAM_R
-getGroupEntryForName name =
-  allocaBytes (#const sizeof(struct group)) $ \pgr ->
-    withCAString name $ \ pstr ->
-      doubleAllocWhileERANGE "getGroupEntryForName" "group" grBufSize unpackGroupEntry $
-        c_getgrnam_r pstr pgr
+getGroupEntryForName name = lockgr GETONE $
+    allocaBytes (#const sizeof(struct group)) $ \pgr ->
+        withCAString name $ \ pstr ->
+            doubleAllocWhileERANGE "getGroupEntryForName" "group"
+                grBufSize unpackGroupEntry $ c_getgrnam_r pstr pgr
 
 foreign import capi safe "HsUnix.h getgrnam_r"
   c_getgrnam_r :: CString -> Ptr CGroup -> CString
@@ -244,16 +352,15 @@ getGroupEntryForName = error "System.Posix.User.getGroupEntryForName: not suppor
 --
 getAllGroupEntries :: IO [GroupEntry]
 #ifdef HAVE_GETGRENT
-getAllGroupEntries =
-    withMVar lock $ \_ -> bracket_ c_setgrent c_endgrent $ worker []
-    where worker accum =
-              do resetErrno
-                 ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $
-                        c_getgrent
-                 if ppw == nullPtr
-                     then return (reverse accum)
-                     else do thisentry <- unpackGroupEntry ppw
-                             worker (thisentry : accum)
+getAllGroupEntries = lockgr GETALL $ bracket_ c_setgrent c_endgrent $ worker []
+  where
+    worker accum = do
+        resetErrno
+        ppw <- throwErrnoIfNullAndError "getAllGroupEntries" $ c_getgrent
+        if ppw == nullPtr
+            then return (reverse accum)
+            else do thisentry <- unpackGroupEntry ppw
+                    worker (thisentry : accum)
 
 foreign import ccall safe "getgrent" c_getgrent :: IO (Ptr CGroup)
 foreign import ccall safe "setgrent" c_setgrent :: IO ()
@@ -294,25 +401,16 @@ data UserEntry =
    userShell     :: String      -- ^ Default shell (pw_shell)
  } deriving (Show, Read, Eq)
 
---
--- getpwent/setpwent require a global lock since they maintain
--- an internal file position pointer.
-#if defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
-lock :: MVar ()
-lock = unsafePerformIO $ newMVar ()
-{-# NOINLINE lock #-}
-#endif
-
 -- | @getUserEntryForID uid@ calls @getpwuid_r@ to obtain
 --   the @UserEntry@ information associated with @UserID@
 --   @uid@. This operation may fail with 'isDoesNotExistError'
 --   if no such user exists.
 getUserEntryForID :: UserID -> IO UserEntry
 #ifdef HAVE_GETPWUID_R
-getUserEntryForID uid =
-  allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
-    doubleAllocWhileERANGE "getUserEntryForID" "user" pwBufSize unpackUserEntry $
-      c_getpwuid_r uid ppw
+getUserEntryForID uid = lockpw GETONE $
+    allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
+        doubleAllocWhileERANGE "getUserEntryForID" "user"
+            pwBufSize unpackUserEntry $ c_getpwuid_r uid ppw
 
 foreign import capi safe "HsUnix.h getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd ->
@@ -327,11 +425,11 @@ getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 --   if no such user exists.
 getUserEntryForName :: String -> IO UserEntry
 #if HAVE_GETPWNAM_R
-getUserEntryForName name =
-  allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
-    withCAString name $ \ pstr ->
-      doubleAllocWhileERANGE "getUserEntryForName" "user" pwBufSize unpackUserEntry $
-        c_getpwnam_r pstr ppw
+getUserEntryForName name = lockpw GETONE $
+    allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
+        withCAString name $ \ pstr ->
+            doubleAllocWhileERANGE "getUserEntryForName" "user"
+                pwBufSize unpackUserEntry $ c_getpwnam_r pstr ppw
 
 foreign import capi safe "HsUnix.h getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
@@ -344,16 +442,15 @@ getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supporte
 --   repeatedly calling @getpwent@
 getAllUserEntries :: IO [UserEntry]
 #ifdef HAVE_GETPWENT
-getAllUserEntries =
-    withMVar lock $ \_ -> bracket_ c_setpwent c_endpwent $ worker []
-    where worker accum =
-              do resetErrno
-                 ppw <- throwErrnoIfNullAndError "getAllUserEntries" $
-                        c_getpwent
-                 if ppw == nullPtr
-                     then return (reverse accum)
-                     else do thisentry <- unpackUserEntry ppw
-                             worker (thisentry : accum)
+getAllUserEntries = lockpw GETALL $ bracket_ c_setpwent c_endpwent $ worker []
+  where
+    worker accum = do
+        resetErrno
+        ppw <- throwErrnoIfNullAndError "getAllUserEntries" $ c_getpwent
+        if ppw == nullPtr
+            then return (reverse accum)
+            else do thisentry <- unpackUserEntry ppw
+                    worker (thisentry : accum)
 
 foreign import ccall safe "getpwent" c_getpwent :: IO (Ptr CPasswd)
 foreign import ccall safe "setpwent" c_setpwent :: IO ()
