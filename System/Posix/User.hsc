@@ -298,19 +298,15 @@ data UserEntry =
  } deriving (Show, Read, Eq)
 
 --
--- getpwuid and getpwnam leave results in a static object. Subsequent
--- calls modify the same object, which isn't threadsafe. We attempt to
--- mitigate this issue, on platforms that don't provide the safe _r versions
---
--- Also, getpwent/setpwent require a global lock since they maintain
+-- getpwent/setpwent require a global lock since they maintain
 -- an internal file position pointer.
-#if !defined(HAVE_GETPWNAM_R) || !defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
+#if defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 lock :: MVar ()
 lock = unsafePerformIO $ newMVar ()
 {-# NOINLINE lock #-}
 #endif
 
--- | @getUserEntryForID gid@ calls @getpwuid_r@ to obtain
+-- | @getUserEntryForID uid@ calls @getpwuid_r@ to obtain
 --   the @UserEntry@ information associated with @UserID@
 --   @uid@. This operation may fail with 'isDoesNotExistError'
 --   if no such user exists.
@@ -324,14 +320,6 @@ getUserEntryForID uid =
 foreign import capi unsafe "HsUnix.h getpwuid_r"
   c_getpwuid_r :: CUid -> Ptr CPasswd ->
                         CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
-#elif HAVE_GETPWUID
-getUserEntryForID uid = do
-  withMVar lock $ \_ -> do
-    ppw <- throwErrnoIfNull "getUserEntryForID" $ c_getpwuid uid
-    unpackUserEntry ppw
-
-foreign import ccall unsafe "getpwuid"
-  c_getpwuid :: CUid -> IO (Ptr CPasswd)
 #else
 getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 #endif
@@ -351,15 +339,6 @@ getUserEntryForName name =
 foreign import capi unsafe "HsUnix.h getpwnam_r"
   c_getpwnam_r :: CString -> Ptr CPasswd
                -> CString -> CSize -> Ptr (Ptr CPasswd) -> IO CInt
-#elif HAVE_GETPWNAM
-getUserEntryForName name = do
-  withCAString name $ \ pstr -> do
-    withMVar lock $ \_ -> do
-      ppw <- throwErrnoIfNull "getUserEntryForName" $ c_getpwnam pstr
-      unpackUserEntry ppw
-
-foreign import ccall unsafe "getpwnam"
-  c_getpwnam :: CString -> IO (Ptr CPasswd)
 #else
 getUserEntryForName = error "System.Posix.User.getUserEntryForName: not supported"
 #endif
