@@ -20,7 +20,7 @@ jobs:
         ghc: ['7.8.4', '7.6.3', '7.4.2']
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/cache@v2
+    - uses: actions/cache@v2.1.4
       name: Cache cabal stuff
       with:
         path: |
@@ -57,7 +57,7 @@ jobs:
       id: setup-haskell-cabal
       with:
         ghc-version: ${{ matrix.ghc }}
-    - uses: actions/cache@v2
+    - uses: actions/cache@v2.1.4
       name: Cache cabal stuff
       with:
         path: |
