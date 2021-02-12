@@ -1,4 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE PatternSynonyms #-}
 #if __GLASGOW_HASKELL__ >= 709
 {-# LANGUAGE Safe #-}
 #else
@@ -44,7 +45,100 @@ module System.Posix.Terminal.ByteString (
   minInput,
   withMinInput,
 
-  BaudRate(..),
+  BaudRate,
+#ifdef B0
+  pattern B0,
+#endif
+#ifdef B50
+  pattern B50,
+#endif
+#ifdef B75
+  pattern B75,
+#endif
+#ifdef B110
+  pattern B110,
+#endif
+#ifdef B134
+  pattern B134,
+#endif
+#ifdef B150
+  pattern B150,
+#endif
+#ifdef B200
+  pattern B200,
+#endif
+#ifdef B300
+  pattern B300,
+#endif
+#ifdef B600
+  pattern B600,
+#endif
+#ifdef B1200
+  pattern B1200,
+#endif
+#ifdef B1800
+  pattern B1800,
+#endif
+#ifdef B2400
+  pattern B2400,
+#endif
+#ifdef B4800
+  pattern B4800,
+#endif
+#ifdef B9600
+  pattern B9600,
+#endif
+#ifdef B19200
+  pattern B19200,
+#endif
+#ifdef B38400
+  pattern B38400,
+#endif
+#ifdef B57600
+  pattern B57600,
+#endif
+#ifdef B115200
+  pattern B115200,
+#endif
+#ifdef B230400
+  pattern B230400,
+#endif
+#ifdef B460800
+  pattern B460800,
+#endif
+#ifdef B500000
+  pattern B500000,
+#endif
+#ifdef B576000
+  pattern B576000,
+#endif
+#ifdef B921600
+  pattern B921600,
+#endif
+#ifdef B1000000
+  pattern B1000000,
+#endif
+#ifdef B1152000
+  pattern B1152000,
+#endif
+#ifdef B1500000
+  pattern B1500000,
+#endif
+#ifdef B2000000
+  pattern B2000000,
+#endif
+#ifdef B2500000
+  pattern B2500000,
+#endif
+#ifdef B3000000
+  pattern B3000000,
+#endif
+#ifdef B3500000
+  pattern B3500000,
+#endif
+#ifdef B4000000
+  pattern B4000000,
+#endif
   inputSpeed,
   withInputSpeed,
   outputSpeed,
