@@ -130,14 +130,8 @@ getSlaveTerminalName (Fd fd) = do
   s <- throwErrnoIfNull "getSlaveTerminalName" (c_ptsname fd)
   peekFilePath s
 
-# if __GLASGOW_HASKELL__ < 800
--- see comment in cbits/HsUnix.c
-foreign import ccall unsafe "__hsunix_ptsname"
-  c_ptsname :: CInt -> IO CString
-# else
 foreign import capi unsafe "HsUnix.h ptsname"
   c_ptsname :: CInt -> IO CString
-# endif
 #else
 getSlaveTerminalName _ =
     ioError (errnoToIOError "getSlaveTerminalName" eNOSYS Nothing Nothing)
@@ -190,20 +184,11 @@ foreign import ccall unsafe "__hsunix_push_module"
   c_push_module :: CInt -> CString -> IO CInt
 
 #ifdef HAVE_PTSNAME
-# if __GLASGOW_HASKELL__ < 800
--- see comment in cbits/HsUnix.c
-foreign import ccall unsafe "__hsunix_grantpt"
-  c_grantpt :: CInt -> IO CInt
-
-foreign import ccall unsafe "__hsunix_unlockpt"
-  c_unlockpt :: CInt -> IO CInt
-# else
 foreign import capi unsafe "HsUnix.h grantpt"
   c_grantpt :: CInt -> IO CInt
 
 foreign import capi unsafe "HsUnix.h unlockpt"
   c_unlockpt :: CInt -> IO CInt
-# endif
 #else
 c_grantpt :: CInt -> IO CInt
 c_grantpt _ = return (fromIntegral 0)

@@ -680,18 +680,6 @@ awaitSignal maybe_sigset = do
 foreign import ccall unsafe "sigsuspend"
   c_sigsuspend :: Ptr CSigset -> IO CInt
 
-#if defined(darwin_HOST_OS) && __GLASGOW_HASKELL__ < 706
--- see http://ghc.haskell.org/trac/ghc/ticket/7359#comment:3
--- To be removed when support for GHC 7.4.x is dropped
-foreign import ccall unsafe "__hscore_sigdelset"
-  c_sigdelset   :: Ptr CSigset -> CInt -> IO CInt
-
-foreign import ccall unsafe "__hscore_sigfillset"
-  c_sigfillset  :: Ptr CSigset -> IO CInt
-
-foreign import ccall unsafe "__hscore_sigismember"
-  c_sigismember :: Ptr CSigset -> CInt -> IO CInt
-#else
 foreign import capi unsafe "signal.h sigdelset"
   c_sigdelset   :: Ptr CSigset -> CInt -> IO CInt
 
@@ -700,7 +688,6 @@ foreign import capi unsafe "signal.h sigfillset"
 
 foreign import capi unsafe "signal.h sigismember"
   c_sigismember :: Ptr CSigset -> CInt -> IO CInt
-#endif
 
 foreign import ccall unsafe "sigpending"
   c_sigpending :: Ptr CSigset -> IO CInt
