@@ -30,8 +30,10 @@ module System.Posix.Directory.Common (
        changeWorkingDirectoryFd,
   ) where
 
+import Control.Exception (mask_)
+import Control.Monad (void, when)
 import System.Posix.Types
-import Foreign
+import Foreign hiding (void)
 import Foreign.C
 
 newtype DirStream = DirStream (Ptr CDir)
@@ -39,11 +41,30 @@ newtype DirStream = DirStream (Ptr CDir)
 data {-# CTYPE "DIR" #-} CDir
 data {-# CTYPE "struct dirent" #-} CDirent
 
--- | @unsafeOpenDirStreamFd fd@ calls @fdopendir@ to obtain a directory stream
---   for @fd@. @fd@ must not be otherwise used after this; see
---   <https://pubs.opengroup.org/onlinepubs/9699919799/functions/fdopendir.html POSIX>.
+-- | Call @fdopendir@ to obtain a directory stream for @fd@. @fd@ must not be
+-- otherwise used after this.
+--
+-- On success, it is owned by the returned 'DirStream', which should be closed
+-- via 'closeDirStream' when no longer needed.  On error, the file descriptor
+-- is automatically closed and then an exception is thrown.  There is no code
+-- path in which the file descriptor remains open and yet not owned by a
+-- returned 'DirStream'.
+--
+-- The input file descriptor must not have been used with @threadWaitRead@ or
+-- @threadWaitWrite@.
 unsafeOpenDirStreamFd :: Fd -> IO DirStream
-unsafeOpenDirStreamFd (Fd fd) = DirStream <$> throwErrnoIfNull "openDirStreamFd" (c_fdopendir fd)
+unsafeOpenDirStreamFd (Fd fd) = mask_ $ do
+    ptr <- c_fdopendir fd
+    when (ptr == nullPtr) $ do
+        errno <- getErrno
+        void $ c_close fd
+        ioError (errnoToIOError "openDirStreamFd" errno Nothing Nothing)
+    return $ DirStream ptr
+
+-- We need c_close here, because 'closeFd' throws exceptions on error,
+-- but we want to silently close the (presumably directory) descriptor.
+foreign import ccall unsafe "HsUnix.h close"
+   c_close :: CInt -> IO CInt
 
 -- NOTE: It is /critical/ to use "capi" and "dirent.h" here, because system
 -- headers on e.g. MacOS alias this function, and linking directly to the
