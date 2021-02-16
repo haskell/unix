@@ -1,6 +1,9 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
 ## 2.8.0.0 *UNRELEASED*
+  * Add openDirStreamFd, openFileAt and createFileAt
+
+  * Add accessors for st_blocks and st_blksize
 
   * Deal with FreeBSD getpwnam_r(3), ... thread safety.  On FreeBSD these
     are not in fact safe for overlapped execution with a sequence of
