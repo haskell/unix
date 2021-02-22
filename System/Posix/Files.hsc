@@ -104,6 +104,12 @@ import System.Posix.Internals
 
 import Data.Time.Clock.POSIX (POSIXTime)
 
+-- throwErrnoTwoPathsIfMinus1_
+--
+-- | For operations that require two paths (e.g., renaming a file)
+throwErrnoTwoPathsIfMinus1_ loc path1 path2 =
+  throwErrnoIfMinus1_ (loc ++ " '" ++ path1 ++ "' to '" ++ path2 ++ "'")
+
 -- -----------------------------------------------------------------------------
 -- chmod()
 
@@ -228,7 +234,7 @@ createLink :: FilePath -> FilePath -> IO ()
 createLink name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
-  throwErrnoIfMinus1_ ("createLink (target: "++name1++") (linkpath: "++name2++")") (c_link s1 s2)
+  throwErrnoTwoPathsIfMinus1_ "createLink" name1 name2 (c_link s1 s2)
 
 -- | @removeLink path@ removes the link named @path@.
 --
@@ -252,7 +258,7 @@ createSymbolicLink :: FilePath -> FilePath -> IO ()
 createSymbolicLink name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
-  throwErrnoIfMinus1_ ("createSymbolicLink (target: "++name1++") (linkpath: "++name2++")") (c_symlink s1 s2)
+  throwErrnoTwoPathsIfMinus1_ "createSymbolicLink" name1 name2 (c_symlink s1 s2)
 
 foreign import ccall unsafe "symlink"
   c_symlink :: CString -> CString -> IO CInt
@@ -290,7 +296,7 @@ rename :: FilePath -> FilePath -> IO ()
 rename name1 name2 =
   withFilePath name1 $ \s1 ->
   withFilePath name2 $ \s2 ->
-  throwErrnoIfMinus1_ ("rename "++name1++" to "++name2) (c_rename s1 s2)
+  throwErrnoTwoPathsIfMinus1_  "rename" name1 name2 (c_rename s1 s2)
 
 foreign import ccall unsafe "rename"
    c_rename :: CString -> CString -> IO CInt
