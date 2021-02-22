@@ -10,6 +10,7 @@ import System.Posix.Directory
 import System.Posix.IO
 import Control.Exception as E
 import Control.Monad
+import Test.Tasty.HUnit
 
 main = do
   cleanup
@@ -70,7 +71,7 @@ testLink = do
   createLink regular hlink_regular
   (fs, _)  <- getStatus regular -- we need to retrieve it again as creating the link causes it to change!
   (fs', ls)  <- getStatus hlink_regular
-  let expected = (
+  snd (statusElements ls) @?= (
                 False, -- isBlockDevice
                 False, -- isCharacterDevice
                 False, -- isNamedPipe
@@ -78,16 +79,8 @@ testLink = do
                 False, -- isDirectory
                 False, -- isSymbolicLink
                 False) -- isSocket
-      actualF  = snd (statusElements ls)
-
-  when (actualF /= expected) $
-    fail "unexpected file status bits for hard link to regular file"
-
-  when (linkCount fs' /= 2) $
-    fail "newly created hard link was expected to contain have a link count of 2"
-
-  when (statusElements fs /= statusElements fs') $
-    fail "status for a file does not match when it's accessed via a link"
+  linkCount fs' == 2 @? "Newly created hard link was expected to have a link count of 2"
+  statusElements fs @?= statusElements fs' -- status for a file should match when accessed via a link
 
 
 cleanup = do
