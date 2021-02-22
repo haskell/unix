@@ -16,12 +16,14 @@ main = do
   fs <- testRegular
   ds <- testDir
   testSymlink fs ds
+  testLink
   cleanup
 
-regular      = "regular"
-dir          = "dir"
-link_regular = "link-regular"
-link_dir     = "link-dir"
+regular       = "regular"
+dir           = "dir"
+slink_regular = "link-regular-symlink"
+hlink_regular = "link-regular-hardlink"
+link_dir      = "link-dir"
 
 testRegular = do
   _ <- createFile regular ownerReadMode
@@ -42,9 +44,9 @@ testDir = do
   return ds
 
 testSymlink fs ds = do
-  createSymbolicLink regular link_regular
+  createSymbolicLink regular slink_regular
   createSymbolicLink dir     link_dir
-  (fs', ls)  <- getStatus link_regular
+  (fs', ls)  <- getStatus slink_regular
   (ds', lds) <- getStatus link_dir
 
   let expected = (False,False,False,False,False,True,False)
@@ -63,10 +65,35 @@ testSymlink fs ds = do
   when (statusElements ds /= statusElements ds') $
     fail "status for a directory does not match when it's accessed via a symlink"
 
+
+testLink = do
+  createLink regular hlink_regular
+  (fs, _)  <- getStatus regular -- we need to retrieve it again as creating the link causes it to change!
+  (fs', ls)  <- getStatus hlink_regular
+  let expected = (
+                False, -- isBlockDevice
+                False, -- isCharacterDevice
+                False, -- isNamedPipe
+                True,  -- isRegularFile
+                False, -- isDirectory
+                False, -- isSymbolicLink
+                False) -- isSocket
+      actualF  = snd (statusElements ls)
+
+  when (actualF /= expected) $
+    fail "unexpected file status bits for hard link to regular file"
+
+  when (linkCount fs' /= 2) $
+    fail "newly created hard link was expected to contain have a link count of 2"
+
+  when (statusElements fs /= statusElements fs') $
+    fail "status for a file does not match when it's accessed via a link"
+
+
 cleanup = do
   ignoreIOExceptions $ removeDirectory dir
   mapM_ (ignoreIOExceptions . removeLink)
-        [regular, link_regular, link_dir]
+        [regular, hlink_regular, slink_regular, link_dir]
 
 ignoreIOExceptions io = io `E.catch`
                         ((\_ -> return ()) :: IOException -> IO ())
