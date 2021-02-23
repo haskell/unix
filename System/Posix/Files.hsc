@@ -102,13 +102,18 @@ import System.Posix.Files.Common
 import System.Posix.Error
 import System.Posix.Internals
 
+#if !MIN_VERSION_base(4, 11, 0)
+import Data.Monoid ((<>))
+#endif
+
 import Data.Time.Clock.POSIX (POSIXTime)
 
 -- throwErrnoTwoPathsIfMinus1_
 --
 -- | For operations that require two paths (e.g., renaming a file)
+throwErrnoTwoPathsIfMinus1_ :: (Eq a, Num a) => String -> FilePath -> FilePath -> IO a -> IO ()
 throwErrnoTwoPathsIfMinus1_ loc path1 path2 =
-  throwErrnoIfMinus1_ (loc ++ " '" ++ path1 ++ "' to '" ++ path2 ++ "'")
+  throwErrnoIfMinus1_ (loc <> " '" <> path1 <> "' to '" <> path2 <> "'")
 
 -- -----------------------------------------------------------------------------
 -- chmod()
