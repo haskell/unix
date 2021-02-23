@@ -9,18 +9,21 @@ module FileStatusByteString (main) where
 import System.Posix.ByteString
 import Control.Exception as E
 import Control.Monad
+import Test.Tasty.HUnit
 
 main = do
   cleanup
   fs <- testRegular
   ds <- testDir
   testSymlink fs ds
+  testLink
   cleanup
 
-regular      = "regular2"
-dir          = "dir2"
-link_regular = "link-regular2"
-link_dir     = "link-dir2"
+regular       = "regular2"
+dir           = "dir2"
+hlink_regular = "hlink-regular2"
+slink_regular = "slink-regular2"
+link_dir      = "link-dir2"
 
 testRegular = do
   _ <- createFile regular ownerReadMode
@@ -41,9 +44,9 @@ testDir = do
   return ds
 
 testSymlink fs ds = do
-  createSymbolicLink regular link_regular
+  createSymbolicLink regular slink_regular
   createSymbolicLink dir     link_dir
-  (fs', ls)  <- getStatus link_regular
+  (fs', ls)  <- getStatus slink_regular
   (ds', lds) <- getStatus link_dir
 
   let expected = (False,False,False,False,False,True,False)
@@ -62,10 +65,26 @@ testSymlink fs ds = do
   when (statusElements ds /= statusElements ds') $
     fail "status for a directory does not match when it's accessed via a symlink"
 
+testLink = do
+  createLink regular hlink_regular
+  (fs, _)  <- getStatus regular -- we need to retrieve it again as creating the link causes it to change!
+  (fs', ls)  <- getStatus hlink_regular
+  snd (statusElements ls) @?= (
+                False, -- isBlockDevice
+                False, -- isCharacterDevice
+                False, -- isNamedPipe
+                True,  -- isRegularFile
+                False, -- isDirectory
+                False, -- isSymbolicLink
+                False) -- isSocket
+  linkCount fs' == 2 @? "Newly created hard link was expected to have a link count of 2"
+  statusElements fs @?= statusElements fs' -- status for a file should match when accessed via a link
+
+
 cleanup = do
   ignoreIOExceptions $ removeDirectory dir
   mapM_ (ignoreIOExceptions . removeLink)
-        [regular, link_regular, link_dir]
+        [regular, hlink_regular, slink_regular, link_dir]
 
 ignoreIOExceptions io = io `E.catch`
                         ((\_ -> return ()) :: IOException -> IO ())
