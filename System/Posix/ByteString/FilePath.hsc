@@ -25,7 +25,8 @@ module System.Posix.ByteString.FilePath (
      throwErrnoPathIf_,
      throwErrnoPathIfNull,
      throwErrnoPathIfMinus1,
-     throwErrnoPathIfMinus1_
+     throwErrnoPathIfMinus1_,
+     throwErrnoTwoPathsIfMinus1_
   ) where
 
 import Foreign hiding ( void )
@@ -41,6 +42,9 @@ import Control.Monad
 import Data.ByteString
 import Data.ByteString.Char8 as BC
 import Prelude hiding (FilePath)
+#if !MIN_VERSION_base(4, 11, 0)
+import Data.Monoid ((<>))
+#endif
 
 -- | A literal POSIX file path
 type RawFilePath = ByteString
@@ -121,3 +125,9 @@ throwErrnoPathIfMinus1 = throwErrnoPathIf (== -1)
 --
 throwErrnoPathIfMinus1_ :: (Eq a, Num a) => String -> RawFilePath -> IO a -> IO ()
 throwErrnoPathIfMinus1_  = throwErrnoPathIf_ (== -1)
+
+-- | as 'throwErrnoTwoPathsIfMinus1_', but exceptions include two paths when appropriate.
+--
+throwErrnoTwoPathsIfMinus1_ :: (Eq a, Num a) => String -> RawFilePath -> RawFilePath -> IO a -> IO ()
+throwErrnoTwoPathsIfMinus1_  loc path1 path2 =
+    throwErrnoIfMinus1_ (loc <> " '" <> BC.unpack path1 <> "' to '" <> BC.unpack path2 <> "'")
