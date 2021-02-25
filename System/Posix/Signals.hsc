@@ -433,6 +433,8 @@ installHandler :: Signal
                -> IO Handler            -- ^ old handler
 
 #ifdef __PARALLEL_HASKELL__
+{-# WARNING installHandler "installHandler: not available for Parallel Haskell"
+ - #-}
 installHandler =
   error "installHandler: not available for Parallel Haskell"
 #else
