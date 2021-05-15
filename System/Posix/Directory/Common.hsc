@@ -17,7 +17,7 @@
 #include "HsUnix.h"
 
 module System.Posix.Directory.Common (
-       DirStream(..), CDir, CDirent, DirStreamOffset(..),
+       DirStream(..), DirEnt(..), CDir, CDirent, DirStreamOffset(..),
        unsafeOpenDirStreamFd,
        rewindDirStream,
        closeDirStream,
@@ -42,6 +42,8 @@ import GHC.IO.Exception ( unsupportedOperation )
 #endif
 
 newtype DirStream = DirStream (Ptr CDir)
+
+newtype DirEnt = DirEnt (Ptr CDirent)
 
 data {-# CTYPE "DIR" #-} CDir
 data {-# CTYPE "struct dirent" #-} CDirent

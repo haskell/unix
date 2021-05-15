@@ -29,9 +29,11 @@ module System.Posix.Directory (
 
    -- * Reading directories
    DirStream,
+   DirEnt(..),
    openDirStream,
    readDirStream,
    readDirStreamMaybe,
+   readDirStreamWith,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -95,10 +97,24 @@ readDirStream = fmap (fromMaybe "") . readDirStreamMaybe
 -- | @readDirStreamMaybe dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@. It returns the @d_name@ member of that
---  structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
---  the end of the directory stream was reached.
+--   structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
+--   the end of the directory stream was reached.
 readDirStreamMaybe :: DirStream -> IO (Maybe FilePath)
-readDirStreamMaybe (DirStream dirp) =
+readDirStreamMaybe = readDirStreamWith
+  (\(DirEnt dEnt) -> d_name dEnt >>= peekFilePath)
+
+-- | @readDirStreamWith f dp@ calls @readdir@ to obtain the next directory entry
+--   (@struct dirent@) for the open directory stream @dp@. If an entry is read,
+--   it passes the pointer to that structure to the provided function @f@ for
+--   processing. It returns the result of that function call wrapped in a @Just@
+--   if an entry was read and @Nothing@ if the end of the directory stream was
+--   reached.
+--
+--   __NOTE:__ The lifetime of the pointer wrapped in the `DirEnt` is limited to
+--   invocation of the callback and it will be freed automatically after. Do not
+--   pass it to the outside world!
+readDirStreamWith :: (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
+readDirStreamWith f (DirStream dirp) =
   alloca $ \ptr_dEnt  -> loop ptr_dEnt
  where
   loop ptr_dEnt = do
@@ -109,9 +125,9 @@ readDirStreamMaybe (DirStream dirp) =
                  if (dEnt == nullPtr)
                     then return Nothing
                     else do
-                     entry <- (d_name dEnt >>= peekFilePath)
+                     res <- f (DirEnt dEnt)
                      c_freeDirEnt dEnt
-                     return $ Just entry
+                     return (Just res)
          else do errno <- getErrno
                  if (errno == eINTR) then loop ptr_dEnt else do
                  let (Errno eo) = errno
