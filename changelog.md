@@ -37,6 +37,8 @@
     
   * Add `Read`, `Show`, `Eq`, and `Ord` typeclass instances to `OpenFileFlags` and `OpenMode`. (#75, #141)
 
+  * Derive `Read`, `Show`, `Eq`, and `Ord` typeclass instances for `BaudeRate`. (#191)
+
 ## 2.7.2.2  *May 2017*
 
   * Bundled with GHC 8.2.1
