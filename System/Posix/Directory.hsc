@@ -31,6 +31,7 @@ module System.Posix.Directory (
    DirStream,
    openDirStream,
    readDirStream,
+   readDirStreamMaybe,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -47,6 +48,7 @@ module System.Posix.Directory (
    changeWorkingDirectoryFd,
   ) where
 
+import Data.Maybe
 import System.IO.Error
 import System.Posix.Error
 import System.Posix.Types
@@ -84,8 +86,20 @@ foreign import capi unsafe "HsUnix.h opendir"
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@, and returns the @d_name@ member of that
 --  structure.
+--
+--  Note that this function returns an empty filepath if the end of the
+--  directory stream is reached. For a safer alternative use
+--  'readDirStreamMaybe'.
 readDirStream :: DirStream -> IO FilePath
-readDirStream (DirStream dirp) =
+readDirStream = fmap (fromMaybe "") . readDirStreamMaybe
+
+-- | @readDirStreamMaybe dp@ calls @readdir@ to obtain the
+--   next directory entry (@struct dirent@) for the open directory
+--   stream @dp@. It returns the @d_name@ member of that
+--  structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
+--  the end of the directory stream was reached.
+readDirStreamMaybe :: DirStream -> IO (Maybe FilePath)
+readDirStreamMaybe (DirStream dirp) =
   alloca $ \ptr_dEnt  -> loop ptr_dEnt
  where
   loop ptr_dEnt = do
@@ -94,16 +108,16 @@ readDirStream (DirStream dirp) =
     if (r == 0)
          then do dEnt <- peek ptr_dEnt
                  if (dEnt == nullPtr)
-                    then return []
+                    then return Nothing
                     else do
                      entry <- (d_name dEnt >>= peekFilePath)
                      c_freeDirEnt dEnt
-                     return entry
+                     return $ Just entry
          else do errno <- getErrno
                  if (errno == eINTR) then loop ptr_dEnt else do
                  let (Errno eo) = errno
                  if (eo == 0)
-                    then return []
+                    then return Nothing
                     else throwErrno "readDirStream"
 
 -- traversing directories
