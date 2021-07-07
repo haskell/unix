@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE NondecreasingIndentation #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE Trustworthy #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -32,6 +32,7 @@ module System.Posix.IO.Common (
     -- EAGAIN exceptions may occur for non-blocking IO!
 
     fdRead, fdWrite,
+    fdReadBytes, fdWriteBytes,
     fdReadBuf, fdWriteBuf,
 
     -- ** Seeking
@@ -60,6 +61,9 @@ module System.Posix.IO.Common (
 
   ) where
 
+import Data.ByteString.Char8 as BC
+import Data.ByteString.Internal as BI
+import Data.ByteString.Unsafe as BU
 import System.IO
 import System.IO.Error
 import System.Posix.Types
@@ -412,6 +416,20 @@ fdRead fd nbytes = do
        s <- peekCStringLen (castPtr buf, fromIntegral n)
        return (s, n)
 
+-- | Read data from an 'Fd'.
+-- Throws an exception if this is an invalid descriptor, or EOF has been
+-- reached.
+fdReadBytes :: Fd
+       -> ByteCount -- ^How many bytes to read
+       -> IO (ByteString, ByteCount) -- ^The bytes read, how many bytes were read.
+fdReadBytes _fd 0 = return (BC.empty, 0)
+fdReadBytes fd nbytes = do
+    BI.createUptoN' (fromIntegral nbytes) $ \ buf -> do
+    rc <- fdReadBuf fd buf nbytes
+    case rc of
+      0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
+      n -> return (fromIntegral n, n)
+
 -- | Read data from an 'Fd' into memory.  This is exactly equivalent
 -- to the POSIX @read@ function.
 fdReadBuf :: Fd
@@ -431,6 +449,12 @@ foreign import ccall safe "read"
 fdWrite :: Fd -> String -> IO ByteCount
 fdWrite fd str =
   withCStringLen str $ \ (buf,len) ->
+    fdWriteBuf fd (castPtr buf) (fromIntegral len)
+
+-- | Write a 'ByteString' to an 'Fd'.
+fdWriteBytes :: Fd -> ByteString -> IO ByteCount
+fdWriteBytes fd bs =
+  BU.unsafeUseAsCStringLen bs $ \ (buf,len) ->
     fdWriteBuf fd (castPtr buf) (fromIntegral len)
 
 -- | Write data from memory to an 'Fd'.  This is exactly equivalent

@@ -35,6 +35,7 @@ module System.Posix.IO (
     -- EAGAIN exceptions may occur for non-blocking IO!
 
     fdRead, fdWrite,
+    fdReadBytes, fdWriteBytes,
     fdReadBuf, fdWriteBuf,
 
     -- ** Seeking
