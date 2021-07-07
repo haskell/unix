@@ -40,17 +40,17 @@ data Resource
 #ifdef RLIMIT_AS
   | ResourceTotalMemory
 #endif
-  deriving Eq
+  deriving (Eq, Show)
 
 data ResourceLimits
   = ResourceLimits { softLimit, hardLimit :: ResourceLimit }
-  deriving Eq
+  deriving (Eq, Show)
 
 data ResourceLimit
   = ResourceLimitInfinity
   | ResourceLimitUnknown
   | ResourceLimit Integer
-  deriving Eq
+  deriving (Eq, Show)
 
 data {-# CTYPE "struct rlimit" #-} RLimit
 
