@@ -68,7 +68,7 @@ library
         buildable: False
 
     build-depends:
-        base        >= 4.10    && < 4.16,
+        base        >= 4.10    && < 4.17,
         bytestring  >= 0.9.2   && < 0.12,
         time        >= 1.2     && < 1.13
 
