@@ -81,7 +81,7 @@ data {-# CTYPE "struct group"  #-} CGroup
 --   setpwent(3) and closed via endpwent(3).  Only one thread at
 --   a time can safely iterate through the file.
 --
--- * On MacOS (through Catalina 10.15), there is no getpwent_r(3) or
+-- * On macOS (through Catalina 10.15), there is no getpwent_r(3) or
 --   getgrent_r(3), so a lock is also required for safe buffer sharing.
 --
 -- * On FreeBSD, in the default configuration with passwd lookups configured
@@ -95,7 +95,7 @@ data {-# CTYPE "struct group"  #-} CGroup
 --   and @*(nam|[ug]id)_r(3)@ functions in the /same/ thread.
 --
 -- * Despite rather similar manpages for getpwent(3) and getpwnam(3), ... as
---   on FreeBSD, the above issue is not seen on NetBSD or MacOS.
+--   on FreeBSD, the above issue is not seen on NetBSD or macOS.
 --
 --   This is not an issue with 1-to-1 thread models, where the code executing
 --   @get(pw|gr)ent@ has exclusive use of its thread, but it is a real issue
@@ -109,7 +109,7 @@ data {-# CTYPE "struct group"  #-} CGroup
 -- non-trivial.  In the threaded runtime, we can run these functions in a
 -- /bound thread/ (via 'forkOS'), thereby avoiding the FreeBSD issues.  We
 -- still need a lock to serialise multiple threads calling these functions
--- on at least MacOS for lack of @_r@ equivalents.  While on FreeBSD we could
+-- on at least macOS for lack of @_r@ equivalents.  While on FreeBSD we could
 -- use @getpwent_r(3)@ and @getgrent_r(3)@ in a bound thread without any
 -- locks, implementing this special case is likely not worthwhile.
 --

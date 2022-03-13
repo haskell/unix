@@ -44,7 +44,7 @@ import Foreign.C.String ( CString )
 -- |On some hosts (e.g. SuSe and Ubuntu Linux) @RTLD_NEXT@ (and
 -- @RTLD_DEFAULT@) are not visible without setting the macro
 -- @_GNU_SOURCE@. Since we don\'t want to define this macro, you can use
--- the function 'haveRtldNext' to check wether the flag `Next` is
+-- the function 'haveRtldNext' to check whether the flag `Next` is
 -- available. Ideally, this will be optimized by the compiler so that it
 -- should be as efficient as an @#ifdef@.
 --
