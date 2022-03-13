@@ -67,7 +67,7 @@ foreign import ccall unsafe "HsUnix.h close"
    c_close :: CInt -> IO CInt
 
 -- NOTE: It is /critical/ to use "capi" and "dirent.h" here, because system
--- headers on e.g. MacOS alias this function, and linking directly to the
+-- headers on e.g. macOS alias this function, and linking directly to the
 -- "fdopendir" symbol in libc leads to a crash!
 --
 foreign import capi unsafe "dirent.h fdopendir"
