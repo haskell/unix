@@ -101,6 +101,10 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
+#if !defined(HAVE_SIGNAL_H)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
 import System.IO.Unsafe (unsafePerformIO)
 import System.Posix.Types
 import System.Posix.Internals
@@ -114,8 +118,6 @@ import GHC.Conc hiding (Signal)
 
 #if !defined(HAVE_SIGNAL_H)
 import Control.Exception ( throw )
-import System.IO.Error ( ioeSetLocation )
-import GHC.IO.Exception ( unsupportedOperation )
 #endif
 
 -- -----------------------------------------------------------------------------

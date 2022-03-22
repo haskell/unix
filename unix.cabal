@@ -70,11 +70,13 @@ library
     build-depends:
         base        >= 4.10    && < 4.17,
         bytestring  >= 0.9.2   && < 0.12,
+        filepath    >= 1.4.100.0,
         time        >= 1.2     && < 1.13
 
     exposed-modules:
         System.Posix
         System.Posix.ByteString
+        System.Posix.PosixString
 
         System.Posix.Error
         System.Posix.Resource
@@ -87,11 +89,13 @@ library
         System.Posix.SharedMem
 
         System.Posix.ByteString.FilePath
+        System.Posix.PosixPath.FilePath
 
         System.Posix.Directory
         System.Posix.Directory.Internals
         System.Posix.Directory.Fd
         System.Posix.Directory.ByteString
+        System.Posix.Directory.PosixPath
 
         System.Posix.DynamicLinker.Module
         System.Posix.DynamicLinker.Module.ByteString
@@ -101,24 +105,30 @@ library
 
         System.Posix.Files
         System.Posix.Files.ByteString
+        System.Posix.Files.PosixString
 
         System.Posix.IO
         System.Posix.IO.ByteString
+        System.Posix.IO.PosixString
 
         System.Posix.Env
         System.Posix.Env.ByteString
+        System.Posix.Env.PosixString
 
         System.Posix.Fcntl
 
         System.Posix.Process
         System.Posix.Process.Internals
         System.Posix.Process.ByteString
+        System.Posix.Process.PosixString
 
         System.Posix.Temp
         System.Posix.Temp.ByteString
+        System.Posix.Temp.PosixString
 
         System.Posix.Terminal
         System.Posix.Terminal.ByteString
+        System.Posix.Terminal.PosixString
 
     other-modules:
         System.Posix.Directory.Common

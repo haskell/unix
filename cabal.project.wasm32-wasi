@@ -5,4 +5,4 @@ package unix
 
 write-ghc-environment-files: always
 
-allow-newer: all:base
+allow-newer: all:base, all:filepath

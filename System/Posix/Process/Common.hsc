@@ -82,9 +82,10 @@ import Control.Monad
 
 import Control.Exception.Base ( bracket, getMaskingState, MaskingState(..) ) -- used by forkProcess
 import GHC.TopHandler   ( runIO )
-import GHC.IO ( unsafeUnmask, uninterruptibleMask_, unsafePerformIO )
 
-#if !defined(HAVE_GETPID)
+#if defined(HAVE_GETPID)
+import GHC.IO ( unsafeUnmask, uninterruptibleMask_  )
+#else
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
