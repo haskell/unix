@@ -1,5 +1,5 @@
-AC_PREREQ([2.60])
-AC_INIT([Haskell unix package], [2.0], [libraries@haskell.org], [unix])
+AC_PREREQ([2.71])
+AC_INIT([Haskell unix package],[2.0],[libraries@haskell.org],[unix])
 
 # Safety check: Ensure that we are in the correct source directory.
 AC_CONFIG_SRCDIR([include/HsUnix.h])
