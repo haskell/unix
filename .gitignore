@@ -5,6 +5,7 @@ autom4te.cache/
 cabal.project.local
 cabal.sandbox.config
 config.log
+config.sub
 config.status
 configure
 dist/
