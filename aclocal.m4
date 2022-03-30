@@ -8,7 +8,7 @@
 # is supported in autoconf versions 2.50 up to the actual 2.57, so there is
 # little risk.
 AC_DEFUN([FP_COMPUTE_INT],
-[_AC_COMPUTE_INT([$1], [$2], [$3], [$4])[]dnl
+[AC_COMPUTE_INT([$2],[$1],[$3],[$4])[]dnl
 ])# FP_COMPUTE_INT
 
 
@@ -31,8 +31,7 @@ AS_VAR_POPDEF([fp_Cache])[]dnl
 # ---------------------------------------
 # autoheader helper for FP_CHECK_CONSTS
 m4_define([FP_CHECK_CONSTS_TEMPLATE],
-[AC_FOREACH([fp_Const], [$1],
-  [AH_TEMPLATE(AS_TR_CPP(CONST_[]fp_Const),
+[m4_foreach_w([fp_Const],[$1],[AH_TEMPLATE(AS_TR_CPP(CONST_[]fp_Const),
                [The value of ]fp_Const[.])])[]dnl
 ])# FP_CHECK_CONSTS_TEMPLATE
 
