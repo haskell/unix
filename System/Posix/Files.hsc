@@ -48,7 +48,7 @@ module System.Posix.Files (
     fileAccess, fileExist,
 
     -- * File status
-    FileStatus,
+    FileStatus(..),
     -- ** Obtaining file status
     getFileStatus, getFdStatus, getSymbolicLinkStatus,
     -- ** Querying file status
