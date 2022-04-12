@@ -239,7 +239,7 @@ setFileCreationMask mask = c_umask mask
 --
 -- - HFS+ volumes on OS X only support whole-second times.
 --
-newtype FileStatus = FileStatus (ForeignPtr CStat)
+newtype FileStatus = FileStatus (ForeignPtr CStat) -- ^ The constructor is considered internal and may change.
 
 -- | ID of the device on which this file resides.
 deviceID         :: FileStatus -> DeviceID
