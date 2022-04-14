@@ -1,0 +1,9 @@
+freebsd_instance:
+  image_family: freebsd-13-0
+
+task:
+  install_script: pkg install -y ghc hs-cabal-install git autoconf
+  script:
+    - cabal update
+    - autoreconf -i
+    - cabal test --test-show-details=direct
