@@ -87,16 +87,11 @@ fileAdvise _ _ _ _ = return ()
 -- @since 2.7.1.0
 fileAllocate :: Fd -> FileOffset -> FileOffset -> IO ()
 #if HAVE_POSIX_FALLOCATE
-#if defined(freebsd_HOST_OS)
-fileAllocate fd off len = do
-  throwErrnoIfMinus1_ "fileAllocate" (c_posix_fallocate (fromIntegral fd) (fromIntegral off) (fromIntegral len))
-#else
 fileAllocate fd off len = do
   ret <- c_posix_fallocate (fromIntegral fd) (fromIntegral off) (fromIntegral len)
   if ret == 0
     then pure ()
     else ioError (errnoToIOError "fileAllocate" (Errno ret) Nothing Nothing)
-#endif
 
 foreign import capi safe "fcntl.h posix_fallocate"
   c_posix_fallocate :: CInt -> COff -> COff -> IO CInt
