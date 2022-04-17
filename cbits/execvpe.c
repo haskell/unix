@@ -3,7 +3,7 @@
 
    Our low-level exec() variant.
 
-   Note: __hsunix_execvpe() is very similiar to the function
+   Note: __hsunix_execvpe() is very similar to the function
          execvpe(3) as provided by glibc 2.11 and later. However, if
          execvpe(3) is available, we use that instead.
 

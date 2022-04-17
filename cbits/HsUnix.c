@@ -33,7 +33,7 @@ int __hsunix_push_module(int fd, const char *module)
  * Eventually we want to drop `readder_r` all together, but want to be
  * compatible with older unixen which may not have a re-entrant `readdir`.
  * Solution is to make systems with *known* re-entrant `readir` use that and use
- * `readdir_r` whereever we have it and don't *know* that `readdir` is
+ * `readdir_r` wherever we have it and don't *know* that `readdir` is
  * re-entrant.
  */
 
