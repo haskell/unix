@@ -171,7 +171,7 @@ posix002 :: TestTree
 posix002 = testCase "posix002" $ do
   actual <- captureStdout $
     executeFile "printenv" True [] (Just [("ONE","1"),("TWO","2")])
-  actual @?= "ONE=1\nTWO=2\n"
+  sort (lines actual) @?= ["ONE=1", "TWO=2"]
 
 posix005 :: TestTree
 posix005 = testCase "posix005" $ do
