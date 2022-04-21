@@ -71,6 +71,9 @@ __hsunix_execvpe(const char *name, char *const argv[], char *const envp[])
 {
 #if HAVE_EXECVPE
     return execvpe(name, argv, envp);
+#elif !defined(HAVE_EXECV)
+    errno = ENOSYS;
+    return (-1);
 #else
     register int lp, ln;
     register char *p;

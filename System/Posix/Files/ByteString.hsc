@@ -109,6 +109,11 @@ import System.Posix.ByteString.FilePath
 
 import Data.Time.Clock.POSIX (POSIXTime)
 
+#if !defined(HAVE_MKNOD)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- -----------------------------------------------------------------------------
 -- chmod()
 
@@ -207,6 +212,14 @@ createNamedPipe name mode = do
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "createNamedPipe" name (c_mkfifo s mode)
 
+#if !defined(HAVE_MKNOD)
+
+{-# WARNING createDevice "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_MKNOD@)" #-}
+createDevice :: RawFilePath -> FileMode -> DeviceID -> IO ()
+createDevice _ _ _ = ioError (ioeSetLocation unsupportedOperation "createDevice")
+
+#else
+
 -- | @createDevice path mode dev@ creates either a regular or a special file
 -- depending on the value of @mode@ (and @dev@).  @mode@ will normally be either
 -- 'blockSpecialMode' or 'characterSpecialMode'.  May fail with
@@ -222,6 +235,8 @@ createDevice path mode dev =
 
 foreign import capi unsafe "HsUnix.h mknod"
   c_mknod :: CString -> CMode -> CDev -> IO CInt
+
+#endif // HAVE_MKNOD
 
 -- -----------------------------------------------------------------------------
 -- Hard links

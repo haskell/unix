@@ -75,7 +75,21 @@ import qualified GHC.IO.Handle.FD as FD
 import GHC.IO.Exception
 import Data.Typeable (cast)
 
+#if !defined(HAVE_PIPE)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 #include "HsUnix.h"
+
+#if !defined(HAVE_PIPE)
+
+createPipe :: IO (Fd, Fd)
+{-# WARNING createPipe
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PIPE@)" #-}
+createPipe = ioError (ioeSetLocation unsupportedOperation "createPipe")
+
+#else
 
 -- -----------------------------------------------------------------------------
 -- Pipes
@@ -97,6 +111,22 @@ createPipe =
 foreign import ccall unsafe "pipe"
    c_pipe :: Ptr CInt -> IO CInt
 
+#endif // HAVE_PIPE
+
+#if !defined(HAVE_DUP)
+
+dup :: Fd -> IO Fd
+{-# WARNING dup
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DUP@)" #-}
+dup _ = ioError (ioeSetLocation unsupportedOperation "dup")
+
+dupTo :: Fd -> Fd -> IO Fd
+{-# WARNING dupTo
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DUP@)" #-}
+dupTo _ _ = ioError (ioeSetLocation unsupportedOperation "dupTo")
+
+#else
+
 -- -----------------------------------------------------------------------------
 -- Duplicating file descriptors
 
@@ -115,6 +145,8 @@ foreign import ccall unsafe "dup"
 
 foreign import ccall unsafe "dup2"
    c_dup2 :: CInt -> CInt -> IO CInt
+
+#endif // HAVE_DUP
 
 -- -----------------------------------------------------------------------------
 -- Opening and closing files
@@ -334,6 +366,25 @@ data LockRequest = ReadLock
 
 type FileLock = (LockRequest, SeekMode, FileOffset, FileOffset)
 
+#if !defined(HAVE_F_GETLK)
+
+getLock :: Fd -> FileLock -> IO (Maybe (ProcessID, FileLock))
+{-# WARNING getLock
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_F_GETLK@)" #-}
+getLock _ _ = ioError (ioeSetLocation unsupportedOperation "getLock")
+
+setLock :: Fd -> FileLock -> IO ()
+{-# WARNING setLock
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_F_GETLK@)" #-}
+setLock _ _ = ioError (ioeSetLocation unsupportedOperation "setLock")
+
+waitToSetLock :: Fd -> FileLock -> IO ()
+{-# WARNING waitToSetLock
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_F_GETLK@)" #-}
+waitToSetLock _ _ = ioError (ioeSetLocation unsupportedOperation "waitToSetLock")
+
+#else
+
 -- | May throw an exception if this is an invalid descriptor.
 getLock :: Fd -> FileLock -> IO (Maybe (ProcessID, FileLock))
 getLock (Fd fd) lock =
@@ -392,6 +443,8 @@ waitToSetLock (Fd fd) lock = do
   allocaLock lock $ \p_flock ->
     throwErrnoIfMinus1_ "waitToSetLock"
         (Base.c_fcntl_lock fd (#const F_SETLKW) p_flock)
+
+#endif // HAVE_F_GETLK
 
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}

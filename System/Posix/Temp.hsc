@@ -30,6 +30,19 @@ import System.Posix.IO
 import System.Posix.Types
 import System.Posix.Internals (withFilePath, peekFilePath)
 
+#if !defined(HAVE_MKSTEMP)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
+#if !defined(HAVE_MKSTEMP)
+
+{-# WARNING mkstemp "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_MKSTEMP@)" #-}
+mkstemp :: String -> IO (FilePath, Handle)
+mkstemp _ = ioError (ioeSetLocation unsupportedOperation "mkstemp")
+
+#else
+
 foreign import capi unsafe "HsUnix.h mkstemp"
   c_mkstemp :: CString -> IO CInt
 
@@ -48,6 +61,8 @@ mkstemp template' = do
     name <- peekFilePath ptr
     h <- fdToHandle (Fd fd)
     return (name, h)
+
+#endif // HAVE_MKSTEMP
 
 #if HAVE_MKSTEMPS
 foreign import capi unsafe "HsUnix.h mkstemps"
@@ -100,7 +115,7 @@ mkdtemp template' = do
     return name
 #else
   name <- mktemp template
-  h <- createDirectory name (toEnum 0o700)
+  _ <- createDirectory name (toEnum 0o700)
   return name
 #endif
 
@@ -115,7 +130,6 @@ foreign import ccall unsafe "mktemp"
 mktemp :: String -> IO String
 mktemp template = do
   withFilePath template $ \ ptr -> do
-    ptr <- throwErrnoIfNull "mktemp" (c_mktemp ptr)
-    peekFilePath ptr
+    ptr' <- throwErrnoIfNull "mktemp" (c_mktemp ptr)
+    peekFilePath ptr'
 #endif
-

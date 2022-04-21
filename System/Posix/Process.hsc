@@ -72,6 +72,11 @@ import System.Posix.Process.Internals
 import System.Posix.Process.Common
 import System.Posix.Internals ( withFilePath )
 
+#if !defined(HAVE_EXECV)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- | @'executeFile' cmd args env@ calls one of the
 --   @execv*@ family, depending on whether or not the current
 --   PATH is to be searched for the command, and whether or not an
@@ -85,6 +90,14 @@ executeFile :: FilePath                     -- ^ Command
             -> [String]                     -- ^ Arguments
             -> Maybe [(String, String)]     -- ^ Environment
             -> IO a
+#if !defined(HAVE_EXECV)
+
+{-# WARNING executeFile
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_EXECV@)" #-}
+executeFile _ _ _ _ = ioError (ioeSetLocation unsupportedOperation "executeFile")
+
+#else
+
 executeFile path search args Nothing = do
   withFilePath path $ \s ->
     withMany withFilePath (path:args) $ \cstrs ->
@@ -119,3 +132,4 @@ foreign import ccall unsafe "execv"
 foreign import ccall unsafe "execve"
   c_execve :: CString -> Ptr CString -> Ptr CString -> IO CInt
 
+#endif // HAVE_EXECV

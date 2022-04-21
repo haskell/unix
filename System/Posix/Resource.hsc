@@ -27,6 +27,11 @@ import System.Posix.Types
 import Foreign
 import Foreign.C
 
+#if !defined(HAVE_STRUCT_RLIMIT)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- -----------------------------------------------------------------------------
 -- Resource limits
 
@@ -51,6 +56,20 @@ data ResourceLimit
   | ResourceLimitUnknown
   | ResourceLimit Integer
   deriving (Eq, Show)
+
+#if !defined(HAVE_STRUCT_RLIMIT)
+
+getResourceLimit :: Resource -> IO ResourceLimits
+{-# WARNING getResourceLimit
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_STRUCT_RLIMIT@)" #-}
+getResourceLimit _ = ioError (ioeSetLocation unsupportedOperation "getResourceLimit")
+
+setResourceLimit :: Resource -> ResourceLimits -> IO ()
+{-# WARNING setResourceLimit
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_STRUCT_RLIMIT@)" #-}
+setResourceLimit _ _ = ioError (ioeSetLocation unsupportedOperation "setResourceLimit")
+
+#else
 
 data {-# CTYPE "struct rlimit" #-} RLimit
 
@@ -160,3 +179,5 @@ showRLim ResourceLimitInfinity = "infinity"
 showRLim ResourceLimitUnknown  = "unknown"
 showRLim (ResourceLimit other)  = show other
 -}
+
+#endif // HAVE_STRUCT_RLIMIT

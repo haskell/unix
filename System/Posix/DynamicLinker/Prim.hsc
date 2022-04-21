@@ -1,4 +1,5 @@
 {-# LANGUAGE Trustworthy #-}
+{-# OPTIONS_GHC -Wno-trustworthy-safe #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -40,6 +41,11 @@ import Foreign.Ptr      ( Ptr, FunPtr, nullPtr )
 import Foreign.C.Types
 import Foreign.C.String ( CString )
 
+#if !defined(HAVE_DLFCN_H)
+import Control.Exception ( throw )
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
 
 -- |On some hosts (e.g. SuSe and Ubuntu Linux) @RTLD_NEXT@ (and
 -- @RTLD_DEFAULT@) are not visible without setting the macro
@@ -87,11 +93,20 @@ packRTLDFlags :: [RTLDFlags] -> CInt
 packRTLDFlags flags = foldl (\ s f -> (packRTLDFlag f) .|. s) 0 flags
 
 packRTLDFlag :: RTLDFlags -> CInt
+#if defined(HAVE_DLFCN_H)
+
 packRTLDFlag RTLD_LAZY = #const RTLD_LAZY
 packRTLDFlag RTLD_NOW = #const RTLD_NOW
 packRTLDFlag RTLD_GLOBAL = #const RTLD_GLOBAL
 packRTLDFlag RTLD_LOCAL = #const RTLD_LOCAL
 
+#else
+
+{-# WARNING packRTLDFlag
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DLFCN_H@)" #-}
+packRTLDFlag _ = throw (ioeSetLocation unsupportedOperation "packRTLDFlag")
+
+#endif // HAVE_DLFCN_H
 
 -- |Flags for 'System.Posix.DynamicLinker.dlsym'. Notice that 'Next'
 -- might not be available on your particular platform! Use

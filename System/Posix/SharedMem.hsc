@@ -20,7 +20,9 @@ module System.Posix.SharedMem
 #include "HsUnix.h"
 
 #include <sys/types.h>
+#if defined(HAVE_SHM_OPEN) || defined(HAVE_SHM_UNLINK)
 #include <sys/mman.h>
+#endif
 #include <fcntl.h>
 
 import System.Posix.Types
