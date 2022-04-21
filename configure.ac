@@ -34,6 +34,31 @@ AC_CHECK_FUNCS([ptsname])
 AC_CHECK_FUNCS([setitimer])
 AC_CHECK_FUNCS([readdir_r])
 
+AC_CHECK_FUNCS([alarm])
+AC_CHECK_FUNCS([dup])
+AC_CHECK_FUNCS([execv])
+AC_CHECK_FUNCS([getpid])
+AC_CHECK_FUNCS([mknod])
+AC_CHECK_FUNCS([mkstemp])
+AC_CHECK_FUNCS([pipe])
+AC_CHECK_FUNCS([times])
+
+AC_CHECK_TYPE([struct rlimit],[AC_DEFINE([HAVE_STRUCT_RLIMIT],[1],[HAVE_STRUCT_RLIMIT])],[],[#include <sys/resource.h>])
+
+AC_MSG_CHECKING(for F_GETLK from fcntl.h)
+AC_EGREP_CPP(yes,
+[
+ #include <fcntl.h>
+ #ifdef F_GETLK
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_F_GETLK], [1], [Define to 1 if F_GETLK is available.])
+], [
+  AC_MSG_RESULT(no)
+  ])
+
 dnl not available on android so check for it
 AC_CANONICAL_TARGET
 AS_CASE([$target_os],[*-android*],[],[AC_CHECK_FUNCS([telldir seekdir])])
@@ -180,7 +205,7 @@ AC_EGREP_CPP(yes,
   AC_DEFINE([HAVE_RTLDNEXT], [1], [Define to 1 if we can see RTLD_NEXT in dlfcn.h.])
 ], [
   AC_MSG_RESULT(no)
-  ])    
+  ])
 
 AC_MSG_CHECKING(for RTLD_DEFAULT from dlfcn.h)
 AC_EGREP_CPP(yes,
@@ -194,7 +219,7 @@ AC_EGREP_CPP(yes,
   AC_DEFINE([HAVE_RTLDDEFAULT], [1], [Define to 1 if RTLD_DEFAULT is available.])
 ], [
   AC_MSG_RESULT(no)
-  ])    
+  ])
 
 AC_CHECK_FUNCS(openpty,,
    AC_CHECK_LIB(util,openpty,

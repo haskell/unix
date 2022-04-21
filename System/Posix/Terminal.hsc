@@ -80,7 +80,7 @@ import System.Posix.IO
 
 import System.Posix.Internals (peekFilePath)
 
-#if !HAVE_CTERMID
+#if !(HAVE_CTERMID && defined(HAVE_TERMIOS_H))
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
@@ -107,7 +107,7 @@ foreign import ccall unsafe "ttyname"
 -- provide @ctermid(3)@ (use @#if HAVE_CTERMID@ CPP guard to
 -- detect availability).
 getControllingTerminalName :: IO FilePath
-#if HAVE_CTERMID
+#if HAVE_CTERMID && defined(HAVE_TERMIOS_H)
 getControllingTerminalName = do
   s <- throwErrnoIfNull "getControllingTerminalName" (c_ctermid nullPtr)
   peekFilePath s
@@ -161,12 +161,12 @@ foreign import ccall unsafe "openpty"
             -> IO CInt
 #else
 openPseudoTerminal = do
-  (Fd master) <- openFd "/dev/ptmx" ReadWrite Nothing
+  (Fd master) <- openFd "/dev/ptmx" ReadWrite
                         defaultFileFlags{noctty=True}
   throwErrnoIfMinus1_ "openPseudoTerminal" (c_grantpt master)
   throwErrnoIfMinus1_ "openPseudoTerminal" (c_unlockpt master)
   slaveName <- getSlaveTerminalName (Fd master)
-  slave <- openFd slaveName ReadWrite Nothing defaultFileFlags{noctty=True}
+  slave <- openFd slaveName ReadWrite defaultFileFlags{noctty=True}
   pushModule slave "ptem"
   pushModule slave "ldterm"
 # ifndef __hpux
@@ -196,10 +196,9 @@ foreign import capi unsafe "HsUnix.h unlockpt"
   c_unlockpt :: CInt -> IO CInt
 #else
 c_grantpt :: CInt -> IO CInt
-c_grantpt _ = return (fromIntegral 0)
+c_grantpt _ = pure 0
 
 c_unlockpt :: CInt -> IO CInt
-c_unlockpt _ = return (fromIntegral 0)
+c_unlockpt _ = pure 0
 #endif /* HAVE_PTSNAME */
 #endif /* !HAVE_OPENPTY */
-

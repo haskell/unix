@@ -161,10 +161,13 @@ import System.IO.Unsafe ( unsafePerformIO )
 import System.Posix.Types
 import System.Posix.Internals ( CTermios )
 
-#if !HAVE_TCDRAIN
+#if (!defined(HAVE_TCDRAIN)) || (!defined(HAVE_TERMIOS_H))
+import Control.Exception ( throw )
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
+
+#if defined(HAVE_TERMIOS_H)
 
 -- -----------------------------------------------------------------------------
 -- Terminal attributes
@@ -176,6 +179,12 @@ makeTerminalAttributes = TerminalAttributes
 
 withTerminalAttributes :: TerminalAttributes -> (Ptr CTermios -> IO a) -> IO a
 withTerminalAttributes (TerminalAttributes termios) = withForeignPtr termios
+
+#else
+
+data TerminalAttributes
+
+#endif // HAVE_TERMIOS_H
 
 
 data TerminalMode
@@ -232,6 +241,35 @@ data TerminalMode
    | KeyboardInterrupts         -- ^ @ISIG@ - Enable signals
    | NoFlushOnInterrupt         -- ^ @NOFLSH@ - Disable flush after interrupt or quit
    | BackgroundWriteInterrupt   -- ^ @TOSTOP@ - Send @SIGTTOU@ for background output
+
+#if !defined(HAVE_TERMIOS_H)
+
+withoutMode :: TerminalAttributes -> TerminalMode -> TerminalAttributes
+{-# WARNING withoutMode
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withoutMode _ _ = throw (ioeSetLocation unsupportedOperation "withoutMode")
+
+withMode :: TerminalAttributes -> TerminalMode -> TerminalAttributes
+{-# WARNING withMode
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withMode _ _ = throw (ioeSetLocation unsupportedOperation "withMode")
+
+terminalMode :: TerminalMode -> TerminalAttributes -> Bool
+{-# WARNING terminalMode
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+terminalMode _ _ = throw (ioeSetLocation unsupportedOperation "terminalMode")
+
+bitsPerByte :: TerminalAttributes -> Int
+{-# WARNING bitsPerByte
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+bitsPerByte _ = throw (ioeSetLocation unsupportedOperation "bitsPerByte")
+
+withBits :: TerminalAttributes -> Int -> TerminalAttributes
+{-# WARNING withBits
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withBits _ _ = throw (ioeSetLocation unsupportedOperation "withBits")
+
+#else
 
 withoutMode :: TerminalAttributes -> TerminalMode -> TerminalAttributes
 withoutMode termios InterruptOnBreak = clearInputFlag (#const BRKINT) termios
@@ -369,6 +407,8 @@ withBits termios bits = unsafePerformIO $ do
     mask 8 = (#const CS8)
     mask _ = error "withBits bit value out of range [5..8]"
 
+#endif // HAVE_TERMIOS_H
+
 data ControlCharacter
   = EndOfFile           -- VEOF
   | EndOfLine           -- VEOL
@@ -379,6 +419,101 @@ data ControlCharacter
   | Start               -- VSTART
   | Stop                -- VSTOP
   | Suspend             -- VSUSP
+
+#if !defined(HAVE_TERMIOS_H)
+
+controlChar :: TerminalAttributes -> ControlCharacter -> Maybe Char
+{-# WARNING controlChar
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+controlChar _ _ = throw (ioeSetLocation unsupportedOperation "controlChar")
+
+withCC :: TerminalAttributes
+       -> (ControlCharacter, Char)
+       -> TerminalAttributes
+{-# WARNING withCC
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withCC _ _ = throw (ioeSetLocation unsupportedOperation "withCC")
+
+withoutCC :: TerminalAttributes
+          -> ControlCharacter
+          -> TerminalAttributes
+{-# WARNING withoutCC
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withoutCC _ _ = throw (ioeSetLocation unsupportedOperation "withoutCC")
+
+inputTime :: TerminalAttributes -> Int
+{-# WARNING inputTime
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+inputTime _ = throw (ioeSetLocation unsupportedOperation "inputTime")
+
+withTime :: TerminalAttributes -> Int -> TerminalAttributes
+{-# WARNING withTime
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withTime _ _ = throw (ioeSetLocation unsupportedOperation "withTime")
+
+minInput :: TerminalAttributes -> Int
+{-# WARNING minInput
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+minInput _ = throw (ioeSetLocation unsupportedOperation "minInput")
+
+withMinInput :: TerminalAttributes -> Int -> TerminalAttributes
+{-# WARNING withMinInput
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withMinInput _ _ = throw (ioeSetLocation unsupportedOperation "withMinInput")
+
+-- | Placeholder implementation
+newtype BaudRate = BaudRate Int deriving (Eq, Ord, Show, Enum, Real, Num)
+
+-- | Hang up
+pattern B0 :: BaudRate
+pattern B0 = BaudRate 0
+-- | 50 baud
+pattern B50 :: BaudRate
+pattern B50 = BaudRate 50
+-- | 75 baud
+pattern B75 :: BaudRate
+pattern B75 = BaudRate 75
+-- | 110 baud
+pattern B110 :: BaudRate
+pattern B110 = BaudRate 110
+-- | 134.5 baud
+pattern B134 :: BaudRate
+pattern B134 = BaudRate 134
+-- | 150 baud
+pattern B150 :: BaudRate
+pattern B150 = BaudRate 150
+-- | 200 baud
+pattern B200 :: BaudRate
+pattern B200 = BaudRate 200
+-- | 300 baud
+pattern B300 :: BaudRate
+pattern B300 = BaudRate 300
+-- | 600 baud
+pattern B600 :: BaudRate
+pattern B600 = BaudRate 600
+-- | 1200 baud
+pattern B1200 :: BaudRate
+pattern B1200 = BaudRate 1200
+-- | 1800 baud
+pattern B1800 :: BaudRate
+pattern B1800 = BaudRate 1800
+-- | 2400 baud
+pattern B2400 :: BaudRate
+pattern B2400 = BaudRate 2400
+-- | 4800 baud
+pattern B4800 :: BaudRate
+pattern B4800 = BaudRate 4800
+-- | 9600 baud
+pattern B9600 :: BaudRate
+pattern B9600 = BaudRate 9600
+-- | 19200 baud
+pattern B19200 :: BaudRate
+pattern B19200 = BaudRate 19200
+-- | 38400 baud
+pattern B38400 :: BaudRate
+pattern B38400 = BaudRate 38400
+
+#else
 
 controlChar :: TerminalAttributes -> ControlCharacter -> Maybe Char
 controlChar termios cc = unsafePerformIO $ do
@@ -589,6 +724,37 @@ pattern B4000000 :: BaudRate
 pattern B4000000 = BaudRate (#const B4000000)
 #endif
 
+#endif // HAVE_TERMIOS_H
+
+#if !defined(HAVE_TERMIOS_H)
+
+inputSpeed :: TerminalAttributes -> BaudRate
+{-# WARNING inputSpeed
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+inputSpeed _ = throw (ioeSetLocation unsupportedOperation "inputSpeed")
+
+withInputSpeed :: TerminalAttributes -> BaudRate -> TerminalAttributes
+{-# WARNING withInputSpeed
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withInputSpeed _ _ = throw (ioeSetLocation unsupportedOperation "withInputSpeed")
+
+outputSpeed :: TerminalAttributes -> BaudRate
+{-# WARNING outputSpeed
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+outputSpeed _ = throw (ioeSetLocation unsupportedOperation "outputSpeed")
+
+withOutputSpeed :: TerminalAttributes -> BaudRate -> TerminalAttributes
+{-# WARNING withOutputSpeed
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+withOutputSpeed _ _ = throw (ioeSetLocation unsupportedOperation "withOutputSpeed")
+
+getTerminalAttributes :: Fd -> IO TerminalAttributes
+{-# WARNING getTerminalAttributes
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+getTerminalAttributes _ = ioError (ioeSetLocation unsupportedOperation "getTerminalAttributes")
+
+#else
+
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do
   withTerminalAttributes termios $ \p -> do
@@ -634,10 +800,34 @@ getTerminalAttributes (Fd fd) = do
 foreign import capi unsafe "termios.h tcgetattr"
   c_tcgetattr :: CInt -> Ptr CTermios -> IO CInt
 
+#endif // HAVE_TERMIOS_H
+
 data TerminalState
   = Immediately
   | WhenDrained
   | WhenFlushed
+
+#if !defined(HAVE_TERMIOS_H)
+
+setTerminalAttributes :: Fd
+                      -> TerminalAttributes
+                      -> TerminalState
+                      -> IO ()
+{-# WARNING setTerminalAttributes
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+setTerminalAttributes _ _ _ = ioError (ioeSetLocation unsupportedOperation "setTerminalAttributes")
+
+sendBreak :: Fd -> Int -> IO ()
+{-# WARNING sendBreak
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+sendBreak _ _ = ioError (ioeSetLocation unsupportedOperation "sendBreak")
+
+drainOutput :: Fd -> IO ()
+{-# WARNING drainOutput
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+drainOutput _ = ioError (ioeSetLocation unsupportedOperation "drainOutput")
+
+#else
 
 -- | @setTerminalAttributes fd attr ts@ calls @tcsetattr@ to change
 --   the @TerminalAttributes@ associated with @Fd@ @fd@ to
@@ -687,10 +877,21 @@ foreign import capi safe "termios.h tcdrain"
 drainOutput _ = ioError (ioeSetLocation unsupportedOperation "drainOutput")
 #endif
 
+#endif // HAVE_TERMIOS_H
+
 data QueueSelector
   = InputQueue          -- TCIFLUSH
   | OutputQueue         -- TCOFLUSH
   | BothQueues          -- TCIOFLUSH
+
+#if !defined(HAVE_TERMIOS_H)
+
+discardData :: Fd -> QueueSelector -> IO ()
+{-# WARNING discardData
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+discardData _ _ = ioError (ioeSetLocation unsupportedOperation "discardData")
+
+#else
 
 -- | @discardData fd queues@ calls @tcflush@ to discard
 --   pending input and\/or output for @Fd@ @fd@,
@@ -707,11 +908,32 @@ discardData (Fd fd) queue =
 foreign import capi unsafe "termios.h tcflush"
   c_tcflush :: CInt -> CInt -> IO CInt
 
+#endif // HAVE_TERMIOS_H
+
 data FlowAction
   = SuspendOutput       -- ^ TCOOFF
   | RestartOutput       -- ^ TCOON
   | TransmitStop        -- ^ TCIOFF
   | TransmitStart       -- ^ TCION
+
+#if !defined(HAVE_TERMIOS_H)
+
+controlFlow :: Fd -> FlowAction -> IO ()
+{-# WARNING controlFlow
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+controlFlow _ _ = ioError (ioeSetLocation unsupportedOperation "controlFlow")
+
+getTerminalProcessGroupID :: Fd -> IO ProcessGroupID
+{-# WARNING getTerminalProcessGroupID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+getTerminalProcessGroupID _ = ioError (ioeSetLocation unsupportedOperation "getTerminalProcessGroupID")
+
+setTerminalProcessGroupID :: Fd -> ProcessGroupID -> IO ()
+{-# WARNING setTerminalProcessGroupID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TERMIOS_H@)" #-}
+setTerminalProcessGroupID _ _ = ioError (ioeSetLocation unsupportedOperation "setTerminalProcessGroupID")
+
+#else
 
 -- | @controlFlow fd action@ calls @tcflow@ to control the
 --   flow of data on @Fd@ @fd@, as indicated by
@@ -750,6 +972,8 @@ setTerminalProcessGroupID (Fd fd) pgid =
 foreign import ccall unsafe "tcsetpgrp"
   c_tcsetpgrp :: CInt -> CPid -> IO CInt
 
+#endif // HAVE_TERMIOS_H
+
 -- -----------------------------------------------------------------------------
 -- file descriptor queries
 
@@ -768,6 +992,8 @@ foreign import ccall unsafe "isatty"
 -- Local utility functions
 
 -- Convert Haskell ControlCharacter to Int
+
+#if defined(HAVE_TERMIOS_H)
 
 cc2Word :: ControlCharacter -> Int
 cc2Word EndOfFile = (#const VEOF)
@@ -918,3 +1144,5 @@ withNewTermios termios action = do
     _ <- action p1
     return ()
   return $ makeTerminalAttributes fp1
+
+#endif // HAVE_TERMIOS_H

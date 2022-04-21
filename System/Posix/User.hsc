@@ -64,10 +64,82 @@ import Control.Exception
 import Control.Monad
 import System.IO.Error
 
+#if !defined(HAVE_PWD_H)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
+#if defined(HAVE_PWD_H)
+
 -- internal types
 data {-# CTYPE "struct passwd" #-} CPasswd
 data {-# CTYPE "struct group"  #-} CGroup
 
+#endif // HAVE_PWD_H
+
+#if !defined(HAVE_PWD_H)
+
+getRealUserID :: IO UserID
+{-# WARNING getRealUserID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getRealUserID = ioError (ioeSetLocation unsupportedOperation "getRealUserID")
+
+getRealGroupID :: IO GroupID
+{-# WARNING getRealGroupID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getRealGroupID = ioError (ioeSetLocation unsupportedOperation "getRealGroupID")
+
+getEffectiveUserID :: IO UserID
+{-# WARNING getEffectiveUserID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getEffectiveUserID = ioError (ioeSetLocation unsupportedOperation "getEffectiveUserID")
+
+getEffectiveGroupID :: IO GroupID
+{-# WARNING getEffectiveGroupID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getEffectiveGroupID = ioError (ioeSetLocation unsupportedOperation "getEffectiveGroupID")
+
+getGroups :: IO [GroupID]
+{-# WARNING getGroups
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getGroups = ioError (ioeSetLocation unsupportedOperation "getGroups")
+
+setGroups :: [GroupID] -> IO ()
+{-# WARNING setGroups
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+setGroups _ = ioError (ioeSetLocation unsupportedOperation "setGroups")
+
+getLoginName :: IO String
+{-# WARNING getLoginName
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getLoginName = ioError (ioeSetLocation unsupportedOperation "getLoginName")
+
+setUserID :: UserID -> IO ()
+{-# WARNING setUserID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+setUserID _ = ioError (ioeSetLocation unsupportedOperation "setUserID")
+
+setEffectiveUserID :: UserID -> IO ()
+{-# WARNING setEffectiveUserID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+setEffectiveUserID _ = ioError (ioeSetLocation unsupportedOperation "setEffectiveUserID")
+
+setGroupID :: GroupID -> IO ()
+{-# WARNING setGroupID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+setGroupID _ = ioError (ioeSetLocation unsupportedOperation "setGroupID")
+
+setEffectiveGroupID :: GroupID -> IO ()
+{-# WARNING setEffectiveGroupID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+setEffectiveGroupID _ = ioError (ioeSetLocation unsupportedOperation "setEffectiveGroupID")
+
+getEffectiveUserName :: IO String
+{-# WARNING getEffectiveUserName
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getEffectiveUserName = ioError (ioeSetLocation unsupportedOperation "getEffectiveUserName")
+
+#else
 -- -----------------------------------------------------------------------------
 -- Thread safety of passwd/group database access APIs:
 --
@@ -294,6 +366,8 @@ getEffectiveUserName = do
     pw <- getUserEntryForID euid
     return (userName pw)
 
+#endif // HAVE_PWD_H
+
 -- -----------------------------------------------------------------------------
 -- The group database (grp.h)
 
@@ -304,6 +378,25 @@ data GroupEntry =
   groupID      :: GroupID,      -- ^ The unique numeric ID for this group (gr_gid)
   groupMembers :: [String]      -- ^ A list of zero or more usernames that are members (gr_mem)
  } deriving (Show, Read, Eq)
+
+#if !defined(HAVE_PWD_H)
+
+getGroupEntryForID :: GroupID -> IO GroupEntry
+{-# WARNING getGroupEntryForID
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getGroupEntryForID _ = ioError (ioeSetLocation unsupportedOperation "getGroupEntryForID")
+
+getGroupEntryForName :: String -> IO GroupEntry
+{-# WARNING getGroupEntryForName
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getGroupEntryForName _ = ioError (ioeSetLocation unsupportedOperation "getGroupEntryForName")
+
+getAllGroupEntries :: IO [GroupEntry]
+{-# WARNING getAllGroupEntries
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
+getAllGroupEntries = ioError (ioeSetLocation unsupportedOperation "getAllGroupEntries")
+
+#else
 
 -- | @getGroupEntryForID gid@ calls @getgrgid_r@ to obtain
 --   the @GroupEntry@ information associated with @GroupID@
@@ -390,6 +483,8 @@ unpackGroupEntry ptr = do
    members <- peekArray0 nullPtr mem >>= mapM peekCAString
    return (GroupEntry name passwd gid members)
 
+#endif // HAVE_PWD_H
+
 -- -----------------------------------------------------------------------------
 -- The user database (pwd.h)
 
@@ -474,7 +569,7 @@ pwBufSize = 1024
 #endif
 #endif
 
-#ifdef HAVE_SYSCONF
+#if defined(HAVE_SYSCONF) && defined(HAVE_PWD_H)
 foreign import ccall unsafe "sysconf"
   c_sysconf :: CInt -> IO CLong
 
@@ -487,6 +582,8 @@ sysconfWithDefault def sc =
     unsafePerformIO $ do v <- fmap fromIntegral $ c_sysconf sc
                          return $ if v == (-1) then def else v
 #endif
+
+#if defined(HAVE_PWD_H)
 
 -- The following function is used by the getgr*_r, c_getpw*_r
 -- families of functions. These functions return their result
@@ -548,3 +645,5 @@ throwErrnoIfNullAndError loc act = do
     if rc == nullPtr && errno /= eOK
        then throwErrno loc
        else return rc
+
+#endif // HAVE_PWD_H

@@ -1,6 +1,8 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
 
+#include "HsUnix.h"
+
 module System.Posix.Process.Internals (
        pPrPr_disableITimers, c_execvpe,
        decipherWaitStatus, ProcessStatus(..) ) where
@@ -10,6 +12,11 @@ import Foreign.C
 import System.Exit
 import System.IO.Error
 import GHC.Conc (Signal)
+
+#if !defined(HAVE_GETPID)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
 
 -- | The exit status of a process
 data ProcessStatus
@@ -30,6 +37,14 @@ foreign import capi unsafe "Rts.h stopTimer"
 
 foreign import ccall unsafe "__hsunix_execvpe"
   c_execvpe :: CString -> Ptr CString -> Ptr CString -> IO CInt
+
+#if !defined(HAVE_GETPID)
+
+{-# WARNING decipherWaitStatus "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_GETPID@)" #-}
+decipherWaitStatus :: CInt -> IO ProcessStatus
+decipherWaitStatus _ = ioError (ioeSetLocation unsupportedOperation "decipherWaitStatus")
+
+#else
 
 decipherWaitStatus :: CInt -> IO ProcessStatus
 decipherWaitStatus wstat =
@@ -76,3 +91,4 @@ foreign import capi unsafe "HsUnix.h WSTOPSIG"
 foreign import capi unsafe "HsUnix.h WCOREDUMP"
   c_WCOREDUMP :: CInt -> CInt
 
+#endif // HAVE_GETPID

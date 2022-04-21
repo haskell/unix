@@ -112,6 +112,12 @@ import Data.Dynamic
 
 import GHC.Conc hiding (Signal)
 
+#if !defined(HAVE_SIGNAL_H)
+import Control.Exception ( throw )
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- -----------------------------------------------------------------------------
 -- Specific signals
 
@@ -352,25 +358,53 @@ fileSizeLimitExceeded = sigXFSZ
 -- | @signalProcess int pid@ calls @kill@ to signal process @pid@
 --   with interrupt signal @int@.
 signalProcess :: Signal -> ProcessID -> IO ()
+#if !defined(HAVE_SIGNAL_H)
+
+{-# WARNING signalProcess
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+signalProcess _ _ = ioError (ioeSetLocation unsupportedOperation "signalProcess")
+
+#else
+
 signalProcess sig pid
  = throwErrnoIfMinus1_ "signalProcess" (c_kill pid sig)
 
 foreign import ccall unsafe "kill"
   c_kill :: CPid -> CInt -> IO CInt
 
+#endif // HAVE_SIGNAL_H
+
 
 -- | @signalProcessGroup int pgid@ calls @kill@ to signal
 --  all processes in group @pgid@ with interrupt signal @int@.
 signalProcessGroup :: Signal -> ProcessGroupID -> IO ()
+#if !defined(HAVE_SIGNAL_H)
+
+{-# WARNING signalProcessGroup
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+signalProcessGroup _ _ = ioError (ioeSetLocation unsupportedOperation "signalProcessGroup")
+
+#else
+
 signalProcessGroup sig pgid
   = throwErrnoIfMinus1_ "signalProcessGroup" (c_killpg pgid sig)
 
 foreign import ccall unsafe "killpg"
   c_killpg :: CPid -> CInt -> IO CInt
 
+#endif // HAVE_SIGNAL_H
+
 -- | @raiseSignal int@ calls @kill@ to signal the current process
 --   with interrupt signal @int@.
 raiseSignal :: Signal -> IO ()
+#if !defined(HAVE_SIGNAL_H)
+
+{-# WARNING raiseSignal
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+raiseSignal _ = ioError (ioeSetLocation unsupportedOperation "raiseSignal")
+
+#else
+
 raiseSignal sig = throwErrnoIfMinus1_ "raiseSignal" (c_raise sig)
 
 -- See also note in GHC's rts/RtsUtils.c
@@ -384,6 +418,7 @@ foreign import ccall unsafe "raise"
   c_raise :: CInt -> IO CInt
 #endif
 
+#endif // HAVE_SIGNAL_H
 
 type Signal = CInt
 
@@ -447,6 +482,12 @@ installHandler :: Signal
  - #-}
 installHandler =
   error "installHandler: not available for Parallel Haskell"
+#elif !defined(HAVE_SIGNAL_H)
+
+{-# WARNING installHandler
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+installHandler _ _ _ = ioError (ioeSetLocation unsupportedOperation "installHandler")
+
 #else
 
 installHandler sig handler _maybe_mask = do
@@ -542,6 +583,15 @@ unmarshalSigInfo fp = do
 
 #endif /* !__PARALLEL_HASKELL__ */
 
+#if !defined(HAVE_ALARM)
+
+scheduleAlarm :: Int -> IO Int
+{-# WARNING scheduleAlarm
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_ALARM@)" #-}
+scheduleAlarm _ = ioError (ioeSetLocation unsupportedOperation "scheduleAlarm")
+
+#else
+
 -- -----------------------------------------------------------------------------
 -- Alarms
 
@@ -555,8 +605,22 @@ scheduleAlarm secs = do
 foreign import ccall unsafe "alarm"
   c_alarm :: CUInt -> IO CUInt
 
+#endif // HAVE_ALARM
+
 -- -----------------------------------------------------------------------------
 -- The NOCLDSTOP flag
+
+#if !defined(HAVE_SIGNAL_H)
+
+{-# WARNING setStoppedChildFlag "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+setStoppedChildFlag :: Bool -> IO Bool
+setStoppedChildFlag _ = ioError (ioeSetLocation unsupportedOperation "setStoppedChildFlag")
+
+{-# WARNING queryStoppedChildFlag "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+queryStoppedChildFlag :: IO Bool
+queryStoppedChildFlag = ioError (ioeSetLocation unsupportedOperation "queryStoppedChildFlag")
+
+#else
 
 foreign import ccall "&nocldstop" nocldstop :: Ptr Int
 
@@ -574,10 +638,55 @@ queryStoppedChildFlag = do
     rc <- peek nocldstop
     return (rc == (0::Int))
 
+#endif
+
 -- -----------------------------------------------------------------------------
 -- Manipulating signal sets
 
+#if defined(HAVE_SIGNAL_H)
+
 newtype SignalSet = SignalSet (ForeignPtr CSigset)
+
+#else
+
+data SignalSet
+
+#endif // HAVE_SIGNAL_H
+
+#if !defined(HAVE_SIGNAL_H)
+
+emptySignalSet :: SignalSet
+{-# WARNING emptySignalSet
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+emptySignalSet = throw (ioeSetLocation unsupportedOperation "emptySignalSet")
+
+fullSignalSet :: SignalSet
+{-# WARNING fullSignalSet
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+fullSignalSet = throw (ioeSetLocation unsupportedOperation "fullSignalSet")
+
+reservedSignals :: SignalSet
+{-# WARNING reservedSignals
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+reservedSignals = throw (ioeSetLocation unsupportedOperation "reservedSignals")
+
+infixr `addSignal`, `deleteSignal`
+addSignal :: Signal -> SignalSet -> SignalSet
+{-# WARNING addSignal
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+addSignal _ _ = throw (ioeSetLocation unsupportedOperation "addSignal")
+
+deleteSignal :: Signal -> SignalSet -> SignalSet
+{-# WARNING deleteSignal
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+deleteSignal _ _ = throw (ioeSetLocation unsupportedOperation "deleteSignal")
+
+inSignalSet :: Signal -> SignalSet -> Bool
+{-# WARNING inSignalSet
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+inSignalSet _ _ = throw (ioeSetLocation unsupportedOperation "inSignalSet")
+
+#else
 
 emptySignalSet :: SignalSet
 emptySignalSet = unsafePerformIO $ do
@@ -623,6 +732,32 @@ inSignalSet sig (SignalSet fp) = unsafePerformIO $
     r <- throwErrnoIfMinus1 "inSignalSet" (c_sigismember p sig)
     return (r /= 0)
 
+#endif // HAVE_SIGNAL_H
+
+#if !defined(HAVE_SIGNAL_H)
+
+getSignalMask :: IO SignalSet
+{-# WARNING getSignalMask
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+getSignalMask = ioError (ioeSetLocation unsupportedOperation "getSignalMask")
+
+setSignalMask :: SignalSet -> IO ()
+{-# WARNING setSignalMask
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+setSignalMask _ = ioError (ioeSetLocation unsupportedOperation "setSignalMask")
+
+blockSignals :: SignalSet -> IO ()
+{-# WARNING blockSignals
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+blockSignals _ = ioError (ioeSetLocation unsupportedOperation "blockSignals")
+
+unblockSignals :: SignalSet -> IO ()
+{-# WARNING unblockSignals
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+unblockSignals _ = ioError (ioeSetLocation unsupportedOperation "unblockSignals")
+
+#else
+
 -- | @getSignalMask@ calls @sigprocmask@ to determine the
 --   set of interrupts which are currently being blocked.
 getSignalMask :: IO SignalSet
@@ -653,6 +788,22 @@ blockSignals set = sigProcMask "blockSignals" (CONST_SIG_BLOCK :: CInt) set
 --   set of blocked interrupts.
 unblockSignals :: SignalSet -> IO ()
 unblockSignals set = sigProcMask "unblockSignals" (CONST_SIG_UNBLOCK :: CInt) set
+
+#endif // HAVE_SIGNAL_H
+
+#if !defined(HAVE_SIGNAL_H)
+
+getPendingSignals :: IO SignalSet
+{-# WARNING getPendingSignals
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+getPendingSignals = ioError (ioeSetLocation unsupportedOperation "getPendingSignals")
+
+awaitSignal :: Maybe SignalSet -> IO ()
+{-# WARNING awaitSignal
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SIGNAL_H@)" #-}
+awaitSignal _ = ioError (ioeSetLocation unsupportedOperation "awaitSignal")
+
+#else
 
 -- | @getPendingSignals@ calls @sigpending@ to obtain
 --   the set of interrupts which have been received but are currently blocked.
@@ -689,6 +840,10 @@ awaitSignal maybe_sigset = do
   -- XXX My manpage says it can also return EFAULT. And why is ignoring
   -- EINTR the right thing to do?
 
+#endif // HAVE_SIGNAL_H
+
+#if defined(HAVE_SIGNAL_H)
+
 foreign import ccall unsafe "sigsuspend"
   c_sigsuspend :: Ptr CSigset -> IO CInt
 
@@ -703,3 +858,5 @@ foreign import capi unsafe "signal.h sigismember"
 
 foreign import ccall unsafe "sigpending"
   c_sigpending :: Ptr CSigset -> IO CInt
+
+#endif // HAVE_SIGNAL_H

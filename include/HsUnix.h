@@ -83,7 +83,9 @@
 #include <utmp.h>
 #endif
 
+#if defined(HAVE_DLFCN_H)
 #include <dlfcn.h>
+#endif
 
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>

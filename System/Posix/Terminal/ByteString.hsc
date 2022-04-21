@@ -88,7 +88,7 @@ import Foreign.C hiding (
 
 import System.Posix.ByteString.FilePath
 
-#if !HAVE_CTERMID
+#if !(HAVE_CTERMID && defined(HAVE_TERMIOS_H))
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
@@ -115,7 +115,7 @@ foreign import ccall unsafe "ttyname"
 -- provide @ctermid(3)@ (use @#if HAVE_CTERMID@ CPP guard to
 -- detect availability).
 getControllingTerminalName :: IO RawFilePath
-#if HAVE_CTERMID
+#if HAVE_CTERMID && defined(HAVE_TERMIOS_H)
 getControllingTerminalName = do
   s <- throwErrnoIfNull "getControllingTerminalName" (c_ctermid nullPtr)
   peekFilePath s
@@ -169,12 +169,12 @@ foreign import ccall unsafe "openpty"
             -> IO CInt
 #else
 openPseudoTerminal = do
-  (Fd master) <- openFd (B.pack "/dev/ptmx") ReadWrite Nothing
+  (Fd master) <- openFd (B.pack "/dev/ptmx") ReadWrite
                         defaultFileFlags{noctty=True}
   throwErrnoIfMinus1_ "openPseudoTerminal" (c_grantpt master)
   throwErrnoIfMinus1_ "openPseudoTerminal" (c_unlockpt master)
   slaveName <- getSlaveTerminalName (Fd master)
-  slave <- openFd slaveName ReadWrite Nothing defaultFileFlags{noctty=True}
+  slave <- openFd slaveName ReadWrite defaultFileFlags{noctty=True}
   pushModule slave "ptem"
   pushModule slave "ldterm"
 # ifndef __hpux
