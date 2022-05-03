@@ -11,10 +11,6 @@ AC_USE_SYSTEM_EXTENSIONS
 
 AC_CONFIG_HEADERS([include/HsUnixConfig.h])
 
-# Is this a Unix system?
-AC_CHECK_HEADER([dlfcn.h], [BUILD_PACKAGE_BOOL=True], [BUILD_PACKAGE_BOOL=False])
-AC_SUBST([BUILD_PACKAGE_BOOL])
-
 AC_C_CONST
 
 dnl ** Enable large file support.  NB. do this before testing the type of
