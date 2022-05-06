@@ -1,0 +1,69 @@
+name: ci-wasm32-wasi
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v3
+
+      - name: setup-wasi-sdk
+        run: |
+          pushd $(mktemp -d)
+          curl -L https://nightly.link/WebAssembly/wasi-sdk/workflows/main/main/dist-ubuntu-latest.zip -O
+          unzip dist-ubuntu-latest.zip
+          sudo mkdir /opt/wasi-sdk
+          sudo tar xzf wasi-sdk-*.tar.gz --strip-components=1 -C /opt/wasi-sdk
+          popd
+
+      - name: setup-libffi
+        run: |
+          pushd $(mktemp -d)
+          curl -L https://nightly.link/tweag/libffi-wasm32/workflows/shell/master/out.zip -O
+          unzip out.zip
+          sudo cp include/* /opt/wasi-sdk/share/wasi-sysroot/include
+          sudo cp lib/* /opt/wasi-sdk/share/wasi-sysroot/lib/wasm32-wasi
+          popd
+
+      - name: setup-ghc
+        run: |
+          sudo mkdir /opt/ghc-wasm32-wasi
+          pushd /opt/ghc-wasm32-wasi
+          curl -L https://gitlab.haskell.org/TerrorJack/ghc/-/jobs/artifacts/wasm32-wasi/raw/ghc-wasm32-wasi.tar.xz?job=wasm32-wasi-bindist | sudo tar xJ --strip-components=1
+          sudo ./configure \
+            --host=x86_64-linux \
+            --target=wasm32-wasi \
+            AR=/opt/wasi-sdk/bin/llvm-ar \
+            CC=/opt/wasi-sdk/bin/clang \
+            LD=/opt/wasi-sdk/bin/wasm-ld \
+            LLC=/bin/false \
+            OPT=/bin/false \
+            RANLIB=/opt/wasi-sdk/bin/llvm-ranlib \
+            STRIP=/opt/wasi-sdk/bin/llvm-strip \
+            CONF_CC_OPTS_STAGE2="-O3 -mmutable-globals -mnontrapping-fptoint -mreference-types -msign-ext" \
+            CONF_CXX_OPTS_STAGE2="-O3 -mmutable-globals -mnontrapping-fptoint -mreference-types -msign-ext" \
+            CONF_GCC_LINKER_OPTS_STAGE2="-Wno-unused-command-line-argument -Wl,--error-limit=0,--growable-table,--stack-first"
+          sudo make lib/settings
+          sudo bin/wasm32-wasi-ghc-pkg recache
+          popd
+
+          /opt/ghc-wasm32-wasi/bin/wasm32-wasi-ghc --info
+
+      - name: setup-cabal
+        run: |
+          echo "CABAL_DIR=$HOME/.cabal-wasm32-wasi" >> $GITHUB_ENV
+          export CABAL_DIR=$HOME/.cabal-wasm32-wasi
+          mkdir $CABAL_DIR
+          cp cabal.config.wasm32-wasi $CABAL_DIR/config
+
+      - name: test
+        run: |
+          cp /opt/wasi-sdk/share/misc/config.* .
+          autoreconf -i
+          cabal --project-file=cabal.project.wasm32-wasi build
+
+          ./test-wasm32-wasi.mjs
