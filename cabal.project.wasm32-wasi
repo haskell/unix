@@ -1,0 +1,4 @@
+packages: .
+
+package unix
+  ghc-options: -Wno-unused-imports
