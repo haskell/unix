@@ -6,6 +6,7 @@ cabal.project.local
 cabal.sandbox.config
 config.log
 config.status
+config.sub
 configure
 dist/
 dist-install/
