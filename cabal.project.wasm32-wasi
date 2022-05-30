@@ -2,3 +2,5 @@ packages: .
 
 package unix
   ghc-options: -Wno-unused-imports
+
+write-ghc-environment-files: always

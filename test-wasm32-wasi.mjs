@@ -14,7 +14,7 @@ for (const f of await fs.promises.readdir("tests")) {
 
   // Compile the test case
   console.log(`\n${f}`);
-  const r = await my_execFile("/opt/ghc-wasm32-wasi/bin/wasm32-wasi-ghc", [
+  const r = await my_execFile("wasm32-wasi-ghc", [
     `tests/${f}`,
     "-Wno-deprecations",
     "-optl-Wl,--warn-unresolved-symbols",
