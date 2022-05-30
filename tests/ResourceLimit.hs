@@ -10,7 +10,9 @@ main = do
   setResourceLimit ResourceCPUTime
     (ResourceLimits (ResourceLimit soft) (ResourceLimit hard))
   r <- getResourceLimit ResourceCPUTime
-  let (ResourceLimit s) = softLimit r
-  let (ResourceLimit h) = hardLimit r
-  s @?= soft
-  h @?= hard
+  soft @?= case softLimit r of
+      ResourceLimit l -> l
+      _               -> 0
+  hard @?= case hardLimit r of
+      ResourceLimit l -> l
+      _               -> 0
