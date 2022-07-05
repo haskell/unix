@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE Trustworthy #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.IO.ByteString
@@ -63,6 +63,16 @@ module System.Posix.IO.ByteString (
 
   ) where
 
+import Data.ByteString ( ByteString, empty )
+import qualified Data.ByteString.Internal as BI
+import qualified Data.ByteString.Unsafe as BU
+
+import Foreign ( castPtr )
+
+import GHC.IO.Exception ( IOErrorType(EOF) )
+
+import System.IO.Error ( ioeSetErrorString, mkIOError )
+
 import System.Posix.Types
 import System.Posix.IO.Common
 
@@ -88,9 +98,9 @@ openFdAt :: Maybe Fd -- ^ Optional directory file descriptor
          -> OpenFileFlags -- ^ Append, exclusive, truncate, etc.
          -> IO Fd
 openFdAt fdMay name how flags =
-   withFilePath name $ \str ->
-     throwErrnoPathIfMinus1Retry "openFdAt" name $
-       openat_ fdMay str how flags
+  withFilePath name $ \str ->
+    throwErrnoPathIfMinus1Retry "openFdAt" name $
+      openat_ fdMay str how flags
 
 -- |Create and open this file in WriteOnly mode.  A special case of
 -- 'openFd'.  See 'System.Posix.Files' for information on how to use
@@ -111,3 +121,23 @@ createFileAt :: Maybe Fd -- ^ Optional directory file descriptor
              -> IO Fd
 createFileAt fdMay name mode
   = openFdAt fdMay name WriteOnly defaultFileFlags{ trunc=True, creat=(Just mode) }
+
+-- | Read data from an 'Fd' and return it as a 'ByteString'.
+-- Throws an exception if this is an invalid descriptor, or EOF has been
+-- reached.
+fdRead :: Fd
+       -> ByteCount -- ^How many bytes to read
+       -> IO ByteString -- ^The bytes read
+fdRead _fd 0 = return empty
+fdRead fd nbytes =
+  BI.createUptoN (fromIntegral nbytes) $ \ buf -> do
+  rc <- fdReadBuf fd buf nbytes
+  case rc of
+    0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
+    n -> return (fromIntegral n)
+
+-- | Write a 'ByteString' to an 'Fd'.
+fdWrite :: Fd -> ByteString -> IO ByteCount
+fdWrite fd bs =
+  BU.unsafeUseAsCStringLen bs $ \ (buf,len) ->
+    fdWriteBuf fd (castPtr buf) (fromIntegral len)

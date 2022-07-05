@@ -31,7 +31,6 @@ module System.Posix.IO.Common (
     -- |Programmers using the 'fdRead' and 'fdWrite' API should be aware that
     -- EAGAIN exceptions may occur for non-blocking IO!
 
-    fdRead, fdWrite,
     fdReadBuf, fdWriteBuf,
 
     -- ** Seeking
@@ -447,23 +446,7 @@ waitToSetLock (Fd fd) lock = do
 #endif // HAVE_F_GETLK
 
 -- -----------------------------------------------------------------------------
--- fd{Read,Write}
-
--- | Read data from an 'Fd' and convert it to a 'String' using the locale encoding.
--- Throws an exception if this is an invalid descriptor, or EOF has been
--- reached.
-fdRead :: Fd
-       -> ByteCount -- ^How many bytes to read
-       -> IO (String, ByteCount) -- ^The bytes read, how many bytes were read.
-fdRead _fd 0 = return ("", 0)
-fdRead fd nbytes = do
-    allocaBytes (fromIntegral nbytes) $ \ buf -> do
-    rc <- fdReadBuf fd buf nbytes
-    case rc of
-      0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
-      n -> do
-       s <- peekCStringLen (castPtr buf, fromIntegral n)
-       return (s, n)
+-- fd{Read,Write}Buf
 
 -- | Read data from an 'Fd' into memory.  This is exactly equivalent
 -- to the POSIX @read@ function.
@@ -479,12 +462,6 @@ fdReadBuf fd buf nbytes =
 
 foreign import ccall safe "read"
    c_safe_read :: CInt -> Ptr CChar -> CSize -> IO CSsize
-
--- | Write a 'String' to an 'Fd' using the locale encoding.
-fdWrite :: Fd -> String -> IO ByteCount
-fdWrite fd str =
-  withCStringLen str $ \ (buf,len) ->
-    fdWriteBuf fd (castPtr buf) (fromIntegral len)
 
 -- | Write data from memory to an 'Fd'.  This is exactly equivalent
 -- to the POSIX @write@ function.
