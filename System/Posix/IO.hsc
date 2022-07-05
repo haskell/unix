@@ -63,6 +63,13 @@ module System.Posix.IO (
 
   ) where
 
+import Foreign ( allocaBytes, castPtr )
+import Foreign.C ( peekCStringLen, withCStringLen )
+
+import GHC.IO.Exception ( IOErrorType(EOF) )
+
+import System.IO.Error ( ioeSetErrorString, mkIOError )
+
 import System.Posix.Types
 import System.Posix.Error
 import System.Posix.IO.Common
@@ -88,9 +95,9 @@ openFdAt :: Maybe Fd -- ^ Optional directory file descriptor
          -> OpenFileFlags -- ^ Append, exclusive, truncate, etc.
          -> IO Fd
 openFdAt fdMay name how flags =
-   withFilePath name $ \str ->
-     throwErrnoPathIfMinus1Retry "openFdAt" name $
-       openat_ fdMay str how flags
+  withFilePath name $ \str ->
+    throwErrnoPathIfMinus1Retry "openFdAt" name $
+      openat_ fdMay str how flags
 
 -- |Create and open this file in WriteOnly mode.  A special case of
 -- 'openFd'.  See 'System.Posix.Files' for information on how to use
@@ -111,3 +118,25 @@ createFileAt :: Maybe Fd -- ^ Optional directory file descriptor
              -> IO Fd
 createFileAt fdMay name mode
   = openFdAt fdMay name WriteOnly defaultFileFlags{ trunc=True, creat=(Just mode) }
+
+-- | Read data from an 'Fd' and convert it to a 'String' using the locale encoding.
+-- Throws an exception if this is an invalid descriptor, or EOF has been
+-- reached.
+fdRead :: Fd
+       -> ByteCount -- ^How many bytes to read
+       -> IO (String, ByteCount) -- ^The bytes read, how many bytes were read.
+fdRead _fd 0 = return ("", 0)
+fdRead fd nbytes =
+  allocaBytes (fromIntegral nbytes) $ \ buf -> do
+  rc <- fdReadBuf fd buf nbytes
+  case rc of
+    0 -> ioError (ioeSetErrorString (mkIOError EOF "fdRead" Nothing Nothing) "EOF")
+    n -> do
+      s <- peekCStringLen (castPtr buf, fromIntegral n)
+      return (s, n)
+
+-- | Write a 'String' to an 'Fd' using the locale encoding.
+fdWrite :: Fd -> String -> IO ByteCount
+fdWrite fd str =
+  withCStringLen str $ \ (buf,len) ->
+    fdWriteBuf fd (castPtr buf) (fromIntegral len)
