@@ -163,7 +163,7 @@ data OpenMode = ReadOnly | WriteOnly | ReadWrite
 data OpenFileFlags =
  OpenFileFlags {
     append    :: Bool,           -- ^ O_APPEND
-    exclusive :: Bool,           -- ^ O_EXCL
+    exclusive :: Bool,           -- ^ O_EXCL, result is undefined if O_CREAT is False
                                  --
                                  -- __NOTE__: Result is undefined if 'creat' is 'Nothing'.
     noctty    :: Bool,           -- ^ O_NOCTTY
