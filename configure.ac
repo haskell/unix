@@ -71,6 +71,12 @@ dnl This is e.g. available as a GNU extension in glibc 2.11+
 AC_CHECK_DECLS([execvpe])
 AC_CHECK_FUNCS([execvpe])
 
+AC_CHECK_DECLS([CLOCKS_PER_SEC], [AC_DEFINE([HAVE_CLOCKS_PER_SEC],[1],[Define to 1 if you have the CLOCKS_PER_SEC macro.])], [], [AC_INCLUDES_DEFAULT
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+])
+
 AC_CHECK_MEMBERS([struct stat.st_atim])
 AC_CHECK_MEMBERS([struct stat.st_mtim])
 AC_CHECK_MEMBERS([struct stat.st_ctim])
