@@ -119,4 +119,8 @@ fall back to O_FSYNC, which should be the same */
 // push a SVR4 STREAMS module; do nothing if STREAMS not available
 int __hsunix_push_module(int fd, const char *module);
 
+#ifdef HAVE_CLOCKS_PER_SEC
+clock_t __hsunix_clocks_per_second (void);
+#endif
+
 #endif

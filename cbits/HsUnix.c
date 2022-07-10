@@ -26,6 +26,10 @@ int __hsunix_push_module(int fd, const char *module)
 #endif
 }
 
+#ifdef HAVE_CLOCKS_PER_SEC
+clock_t __hsunix_clocks_per_second (void) {return CLOCKS_PER_SEC;}
+#endif
+
 /*
  * GNU glibc 2.23 and later deprecate `readdir_r` in favour of plain old
  * `readdir` which in some upcoming POSIX standard is going to required to be

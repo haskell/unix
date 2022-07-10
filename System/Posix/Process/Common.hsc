@@ -44,6 +44,7 @@ module System.Posix.Process.Common (
     -- ** Process times
     ProcessTimes(..),
     getProcessTimes,
+    clocksPerSec,
 
     -- ** Scheduling priority
     nice,
@@ -81,7 +82,7 @@ import Control.Monad
 
 import Control.Exception.Base ( bracket, getMaskingState, MaskingState(..) ) -- used by forkProcess
 import GHC.TopHandler   ( runIO )
-import GHC.IO ( unsafeUnmask, uninterruptibleMask_ )
+import GHC.IO ( unsafeUnmask, uninterruptibleMask_, unsafePerformIO )
 
 #if !defined(HAVE_GETPID)
 import System.IO.Error ( ioeSetLocation )
@@ -302,12 +303,30 @@ data {-# CTYPE "struct tms" #-} CTms
 foreign import capi unsafe "HsUnix.h times"
   c_times :: Ptr CTms -> IO CClock
 
+-- | Returns the value from the @CLOCK_PER_SEC@ macro, which is required by POSIX.
+clocksPerSec :: ClockTick
+#ifdef HAVE_CLOCKS_PER_SEC
+clocksPerSec = c_clocks_per_sec
+
+foreign import capi unsafe "HsUnix.h __hsunix_clocks_per_second"
+  c_clocks_per_sec :: CClock
+#else
+{-# WARNING clocksPerSec
+    "CLOCK_PER_SEC not defined, defaulting to the value 1000000 as indicated by POSIX (CPP guard: @#if HAVE_CLOCKS_PER_SEC@)" #-}
+clocksPerSec = 1000000
+#endif // HAVE_CLOCKS_PER_SEC
+
 #else
 
 getProcessTimes :: IO ProcessTimes
 {-# WARNING getProcessTimes
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_TIMES@)" #-}
 getProcessTimes = ioError (ioeSetLocation unsupportedOperation "getProcessTimes")
+
+clocksPerSec :: ClockTick
+{-# WARNING clocksPerSec
+    "CLOCK_PER_SEC not defined, defaulting to the value 1000000 as indicated by POSIX (CPP guard: @#if HAVE_CLOCKS_PER_SEC@)" #-}
+clocksPerSec = 1000000
 
 #endif // HAVE_TIMES
 
