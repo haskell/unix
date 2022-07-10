@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE NondecreasingIndentation #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE Trustworthy #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -73,7 +73,10 @@ import GHC.IO.Handle.Types
 import qualified GHC.IO.FD as FD
 import qualified GHC.IO.Handle.FD as FD
 import GHC.IO.Exception
+import GHC.IO.Buffer
+import GHC.IORef
 import Data.Typeable (cast)
+import System.IO.Unsafe (unsafePerformIO)
 
 #if !defined(HAVE_PIPE)
 import System.IO.Error ( ioeSetLocation )
@@ -301,9 +304,25 @@ handleToFd' h h_@Handle__{haType=_,..} = do
      -- converting a Handle into an Fd effectively means
      -- letting go of the Handle; it is put into a closed
      -- state as a result.
-     flushWriteBuffer h_
+
+     -- free the spare buffers
+     writeIORef haBuffers BufferListNil
+     writeIORef haCharBuffer noCharBuffer
+     writeIORef haByteBuffer noByteBuffer
+
+     -- release our encoder/decoder
+     closeTextCodecs h_
+
      FD.release fd
      return (Handle__{haType=ClosedHandle,..}, Fd (FD.fdFD fd))
+
+{-# NOINLINE noCharBuffer #-}
+noCharBuffer :: CharBuffer
+noCharBuffer = unsafePerformIO $ newCharBuffer 1 ReadBuffer
+
+{-# NOINLINE noByteBuffer #-}
+noByteBuffer :: Buffer Word8
+noByteBuffer = unsafePerformIO $ newByteBuffer 1 ReadBuffer
 
 
 -- -----------------------------------------------------------------------------
