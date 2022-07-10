@@ -89,6 +89,7 @@ library
         System.Posix.ByteString.FilePath
 
         System.Posix.Directory
+        System.Posix.Directory.Internals
         System.Posix.Directory.Fd
         System.Posix.Directory.ByteString
 
