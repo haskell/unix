@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-deprecations #-}
 -- !! Basic pipe usage
 module Main (main) where
 

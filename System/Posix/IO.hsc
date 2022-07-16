@@ -119,6 +119,7 @@ createFileAt :: Maybe Fd -- ^ Optional directory file descriptor
 createFileAt fdMay name mode
   = openFdAt fdMay name WriteOnly defaultFileFlags{ trunc=True, creat=(Just mode) }
 
+{-# DEPRECATED fdRead "This function is scheduled to be dropped in favor of 'System.Posix.IO.ByteString.fdRead', because decoding e.g. UTF-8 streams partially is unsafe." #-} -- deprecated in 2.8.0.0
 -- | Read data from an 'Fd' and convert it to a 'String' using the locale encoding.
 -- Throws an exception if this is an invalid descriptor, or EOF has been
 -- reached.
