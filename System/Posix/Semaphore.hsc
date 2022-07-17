@@ -20,18 +20,24 @@ module System.Posix.Semaphore
      semPost, semGetValue)
     where
 
+#include "HsUnix.h"
 #include <semaphore.h>
 #include <fcntl.h>
 
 import Foreign.C
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Marshal
 import Foreign.Ptr
-import Foreign.Storable
 import System.Posix.Types
 import Control.Concurrent
 import Data.Bits
+#if !defined(HAVE_SEM_GETVALUE)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#else
+import Foreign.Marshal
+import Foreign.Storable
+#endif
 
 data OpenSemFlags = OpenSemFlags { semCreate :: Bool,
                                    -- ^ If true, create the semaphore if it
@@ -102,14 +108,23 @@ semPost (Semaphore fptr) = withForeignPtr fptr semPost'
 
 -- | Return the semaphore's current value.
 semGetValue :: Semaphore -> IO Int
+#ifdef HAVE_SEM_GETVALUE
 semGetValue (Semaphore fptr) = withForeignPtr fptr semGetValue'
     where semGetValue' sem = alloca (semGetValue_ sem)
+
 
 semGetValue_ :: Ptr () -> Ptr CInt -> IO Int
 semGetValue_ sem ptr = do throwErrnoIfMinus1Retry_ "semGetValue" $
                             sem_getvalue sem ptr
                           cint <- peek ptr
                           return $ fromEnum cint
+
+foreign import capi safe "semaphore.h sem_getvalue"
+        sem_getvalue :: Ptr () -> Ptr CInt -> IO Int
+#else
+{-# WARNING semGetValue "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_SEM_GETVALUE@)" #-}
+semGetValue _ = ioError (ioeSetLocation unsupportedOperation "semGetValue")
+#endif
 
 foreign import capi safe "semaphore.h sem_open"
         sem_open :: CString -> CInt -> CMode -> CUInt -> IO (Ptr ())
@@ -124,5 +139,3 @@ foreign import capi safe "semaphore.h sem_trywait"
         sem_trywait :: Ptr () -> IO CInt
 foreign import capi safe "semaphore.h sem_post"
         sem_post :: Ptr () -> IO CInt
-foreign import capi safe "semaphore.h sem_getvalue"
-        sem_getvalue :: Ptr () -> Ptr CInt -> IO Int
