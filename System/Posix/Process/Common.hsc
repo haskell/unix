@@ -449,6 +449,10 @@ The exception masking state of the executed action is inherited
 threads are not copied into the child process, it's easy to go wrong:
 e.g. by accessing some shared resource that was held by another thread
 in the parent.
+
+GHC note: 'forkProcess' is not currently very well supported when using multiple
+capabilities (@+RTS -N@), although it is supported with @-threaded@ as
+long as only one capability is being used.
 -}
 
 #if !defined(HAVE_GETPID)
