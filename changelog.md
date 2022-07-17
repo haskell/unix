@@ -1,6 +1,34 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
 ## 2.8.0.0 *UNRELEASED*
+  * Fix `semTrywait` on darwin
+
+  * Fix vanishing environment variables in `System.Posix.Env.ByteString.putEnv`/`System.Posix.Env.ByteString.getEnv`
+
+  * Add missing `setEnvironment` and `clearEnv` to `System.Posix.Env.ByteString`
+
+  * Add support for filepath-1.4.100.0 with `PosixString` variants
+
+  * Expose `DirStream`, `CDir`, `CDirent` and `DirStreamOffset` (internal API)
+
+  * Add `fdRead`/`fdWrite` with ByteString payload and deprecate String based `fdRead`
+
+  * Add `clocksPerSec`
+
+  * Support wasm32-wasi
+
+  * Implement BaudRate as an `Int` newtype and allow matching via extensible PatternSynonyms
+
+  * Added `readDirStreamMaybe`
+
+  * Warn when functions are used on unsupported platforms
+
+  * Fix the error handling of `posix_fallocate`
+
+  * Export `FileStatus` constructor
+
+  * Various documentation and error message improvements
+
   * Add openDirStreamFd, openFileAt and createFileAt
 
   * Add accessors for st_blocks and st_blksize
@@ -34,7 +62,7 @@
 
   * Generalise return type of `exitImmediately` from `ExitCode -> IO ()` to
     `∀a. ExitCode -> IO a` (#130)
-    
+
   * Add `Read`, `Show`, `Eq`, and `Ord` typeclass instances to `OpenFileFlags` and `OpenMode`. (#75, #141)
 
 ## 2.7.2.2  *May 2017*
