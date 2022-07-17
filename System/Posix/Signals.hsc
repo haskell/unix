@@ -439,7 +439,9 @@ data Handler = Default
                  -- cannot be caught or ignored.
              -- not yet: | Hold
              | Catch (IO ())
+                 -- ^ signal handler is not reset
              | CatchOnce (IO ())
+                 -- ^ signal handler is automatically reset (via @SA_RESETHAND@)
              | CatchInfo (SignalInfo -> IO ())     -- ^ @since 2.7.0.0
              | CatchInfoOnce (SignalInfo -> IO ()) -- ^ @since 2.7.0.0
   deriving (Typeable)
