@@ -264,6 +264,10 @@ AC_SEARCH_LIBS(sem_close, pthread,
     [EXTRA_LIBS="$EXTRA_LIBS $ac_lib"],
     [AC_MSG_NOTICE([Not found])])
 
+AC_CHECK_DECLS([sem_getvalue],[AC_DEFINE([HAVE_SEM_GETVALUE],[1],[Define to 1 if you have the `sem_getvalue' function.])],[],[AC_INCLUDES_DEFAULT
+#include <semaphore.h>
+])
+
 AC_SUBST([EXTRA_LIBS])
 AC_CONFIG_FILES([unix.buildinfo])
 
