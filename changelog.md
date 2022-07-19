@@ -17,7 +17,7 @@
 
   * Support wasm32-wasi
 
-  * Implement BaudRate as a `CSpeed` newtype and allow matching via extensible PatternSynonyms
+  * Implement BaudRate as an `Int` newtype and allow matching via extensible PatternSynonyms
 
   * Added `readDirStreamMaybe`
 
