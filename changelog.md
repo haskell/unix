@@ -1,5 +1,23 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.7.2.3  *Unreleased*
+
+  * Resource: Fix warning in case of no RLIM_SAVED_{CUR,MAX}
+
+  * Future-proof glibc version check
+
+  * Fix the error handling of posix_fallocate in non-FreeBSD
+
+  * Synchronize ByteString and String modules and fix grave bug in 'putEnv'
+
+  * Fix 'semTrywait: invalid argument (Bad file descriptor)' wrt #218
+
+  * Improve error messages
+
+  * Improve tests
+
+  * Don't show repo as modified after configure
+
 ## 2.7.2.2  *May 2017*
 
   * Bundled with GHC 8.2.1

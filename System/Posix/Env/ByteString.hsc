@@ -104,7 +104,7 @@ getEnvironment = do
 -- |'setEnvironment' resets the entire environment to the given list of
 -- @(key,value)@ pairs.
 --
--- @since 2.8.0.0
+-- @since 2.7.3
 setEnvironment ::
   [(ByteString,ByteString)] {- ^ @[(key,value)]@ -} ->
   IO ()
