@@ -462,7 +462,7 @@ withMinInput :: TerminalAttributes -> Int -> TerminalAttributes
 withMinInput _ _ = throw (ioeSetLocation unsupportedOperation "withMinInput")
 
 -- | Placeholder implementation
-newtype BaudRate = BaudRate Int deriving (Eq, Ord, Show, Enum, Real, Num)
+newtype BaudRate = BaudRate CSpeed deriving (Eq, Ord, Show, Enum, Real, Num)
 
 -- | Hang up
 pattern B0 :: BaudRate
