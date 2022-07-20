@@ -335,6 +335,7 @@ data BaudRate
   | B38400
   | B57600
   | B115200
+  deriving (Eq, Show)
 
 inputSpeed :: TerminalAttributes -> BaudRate
 inputSpeed termios = unsafePerformIO $ do

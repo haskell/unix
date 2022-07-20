@@ -1,8 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
-#if __GLASGOW_HASKELL__ >= 709
-{-# OPTIONS_GHC -fno-warn-trustworthy-safe #-}
-#endif
 
 -----------------------------------------------------------------------------
 -- |
@@ -24,9 +21,11 @@ module System.Posix.Env.ByteString (
         , getEnvDefault
         , getEnvironmentPrim
         , getEnvironment
+        , setEnvironment
         , putEnv
         , setEnv
-       , unsetEnv
+        , unsetEnv
+        , clearEnv
 
        -- * Program arguments
        , getArgs
@@ -34,14 +33,16 @@ module System.Posix.Env.ByteString (
 
 #include "HsUnix.h"
 
+import Control.Monad
 import Foreign
 import Foreign.C
-import Control.Monad    ( liftM )
 import Data.Maybe       ( fromMaybe )
 
+import System.Posix.Env ( clearEnv )
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.ByteString (ByteString)
+import Data.ByteString.Internal (ByteString (PS), memcpy)
 
 -- |'getEnv' looks up a variable in the environment.
 
@@ -55,8 +56,8 @@ getEnv name = do
      else return Nothing
 
 -- |'getEnvDefault' is a wrapper around 'getEnv' where the
--- programmer can specify a fallback if the variable is not found
--- in the environment.
+-- programmer can specify a fallback as the second argument, which will be
+-- used if the variable is not found in the environment.
 
 getEnvDefault ::
   ByteString    {- ^ variable name                    -} ->
@@ -100,6 +101,18 @@ getEnvironment = do
       | BC.head y == '=' = (x,B.tail y)
       | otherwise       = error $ "getEnvironment: insane variable " ++ BC.unpack x
 
+-- |'setEnvironment' resets the entire environment to the given list of
+-- @(key,value)@ pairs.
+--
+-- @since 2.7.3
+setEnvironment ::
+  [(ByteString,ByteString)] {- ^ @[(key,value)]@ -} ->
+  IO ()
+setEnvironment env = do
+  clearEnv
+  forM_ env $ \(key,value) ->
+    setEnv key value True {-overwrite-}
+
 -- |The 'unsetEnv' function deletes all instances of the variable name
 -- from the environment.
 
@@ -120,15 +133,25 @@ foreign import capi unsafe "HsUnix.h unsetenv"
    c_unsetenv :: CString -> IO ()
 # endif
 #else
-unsetEnv name = putEnv (name ++ "=")
+unsetEnv name = putEnv (BC.snoc name '=')
 #endif
 
 -- |'putEnv' function takes an argument of the form @name=value@
 -- and is equivalent to @setEnv(key,value,True{-overwrite-})@.
 
 putEnv :: ByteString {- ^ "key=value" -} -> IO ()
-putEnv keyvalue = B.useAsCString keyvalue $ \s ->
-  throwErrnoIfMinus1_ "putenv" (c_putenv s)
+putEnv (PS fp o l) = withForeignPtr fp $ \p -> do
+  -- https://pubs.opengroup.org/onlinepubs/009696899/functions/putenv.html
+  --
+  -- "the string pointed to by string shall become part of the environment,
+  -- so altering the string shall change the environment. The space used by
+  -- string is no longer used once a new string which defines name is passed to putenv()."
+  --
+  -- hence we must not free the buffer
+  buf <- mallocBytes (l+1)
+  memcpy buf (p `plusPtr` o) l
+  pokeByteOff buf l (0::Word8)
+  throwErrnoIfMinus1_ "putenv" (c_putenv (castPtr buf))
 
 foreign import ccall unsafe "putenv"
    c_putenv :: CString -> IO CInt

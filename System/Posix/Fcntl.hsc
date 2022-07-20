@@ -92,7 +92,10 @@ fileAdvise _ _ _ _ = return ()
 fileAllocate :: Fd -> FileOffset -> FileOffset -> IO ()
 #if HAVE_POSIX_FALLOCATE
 fileAllocate fd off len = do
-  throwErrnoIfMinus1_ "fileAllocate" (c_posix_fallocate (fromIntegral fd) (fromIntegral off) (fromIntegral len))
+  ret <- c_posix_fallocate (fromIntegral fd) (fromIntegral off) (fromIntegral len)
+  if ret == 0
+    then pure ()
+    else ioError (errnoToIOError "fileAllocate" (Errno ret) Nothing Nothing)
 
 foreign import capi safe "fcntl.h posix_fallocate"
   c_posix_fallocate :: CInt -> COff -> COff -> IO CInt

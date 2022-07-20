@@ -47,7 +47,7 @@ int __hsunix_push_module(int fd, const char *module)
  * re-entrant.
  */
 
-#if defined (__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 23)
+#if defined (__GLIBC__) && ((__GLIBC__ > 2) || (__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 23))
 #define USE_READDIR_R 0
 #else
 #define USE_READDIR_R 1

@@ -3,6 +3,7 @@
 #else
 {-# LANGUAGE Trustworthy #-}
 #endif
+{-# LANGUAGE CApiFFI #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Semaphore
@@ -114,18 +115,18 @@ semGetValue_ sem ptr = do throwErrnoIfMinus1Retry_ "semGetValue" $
                           cint <- peek ptr
                           return $ fromEnum cint
 
-foreign import ccall safe "sem_open"
+foreign import capi safe "semaphore.h sem_open"
         sem_open :: CString -> CInt -> CMode -> CUInt -> IO (Ptr ())
-foreign import ccall safe "sem_close"
+foreign import capi safe "semaphore.h sem_close"
         sem_close :: Ptr () -> IO CInt
-foreign import ccall safe "sem_unlink"
+foreign import capi safe "semaphore.h sem_unlink"
         sem_unlink :: CString -> IO CInt
 
-foreign import ccall safe "sem_wait"
+foreign import capi safe "semaphore.h sem_wait"
         sem_wait :: Ptr () -> IO CInt
-foreign import ccall safe "sem_trywait"
+foreign import capi safe "semaphore.h sem_trywait"
         sem_trywait :: Ptr () -> IO CInt
-foreign import ccall safe "sem_post"
+foreign import capi safe "semaphore.h sem_post"
         sem_post :: Ptr () -> IO CInt
-foreign import ccall safe "sem_getvalue"
+foreign import capi safe "semaphore.h sem_getvalue"
         sem_getvalue :: Ptr () -> Ptr CInt -> IO Int

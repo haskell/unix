@@ -1,5 +1,5 @@
 name:           unix
-version:        2.7.2.2
+version:        2.7.3
 -- NOTE: Don't forget to update ./changelog.md
 license:        BSD3
 license-file:   LICENSE
@@ -62,7 +62,7 @@ library
         buildable: False
 
     build-depends:
-        base        >= 4.5     && < 4.18,
+        base        >= 4.10    && < 4.18,
         bytestring  >= 0.9.2   && < 0.12,
         time        >= 1.2     && < 1.13
 
@@ -132,3 +132,111 @@ library
     c-sources:
         cbits/HsUnix.c
         cbits/execvpe.c
+
+test-suite unix-tests
+    hs-source-dirs: tests
+    main-is: Test.hs
+    other-modules:
+        FileStatus
+        FileStatusByteString
+        Signals001
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, tasty, tasty-hunit, unix
+    ghc-options: -Wall -with-rtsopts=-V0
+
+test-suite FdReadBuf001
+    hs-source-dirs: tests
+    main-is: FdReadBuf001.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall -threaded
+
+test-suite ForkProcess01
+    hs-source-dirs: tests
+    main-is: ForkProcess01.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Signals002
+    hs-source-dirs: tests
+    main-is: Signals002.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Signals004
+    hs-source-dirs: tests
+    main-is: Signals004.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Posix004
+    hs-source-dirs: tests
+    main-is: Posix004.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite Posix009
+    hs-source-dirs: tests
+    main-is: Posix009.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall -with-rtsopts=-V0
+
+test-suite Posix014
+    hs-source-dirs: tests
+    main-is: Posix014.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite T8108
+    hs-source-dirs: tests
+    main-is: T8108.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
+test-suite ResourceLimit
+    hs-source-dirs: tests
+    main-is: ResourceLimit.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix, tasty-hunit
+    ghc-options: -Wall
+
+test-suite Terminal
+    hs-source-dirs: tests
+    main-is: Terminal.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix, tasty-hunit
+    ghc-options: -Wall
+
+test-suite PutEnv001
+    hs-source-dirs: tests
+    main-is: PutEnv001.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix, tasty, tasty-hunit
+    ghc-options: -Wall -with-rtsopts=-V0 -O0
+
+test-suite Semaphore001
+    hs-source-dirs: tests
+    main-is: Semaphore001.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall

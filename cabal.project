@@ -1,0 +1,6 @@
+packages: .
+
+tests: True
+
+constraints:
+  tasty -unix, optparse-applicative -process
