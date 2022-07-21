@@ -30,7 +30,7 @@ Describe your project (alternative: link to the project):
 
 ### Include debug information
 
-<!-- Include any useful debug information, such as your 'HsUnixConfig.h' file (usually found inside 'dist-newstyle/' -->
+<!-- Include any useful debug information, such as your 'HsUnixConfig.h' file (usually found inside 'dist-newstyle/') -->
 
 ### API breaking changes
 
