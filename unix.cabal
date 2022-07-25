@@ -82,11 +82,13 @@ library
         System.Posix.Resource
         System.Posix.Time
         System.Posix.Unistd
-        System.Posix.User
         System.Posix.Signals
         System.Posix.Signals.Exts
         System.Posix.Semaphore
         System.Posix.SharedMem
+
+        System.Posix.User
+        System.Posix.User.ByteString
 
         System.Posix.ByteString.FilePath
         System.Posix.PosixPath.FilePath
@@ -137,6 +139,7 @@ library
         System.Posix.IO.Common
         System.Posix.Process.Common
         System.Posix.Terminal.Common
+        System.Posix.User.Common
 
     ghc-options: -Wall
 

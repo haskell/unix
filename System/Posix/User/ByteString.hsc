@@ -1,7 +1,7 @@
 {-# LANGUAGE Trustworthy, CApiFFI, PatternSynonyms, ViewPatterns #-}
 -----------------------------------------------------------------------------
 -- |
--- Module      :  System.Posix.User
+-- Module      :  System.Posix.User.ByteString
 -- Copyright   :  (c) The University of Glasgow 2002
 -- License     :  BSD-style (see the file libraries/base/LICENSE)
 --
@@ -13,7 +13,7 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Posix.User (
+module System.Posix.User.ByteString (
     -- * User environment
     -- ** Querying the user environment
     getRealUserID,
@@ -25,24 +25,14 @@ module System.Posix.User (
     getEffectiveUserName,
 
     -- *** The group database
-    groupName,
-    groupPassword,
-    groupID,
-    groupMembers,
-    pattern GroupEntry,
+    GroupEntry(..),
+
     getGroupEntryForID,
     getGroupEntryForName,
     getAllGroupEntries,
 
     -- *** The user database
-    userName,
-    userPassword,
-    userID,
-    userGroupID,
-    userGecos,
-    homeDirectory,
-    userShell,
-    pattern UserEntry,
+    UserEntry(..),
 
     getUserEntryForID,
     getUserEntryForName,
@@ -61,17 +51,12 @@ module System.Posix.User (
 
 import System.Posix.Types
 import System.IO.Unsafe (unsafePerformIO)
-import Foreign.C
+import Foreign.C ( CSize(..), CInt(..), CString, CLong(..), getErrno, throwErrno, eOK, throwErrnoIfMinus1_, throwErrnoIfNull, resetErrno, Errno(..), eRANGE, errnoToIOError )
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
-import System.Posix.User.Common ( UserEntry, GroupEntry
-#if defined(HAVE_PWD_H)
-      , unpackUserEntry, unpackGroupEntry, LKUPTYPE(..), CPasswd, CGroup
-#endif
-  )
-import qualified System.Posix.User.Common as User
 
+import System.Posix.User.Common
 #if defined(HAVE_GETPWENT) || defined(HAVE_GETGRENT)
 #if defined(freebsd_HOST_OS)
 import Control.Concurrent (runInBoundThread, rtsSupportsBoundThreads)
@@ -81,7 +66,7 @@ import Control.Exception
 #endif
 import Control.Monad
 import System.IO.Error
-import qualified Data.ByteString.Char8 as C8
+import Data.ByteString ( ByteString, packCString, useAsCString )
 
 #if !defined(HAVE_PWD_H)
 import System.IO.Error ( ioeSetLocation )
@@ -121,7 +106,7 @@ setGroups :: [GroupID] -> IO ()
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
 setGroups _ = ioError (ioeSetLocation unsupportedOperation "setGroups")
 
-getLoginName :: IO String
+getLoginName :: IO ByteString
 {-# WARNING getLoginName
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
 getLoginName = ioError (ioeSetLocation unsupportedOperation "getLoginName")
@@ -146,7 +131,7 @@ setEffectiveGroupID :: GroupID -> IO ()
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
 setEffectiveGroupID _ = ioError (ioeSetLocation unsupportedOperation "setEffectiveGroupID")
 
-getEffectiveUserName :: IO String
+getEffectiveUserName :: IO ByteString
 {-# WARNING getEffectiveUserName
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
 getEffectiveUserName = ioError (ioeSetLocation unsupportedOperation "getEffectiveUserName")
@@ -321,11 +306,11 @@ foreign import ccall unsafe "setgroups"
 
 -- | @getLoginName@ calls @getlogin@ to obtain the login name
 --   associated with the current process.
-getLoginName :: IO String
+getLoginName :: IO ByteString
 getLoginName =  do
     -- ToDo: use getlogin_r
     str <- throwErrnoIfNull "getLoginName" c_getlogin
-    peekCAString str
+    packCString str
 
 foreign import ccall unsafe "getlogin"
   c_getlogin :: IO CString
@@ -371,7 +356,7 @@ foreign import ccall unsafe "setegid"
 
 -- | @getEffectiveUserName@ gets the name
 --   associated with the effective @UserID@ of the process.
-getEffectiveUserName :: IO String
+getEffectiveUserName :: IO ByteString
 getEffectiveUserName = do
     euid <- getEffectiveUserID
     pw <- getUserEntryForID euid
@@ -382,28 +367,6 @@ getEffectiveUserName = do
 -- -----------------------------------------------------------------------------
 -- The group database (grp.h)
 
-groupName :: GroupEntry -> String
-groupName (GroupEntry gn _ _ _) = gn
-
-groupPassword :: GroupEntry -> String
-groupPassword (GroupEntry _ gp _ _) = gp
-
-groupID :: GroupEntry -> GroupID
-groupID (GroupEntry _ _ id' _) = id'
-
-groupMembers :: GroupEntry -> [String]
-groupMembers (GroupEntry _ _ _ gm) = gm
-
--- | Manually constructing 'GroupEntry' in String modules is discouraged. It will truncate
--- Chars to 8bit. Use 'System.Posix.User.ByteString' instead.
-pattern GroupEntry :: String          -- ^ The name of this group (gr_name)
-                   -> String          -- ^ The password for this group (gr_passwd)
-                   -> GroupID         -- ^ The unique numeric ID for this group (gr_gid)
-                   -> [String]        -- ^ A list of zero or more usernames that are members (gr_mem)
-                   -> GroupEntry
-pattern GroupEntry gn gp gi gm <- User.GroupEntry (C8.unpack -> gn) (C8.unpack -> gp) gi (fmap C8.unpack -> gm) where
-  GroupEntry gn gp gi gm = User.GroupEntry (C8.pack gn) (C8.pack gp) gi (C8.pack <$> gm)
-{-# COMPLETE GroupEntry #-}
 
 #if !defined(HAVE_PWD_H)
 
@@ -412,7 +375,7 @@ getGroupEntryForID :: GroupID -> IO GroupEntry
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
 getGroupEntryForID _ = ioError (ioeSetLocation unsupportedOperation "getGroupEntryForID")
 
-getGroupEntryForName :: String -> IO GroupEntry
+getGroupEntryForName :: ByteString -> IO GroupEntry
 {-# WARNING getGroupEntryForName
     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_PWD_H@)" #-}
 getGroupEntryForName _ = ioError (ioeSetLocation unsupportedOperation "getGroupEntryForName")
@@ -447,11 +410,11 @@ getGroupEntryForID = error "System.Posix.User.getGroupEntryForID: not supported"
 --   the @GroupEntry@ information associated with the group called
 --   @name@. This operation may fail with 'isDoesNotExistError'
 --   if no such group exists.
-getGroupEntryForName :: String -> IO GroupEntry
+getGroupEntryForName :: ByteString -> IO GroupEntry
 #ifdef HAVE_GETGRNAM_R
 getGroupEntryForName name = lockgr GETONE $
     allocaBytes (#const sizeof(struct group)) $ \pgr ->
-        withCAString name $ \ pstr ->
+        useAsCString name $ \ pstr ->
             doubleAllocWhileERANGE "getGroupEntryForName" "group"
                 grBufSize unpackGroupEntry $ c_getgrnam_r pstr pgr
 
@@ -505,52 +468,6 @@ grBufSize = 1024
 -- -----------------------------------------------------------------------------
 -- The user database (pwd.h)
 
-userName :: UserEntry -> String
-userName (UserEntry n _ _ _ _ _ _) = n
-
-userPassword :: UserEntry -> String
-userPassword (UserEntry _ p _ _ _ _ _) = p
-
-userID :: UserEntry -> UserID
-userID (UserEntry _ _ id' _ _ _ _) = id'
-
-userGroupID :: UserEntry -> GroupID
-userGroupID (UserEntry _ _ _ gid _ _ _) = gid
-
-userGecos :: UserEntry -> String
-userGecos (UserEntry _ _ _ _ ge _ _) = ge
-
-homeDirectory :: UserEntry -> String
-homeDirectory (UserEntry _ _ _ _ _ hd _) = hd
-
-userShell :: UserEntry -> String
-userShell (UserEntry _ _ _ _ _ _ us) = us
-
--- | Manually constructing 'UserEntry' in String modules is discouraged. It will truncate
--- Chars to 8bit. Use 'System.Posix.User.ByteString' instead.
-pattern UserEntry :: String         -- ^ Textual name of this user (pw_name)
-                  -> String         -- ^ Password -- may be empty or fake if shadow is in use (pw_passwd)
-                  -> UserID         -- ^ Numeric ID for this user (pw_uid)
-                  -> GroupID        -- ^ Primary group ID (pw_gid)
-                  -> String         -- ^ Usually the real name for the user (pw_gecos)
-                  -> String         -- ^ Home directory (pw_dir)
-                  -> String         -- ^ Default shell (pw_shell)
-                  -> UserEntry
-pattern UserEntry un up ui ugi ug hd us <- User.UserEntry (C8.unpack -> un)
-                                                       (C8.unpack -> up)
-                                                       ui
-                                                       ugi
-                                                       (C8.unpack -> ug)
-                                                       (C8.unpack -> hd)
-                                                       (C8.unpack -> us) where
-  UserEntry un up ui ugi ug hd us = User.UserEntry (C8.pack un)
-                                                (C8.pack up)
-                                                ui
-                                                ugi
-                                                (C8.pack ug)
-                                                (C8.pack hd)
-                                                (C8.pack us)
-{-# COMPLETE UserEntry #-}
 
 -- | @getUserEntryForID uid@ calls @getpwuid_r@ to obtain
 --   the @UserEntry@ information associated with @UserID@
@@ -575,11 +492,11 @@ getUserEntryForID = error "System.Posix.User.getUserEntryForID: not supported"
 --   the @UserEntry@ information associated with the user login
 --   @name@. This operation may fail with 'isDoesNotExistError'
 --   if no such user exists.
-getUserEntryForName :: String -> IO UserEntry
+getUserEntryForName :: ByteString -> IO UserEntry
 #if HAVE_GETPWNAM_R
 getUserEntryForName name = lockpw GETONE $
     allocaBytes (#const sizeof(struct passwd)) $ \ppw ->
-        withCAString name $ \ pstr ->
+        useAsCString name $ \ pstr ->
             doubleAllocWhileERANGE "getUserEntryForName" "user"
                 pwBufSize unpackUserEntry $ c_getpwnam_r pstr ppw
 
@@ -673,7 +590,6 @@ doubleAllocWhileERANGE loc enttype initlen unpack action =
   notFoundErr =
     ioError $ flip ioeSetErrorString ("no such " ++ enttype)
             $ mkIOError doesNotExistErrorType loc Nothing Nothing
-
 
 -- Used when a function returns NULL to indicate either an error or
 -- EOF, depending on whether the global errno is nonzero.
