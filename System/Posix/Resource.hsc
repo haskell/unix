@@ -1,9 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
-#if __GLASGOW_HASKELL__ >= 709
-{-# LANGUAGE Safe #-}
-#else
 {-# LANGUAGE Trustworthy #-}
-#endif
+
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Resource
@@ -30,6 +27,10 @@ module System.Posix.Resource (
 import System.Posix.Types
 import Foreign
 import Foreign.C
+
+#if __GLASGOW_HASKELL__ >= 905
+import GHC.Exts ( considerAccessible )
+#endif
 
 -- -----------------------------------------------------------------------------
 -- Resource limits
@@ -100,12 +101,20 @@ unpackRLimit :: CRLim -> ResourceLimit
 unpackRLimit (#const RLIM_INFINITY)  = ResourceLimitInfinity
 unpackRLimit other
 #if defined(RLIM_SAVED_MAX)
-    | ((#const RLIM_SAVED_MAX) :: CRLim) /= (#const RLIM_INFINITY) &&
-      other == (#const RLIM_SAVED_MAX) = ResourceLimitUnknown
+    | ((#const RLIM_SAVED_MAX) :: CRLim) /= (#const RLIM_INFINITY)
+    , other == (#const RLIM_SAVED_MAX)
+    = ResourceLimitUnknown
 #endif
 #if defined(RLIM_SAVED_CUR)
-    | ((#const RLIM_SAVED_CUR) :: CRLim) /= (#const RLIM_INFINITY) &&
-      other == (#const RLIM_SAVED_CUR) = ResourceLimitUnknown
+    | ((#const RLIM_SAVED_CUR) :: CRLim) /= (#const RLIM_INFINITY)
+    , other == (#const RLIM_SAVED_CUR)
+#if __GLASGOW_HASKELL__ >= 905
+    , considerAccessible
+#endif
+    = ResourceLimitUnknown
+    -- (*) This pattern match is redundant if RLIM_SAVED_MAX and RLIM_SAVED_CUR
+    -- are both defined and are equal. This redundancy is only detected by GHC
+    -- starting from version 9.5, so we use 'considerAccessible'.
 #endif
     | otherwise = ResourceLimit (fromIntegral other)
 
