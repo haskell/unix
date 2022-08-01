@@ -1,6 +1,8 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## 2.8.0.0 *UNRELEASED*
+## 2.8.0.0 *August 2022*
+  * Use ByteString for GroupEntry/UserEntry
+
   * Fix `semTrywait` on darwin
 
   * Fix vanishing environment variables in `System.Posix.Env.ByteString.putEnv`/`System.Posix.Env.ByteString.getEnv`
