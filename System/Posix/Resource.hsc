@@ -1,5 +1,9 @@
 {-# LANGUAGE CApiFFI #-}
+#if __GLASGOW_HASKELL__ >= 905
 {-# LANGUAGE Trustworthy #-}
+#else
+{-# LANGUAGE Safe #-}
+#endif
 
 -----------------------------------------------------------------------------
 -- |
