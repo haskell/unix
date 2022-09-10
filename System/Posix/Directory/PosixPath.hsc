@@ -46,15 +46,11 @@ module System.Posix.Directory.PosixPath (
    changeWorkingDirectoryFd,
   ) where
 
-import System.IO.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C
 
 import System.OsPath.Types
-import GHC.IO.Encoding.UTF8 ( mkUTF8 )
-import GHC.IO.Encoding.Failure ( CodingFailureMode(..) )
-import System.OsPath.Posix
 import System.Posix.Directory hiding (createDirectory, openDirStream, readDirStream, getWorkingDirectory, changeWorkingDirectory, removeDirectory)
 import qualified System.Posix.Directory.Common as Common
 import System.Posix.PosixPath.FilePath
@@ -145,22 +141,16 @@ foreign import ccall unsafe "getcwd"
 --   the current working directory to @dir@.
 changeWorkingDirectory :: PosixPath -> IO ()
 changeWorkingDirectory path =
-  modifyIOError (`ioeSetFileName` (_toStr path)) $
-    withFilePath path $ \s ->
-       throwErrnoIfMinus1Retry_ "changeWorkingDirectory" (c_chdir s)
+  withFilePath path $ \s ->
+     throwErrnoPathIfMinus1Retry_ "changeWorkingDirectory" path (c_chdir s)
 
 foreign import ccall unsafe "chdir"
    c_chdir :: CString -> IO CInt
 
 removeDirectory :: PosixPath -> IO ()
 removeDirectory path =
-  modifyIOError (`ioeSetFileName` _toStr path) $
-    withFilePath path $ \s ->
-       throwErrnoIfMinus1Retry_ "removeDirectory" (c_rmdir s)
+  withFilePath path $ \s ->
+     throwErrnoPathIfMinus1Retry_ "removeDirectory" path (c_rmdir s)
 
 foreign import ccall unsafe "rmdir"
    c_rmdir :: CString -> IO CInt
-
-_toStr :: PosixPath -> String
-_toStr fp = either (error . show) id $ decodeWith (mkUTF8 TransliterateCodingFailure) fp
-
