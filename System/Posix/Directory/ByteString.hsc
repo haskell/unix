@@ -49,7 +49,6 @@ module System.Posix.Directory.ByteString (
   ) where
 
 import Data.Maybe
-import System.IO.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C
@@ -158,18 +157,16 @@ foreign import ccall unsafe "getcwd"
 --   the current working directory to @dir@.
 changeWorkingDirectory :: RawFilePath -> IO ()
 changeWorkingDirectory path =
-  modifyIOError (`ioeSetFileName` (BC.unpack path)) $
-    withFilePath path $ \s ->
-       throwErrnoIfMinus1Retry_ "changeWorkingDirectory" (c_chdir s)
+  withFilePath path $ \s ->
+     throwErrnoPathIfMinus1Retry_ "changeWorkingDirectory" path (c_chdir s)
 
 foreign import ccall unsafe "chdir"
    c_chdir :: CString -> IO CInt
 
 removeDirectory :: RawFilePath -> IO ()
 removeDirectory path =
-  modifyIOError (`ioeSetFileName` BC.unpack path) $
-    withFilePath path $ \s ->
-       throwErrnoIfMinus1Retry_ "removeDirectory" (c_rmdir s)
+  withFilePath path $ \s ->
+     throwErrnoPathIfMinus1Retry_ "removeDirectory" path (c_rmdir s)
 
 foreign import ccall unsafe "rmdir"
    c_rmdir :: CString -> IO CInt
