@@ -35,6 +35,19 @@ import System.Posix.Directory.PosixPath (createDirectory)
 import System.Posix.IO.PosixString
 import System.Posix.Types
 
+#if !defined(HAVE_MKSTEMP)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
+#if !defined(HAVE_MKSTEMP)
+
+{-# WARNING mkstemp "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_MKSTEMP@)" #-}
+mkstemp :: PosixString -> IO (PosixPath, Handle)
+mkstemp _ = ioError (ioeSetLocation unsupportedOperation "mkstemp")
+
+#else
+
 foreign import capi unsafe "HsUnix.h mkstemp"
   c_mkstemp :: CString -> IO CInt
 
@@ -53,6 +66,8 @@ mkstemp (PosixString template') = do
     name <- peekFilePath ptr
     h <- fdToHandle (Fd fd)
     return (name, h)
+
+#endif // HAVE_MKSTEMP
 
 #if HAVE_MKSTEMPS
 foreign import capi unsafe "HsUnix.h mkstemps"
