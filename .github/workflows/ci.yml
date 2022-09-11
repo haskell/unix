@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [macOS-latest]
         ghc: ['9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
     steps:
     - uses: actions/checkout@v2
