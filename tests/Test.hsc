@@ -29,6 +29,7 @@ import Test.Tasty.QuickCheck
 import qualified FileStatus
 import qualified FileExtendedStatus
 import qualified FileStatusByteString
+import qualified ReadDirStream
 import qualified Signals001
 
 main :: IO ()
@@ -59,6 +60,9 @@ main = defaultMain $ testGroup "All"
     , posix005                     -- JS: missing "environ"
     , posix006                     -- JS: missing "time"
     , posix010                     -- JS: missing "sysconf"
+    , emptyDirStream
+    , nonEmptyDirStream
+    , dirStreamWithTypes
     ]
 #endif
   , testWithFilePath
@@ -274,6 +278,15 @@ testWithFilePath =
           ioProperty $ PPFP.withFilePath (PosixString ys)
             (\ptr -> (=== ys) <$> Sh.packCString ptr)
       ]
+
+emptyDirStream :: TestTree
+emptyDirStream = testCase "emptyDirStream" ReadDirStream.emptyDirStream
+
+nonEmptyDirStream :: TestTree
+nonEmptyDirStream = testCase "nonEmptyDirStream" ReadDirStream.nonEmptyDirStream
+
+dirStreamWithTypes :: TestTree
+dirStreamWithTypes = testCase "dirStreamWithTypes" ReadDirStream.dirStreamWithTypes
 
 -------------------------------------------------------------------------------
 -- Utils
