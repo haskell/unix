@@ -19,6 +19,7 @@ import Test.Tasty.HUnit
 
 import qualified FileStatus
 import qualified FileStatusByteString
+import qualified ReadDirStream
 import qualified Signals001
 
 main :: IO ()
@@ -42,6 +43,8 @@ main = defaultMain $ testGroup "All"
   , posix005
   , posix006
   , posix010
+  , emptyDirStream
+  , nonEmptyDirStream
   ]
 
 executeFile001 :: TestTree
@@ -224,6 +227,12 @@ posix010 = testCase "posix010" $ do
   userGroupID root' @?= 0
 
   homeDirectory root @?= homeDirectory root'
+
+emptyDirStream :: TestTree
+emptyDirStream = testCase "emptyDirStream" ReadDirStream.emptyDirStream
+
+nonEmptyDirStream :: TestTree
+nonEmptyDirStream = testCase "nonEmptyDirStream" ReadDirStream.nonEmptyDirStream
 
 -------------------------------------------------------------------------------
 -- Utils

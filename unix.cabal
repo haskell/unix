@@ -162,6 +162,7 @@ test-suite unix-tests
         FileStatus
         FileStatusByteString
         Signals001
+        ReadDirStream
     type: exitcode-stdio-1.0
     default-language: Haskell2010
     build-depends: base, tasty, tasty-hunit, unix
