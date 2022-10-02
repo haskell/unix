@@ -1,3 +1,4 @@
+{-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE Trustworthy #-}
 
 -----------------------------------------------------------------------------
@@ -452,12 +453,12 @@ toCTimeSpec t = CTimeSpec (CTime sec) (truncate $ 10^(9::Int) * frac)
 #endif
 
 #ifdef HAVE_UTIMENSAT
-foreign import ccall unsafe "utimensat"
+foreign import capi unsafe "sys/stat.h utimensat"
     c_utimensat :: CInt -> CString -> Ptr CTimeSpec -> CInt -> IO CInt
 #endif
 
 #if HAVE_FUTIMENS
-foreign import ccall unsafe "futimens"
+foreign import capi unsafe "sys/stat.h futimens"
     c_futimens :: CInt -> Ptr CTimeSpec -> IO CInt
 #endif
 
@@ -480,16 +481,16 @@ toCTimeVal t = CTimeVal sec (truncate $ 10^(6::Int) * frac)
     (sec, frac) = if (frac' < 0) then (sec' - 1, frac' + 1) else (sec', frac')
     (sec', frac') = properFraction $ toRational t
 
-foreign import ccall unsafe "utimes"
+foreign import capi unsafe "sys/time.h utimes"
     c_utimes :: CString -> Ptr CTimeVal -> IO CInt
 
 #ifdef HAVE_LUTIMES
-foreign import ccall unsafe "lutimes"
+foreign import capi unsafe "sys/time.h lutimes"
     c_lutimes :: CString -> Ptr CTimeVal -> IO CInt
 #endif
 
 #if HAVE_FUTIMES
-foreign import ccall unsafe "futimes"
+foreign import capi unsafe "sys/time.h futimes"
     c_futimes :: CInt -> Ptr CTimeVal -> IO CInt
 #endif
 
