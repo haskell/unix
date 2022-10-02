@@ -34,6 +34,7 @@ module System.Posix.Directory (
    readDirStream,
    readDirStreamMaybe,
    readDirStreamWith,
+   readDirStreamWithPtr,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -114,26 +115,38 @@ readDirStreamMaybe = readDirStreamWith
 --   invocation of the callback and it will be freed automatically after. Do not
 --   pass it to the outside world!
 readDirStreamWith :: (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
-readDirStreamWith f (DirStream dirp) =
-  alloca $ \ptr_dEnt  -> loop ptr_dEnt
- where
-  loop ptr_dEnt = do
-    resetErrno
-    r <- c_readdir dirp ptr_dEnt
-    if (r == 0)
-         then do dEnt <- peek ptr_dEnt
-                 if (dEnt == nullPtr)
-                    then return Nothing
-                    else do
-                     res <- f (DirEnt dEnt)
-                     c_freeDirEnt dEnt
-                     return (Just res)
-         else do errno <- getErrno
-                 if (errno == eINTR) then loop ptr_dEnt else do
-                 let (Errno eo) = errno
-                 if (eo == 0)
-                    then return Nothing
-                    else throwErrno "readDirStream"
+readDirStreamWith f dstream = alloca
+  (\ptr_dEnt  -> readDirStreamWithPtr ptr_dEnt f dstream)
+
+-- | A version of 'readDirStreamWith' that takes a pre-allocated pointer in
+--   addition to the other arguments. This pointer is used to store the pointer
+--   to the next directory entry, if there is any. This function is intended for
+--   usecases where you need to read a lot of directory entries and want to
+--   reuse the pointer for each of them. Using for example 'readDirStream' or
+--   'readDirStreamWith' in this scenario would allocate a new pointer for each
+--   call of these functions.
+--
+--   __NOTE__: You are responsible for releasing the pointer after you are done.
+readDirStreamWithPtr :: Ptr DirEnt -> (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
+readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
+  resetErrno
+  r <- c_readdir dirp (castPtr ptr_dEnt)
+  if (r == 0)
+       then do dEnt@(DirEnt dEntPtr) <- peek ptr_dEnt
+               if (dEntPtr == nullPtr)
+                  then return Nothing
+                  else do
+                   res <- f dEnt
+                   c_freeDirEnt dEntPtr
+                   return (Just res)
+       else do errno <- getErrno
+               if (errno == eINTR)
+                  then readDirStreamWithPtr ptr_dEnt f dstream
+                  else do
+                   let (Errno eo) = errno
+                   if (eo == 0)
+                      then return Nothing
+                      else throwErrno "readDirStream"
 
 -- traversing directories
 foreign import ccall unsafe "__hscore_readdir"

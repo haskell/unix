@@ -45,6 +45,21 @@ newtype DirStream = DirStream (Ptr CDir)
 
 newtype DirEnt = DirEnt (Ptr CDirent)
 
+-- We provide a hand-written instance here since GeneralizedNewtypeDeriving and
+-- DerivingVia are not allowed in Safe Haskell.
+instance Storable DirEnt where
+  sizeOf _ = sizeOf (undefined :: Ptr CDirent)
+  {-# INLINE sizeOf #-}
+
+  alignment _ = alignment (undefined :: Ptr CDirent)
+  {-# INLINE alignment #-}
+
+  peek ptr = DirEnt <$> peek (castPtr ptr)
+  {-# INLINE peek #-}
+
+  poke ptr (DirEnt dEnt) = poke (castPtr ptr) dEnt
+  {-# INLINE poke#-}
+
 data {-# CTYPE "DIR" #-} CDir
 data {-# CTYPE "struct dirent" #-} CDirent
 
