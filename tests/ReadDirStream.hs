@@ -17,12 +17,10 @@ emptyDirStream = do
   cleanup
   createDirectory dir ownerReadMode
   dir_p <- openDirStream dir
-  _ <- readDirStreamMaybe dir_p  -- Just "."
-  _ <- readDirStreamMaybe dir_p  -- Just ".."
-  ment <- readDirStreamMaybe dir_p
+  entries <- readDirStreamEntries dir_p
   closeDirStream dir_p
   cleanup
-  ment @?= Nothing
+  entries @?= []
 
 nonEmptyDirStream :: IO ()
 nonEmptyDirStream = do
@@ -30,14 +28,19 @@ nonEmptyDirStream = do
   createDirectory dir ownerModes
   _ <- createFile (dir ++ "/file") ownerReadMode
   dir_p <- openDirStream dir
-  -- We read three entries here since "." and "." are included in the dirstream
-  one <- readDirStreamMaybe dir_p
-  two <- readDirStreamMaybe dir_p
-  three <- readDirStreamMaybe dir_p
-  let ment = maximum [one, two, three]
+  entries <- readDirStreamEntries dir_p
   closeDirStream dir_p
   cleanup
-  ment @?= Just "file"
+  entries @?= ["file"]
+
+readDirStreamEntries :: DirStream -> IO [FilePath]
+readDirStreamEntries dir_p = do
+  ment <- readDirStreamMaybe dir_p
+  case ment of
+    Nothing -> return []
+    Just "." -> readDirStreamEntries dir_p
+    Just ".." -> readDirStreamEntries dir_p
+    Just ent -> (ent :) <$> readDirStreamEntries dir_p
 
 cleanup :: IO ()
 cleanup = do
