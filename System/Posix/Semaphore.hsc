@@ -39,6 +39,13 @@ import Foreign.Marshal
 import Foreign.Storable
 #endif
 
+#if __GLASGOW_HASKELL__ >= 902
+import System.Posix.Internals (hostIsThreaded)
+#else
+hostIsThreaded :: Bool
+hostIsThreaded = False
+#endif
+
 data OpenSemFlags = OpenSemFlags { semCreate :: Bool,
                                    -- ^ If true, create the semaphore if it
                                    --   does not yet exist.
@@ -96,9 +103,15 @@ semTryWait (Semaphore fptr) = withForeignPtr fptr semTrywait'
 --   semWait, this will block only the current thread rather than the
 --   entire process.
 semThreadWait :: Semaphore -> IO ()
-semThreadWait sem = do res <- semTryWait sem
-                       (if res then return ()
-                        else ( do { yield; semThreadWait sem } ))
+semThreadWait sem
+  -- N.B. semWait can be safely used in the case of the threaded runtime, where
+  -- the safe foreign call will be performed in its own thread, thereby not
+  -- blocking the process.
+  | hostIsThreaded = semWait sem
+  | otherwise = do
+      res <- semTryWait sem
+      if res then return ()
+             else do yield >> semThreadWait sem
 
 -- | Unlock the semaphore.
 semPost :: Semaphore -> IO ()
