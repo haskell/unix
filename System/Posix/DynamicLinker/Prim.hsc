@@ -86,15 +86,15 @@ data RTLDFlags
     deriving (Show, Read)
 
 #if defined(HAVE_DLFCN_H)
-foreign import capi unsafe "dlfcn.h dlopen" c_dlopen :: CString -> CInt -> IO (Ptr ())
+foreign import capi safe "dlfcn.h dlopen" c_dlopen :: CString -> CInt -> IO (Ptr ())
 foreign import capi unsafe "dlfcn.h dlsym"  c_dlsym  :: Ptr () -> CString -> IO (FunPtr a)
 foreign import capi unsafe "dlfcn.h dlerror" c_dlerror :: IO CString
-foreign import capi unsafe "dlfcn.h dlclose" c_dlclose :: (Ptr ()) -> IO CInt
+foreign import capi safe "dlfcn.h dlclose" c_dlclose :: (Ptr ()) -> IO CInt
 #else
-foreign import ccall unsafe "dlopen" c_dlopen :: CString -> CInt -> IO (Ptr ())
+foreign import ccall safe "dlopen" c_dlopen :: CString -> CInt -> IO (Ptr ())
 foreign import ccall unsafe "dlsym"  c_dlsym  :: Ptr () -> CString -> IO (FunPtr a)
 foreign import ccall unsafe "dlerror" c_dlerror :: IO CString
-foreign import ccall unsafe "dlclose" c_dlclose :: (Ptr ()) -> IO CInt
+foreign import ccall safe "dlclose" c_dlclose :: (Ptr ()) -> IO CInt
 #endif // HAVE_DLFCN_H
 
 packRTLDFlags :: [RTLDFlags] -> CInt
