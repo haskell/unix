@@ -12,16 +12,16 @@ jobs:
       - name: setup-ghc-wasm32-wasi
         run: |
           pushd $(mktemp -d)
-          curl -L https://github.com/tweag/ghc-wasm32-wasi/archive/refs/heads/master.tar.gz | tar xz --strip-components=1
+          curl -L https://gitlab.haskell.org/ghc/ghc-wasm-meta/-/archive/master/ghc-wasm-meta-master.tar.gz | tar xz --strip-components=1
           ./setup.sh
-          ~/.ghc-wasm32-wasi/add_to_github_path.sh
+          ~/.ghc-wasm/add_to_github_path.sh
           popd
 
       - uses: actions/checkout@v3
 
       - name: test
         run: |
-          cp ~/.ghc-wasm32-wasi/wasi-sdk/share/misc/config.* .
+          cp ~/.ghc-wasm/wasi-sdk/share/misc/config.* .
           autoreconf -i
 
           wasm32-wasi-cabal --project-file=cabal.project.wasm32-wasi build
