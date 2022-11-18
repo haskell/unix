@@ -56,6 +56,7 @@ where
 
 #include "HsUnix.h"
 
+import Prelude hiding (head, tail)
 import System.Posix.DynamicLinker
 import System.Posix.DynamicLinker.Common
 import Foreign.Ptr      ( Ptr, nullPtr, FunPtr )
@@ -101,7 +102,7 @@ withModule :: Maybe String
 withModule mdir file flags p = do
   let modPath = case mdir of
                   Nothing -> file
-                  Just dir  -> dir ++ if ((head (reverse dir)) == '/')
+                  Just dir  -> dir ++ if last dir == '/'
                                        then file
                                        else ('/':file)
   modu <- moduleOpen modPath flags
