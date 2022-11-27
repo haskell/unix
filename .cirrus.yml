@@ -1,9 +1,25 @@
-freebsd_instance:
-  image_family: freebsd-13-1
-
 task:
+  name: FreeBSD
+  freebsd_instance:
+    image_family: freebsd-13-1
   install_script: pkg install -y ghc hs-cabal-install git autoconf
   script:
+    - cabal update
+    - autoreconf -i
+    - cabal test --test-show-details=direct
+
+task:
+  name: OpenBSD
+  compute_engine_instance:
+    image_project: pg-ci-images
+    image: family/pg-ci-openbsd-vanilla-7-2
+    platform: openbsd
+  install_script: pkg_add ghc cabal-install git autoconf-2.71
+  script:
+    - export AUTOCONF_VERSION=2.71
+    - export CABAL_DIR=/tmp/.cabal
+    - ghc --version
+    - cabal --version
     - cabal update
     - autoreconf -i
     - cabal test --test-show-details=direct
