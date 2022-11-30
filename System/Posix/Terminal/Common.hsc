@@ -216,13 +216,16 @@ data TerminalMode
    | ReturnMeansLF              -- ^ @ONLRET@ - (XSI) NL performs CR function
                                 --
                                 -- @since 2.8.0.0
+#ifdef TAB0
    | TabDelayMask0              -- ^ @TABDLY(TAB0)@ - (XSI) Select horizontal-tab delays: type 0
                                 --
                                 -- @since 2.8.0.0
+#endif
+#ifdef TAB3
    | TabDelayMask3              -- ^ @TABDLY(TAB3)@ - (XSI) Select horizontal-tab delays: type 3
                                 --
                                 -- @since 2.8.0.0
-
+#endif
         -- control flags
    | LocalMode                  -- ^ @CLOCAL@ - Ignore modem status lines
    | ReadEnable                 -- ^ @CREAD@ - Enable receiver
@@ -289,8 +292,12 @@ withoutMode termios MapLFtoCRLF = clearOutputFlag (#const ONLCR) termios
 withoutMode termios OutputMapCRtoLF = clearOutputFlag (#const OCRNL) termios
 withoutMode termios NoCRAtColumnZero = clearOutputFlag (#const ONOCR) termios
 withoutMode termios ReturnMeansLF = clearOutputFlag (#const ONLRET) termios
+#ifdef TAB0
 withoutMode termios TabDelayMask0 = clearOutputFlag (#const TAB0) termios
+#endif
+#ifdef TAB3
 withoutMode termios TabDelayMask3 = clearOutputFlag (#const TAB3) termios
+#endif
 withoutMode termios LocalMode = clearControlFlag (#const CLOCAL) termios
 withoutMode termios ReadEnable = clearControlFlag (#const CREAD) termios
 withoutMode termios TwoStopBits = clearControlFlag (#const CSTOPB) termios
@@ -325,8 +332,12 @@ withMode termios MapLFtoCRLF = setOutputFlag (#const ONLCR) termios
 withMode termios OutputMapCRtoLF = setOutputFlag (#const OCRNL) termios
 withMode termios NoCRAtColumnZero = setOutputFlag (#const ONOCR) termios
 withMode termios ReturnMeansLF = setOutputFlag (#const ONLRET) termios
+#ifdef TAB0
 withMode termios TabDelayMask0 = setOutputFlag (#const TAB0) termios
+#endif
+#ifdef TAB3
 withMode termios TabDelayMask3 = setOutputFlag (#const TAB3) termios
+#endif
 withMode termios LocalMode = setControlFlag (#const CLOCAL) termios
 withMode termios ReadEnable = setControlFlag (#const CREAD) termios
 withMode termios TwoStopBits = setControlFlag (#const CSTOPB) termios
@@ -361,8 +372,12 @@ terminalMode MapLFtoCRLF = testOutputFlag (#const ONLCR)
 terminalMode OutputMapCRtoLF = testOutputFlag (#const OCRNL)
 terminalMode NoCRAtColumnZero = testOutputFlag (#const ONOCR)
 terminalMode ReturnMeansLF = testOutputFlag (#const ONLRET)
+#ifdef TAB0
 terminalMode TabDelayMask0 = testOutputFlag (#const TAB0)
+#endif
+#ifdef TAB3
 terminalMode TabDelayMask3 = testOutputFlag (#const TAB3)
+#endif
 terminalMode LocalMode = testControlFlag (#const CLOCAL)
 terminalMode ReadEnable = testControlFlag (#const CREAD)
 terminalMode TwoStopBits = testControlFlag (#const CSTOPB)
