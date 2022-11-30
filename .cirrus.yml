@@ -23,3 +23,20 @@ task:
     - cabal update
     - autoreconf -i
     - cabal test --test-show-details=direct
+
+task:
+  name: NetBSD
+  compute_engine_instance:
+    image_project: pg-ci-images
+    image: family/pg-ci-netbsd-vanilla-9-2
+    platform: netbsd
+  install_script:
+    - export PKG_PATH="http://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f '1 2' -d.)/All/"
+    - pkg_add ghc cabal-install git autoconf
+  script:
+    - export CABAL_DIR=/tmp/.cabal
+    - ghc --version
+    - cabal --version
+    - cabal update
+    - autoreconf -i
+    - cabal test --test-show-details=direct
