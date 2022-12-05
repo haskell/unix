@@ -1,7 +1,9 @@
 name: ci
 on:
-  - push
-  - pull_request
+  push:
+    branches: [ master, ci-* ]
+  pull_request:
+    branches: [ master, ci-* ]
 
 defaults:
   run:
@@ -11,9 +13,9 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-20.04, macOS-latest]
         ghc: ['9.4', '9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
     steps:
     - uses: actions/checkout@v3
