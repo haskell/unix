@@ -15,10 +15,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-latest]
+        os: [ubuntu-22.04, macOS-latest]
         ghc: ['9.4', '9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
     steps:
     - uses: actions/checkout@v3
+    - name: Install prerequisites for GHC 8.2 on ubuntu-22.04
+      if: runner.os == 'Linux' && matrix.ghc == '8.2'
+      run: |
+        sudo apt-get install libncurses5 libtinfo5
     - uses: haskell/actions/setup@v2
       id: setup-haskell-cabal
       with:
