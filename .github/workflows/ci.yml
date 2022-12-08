@@ -13,15 +13,19 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, macOS-latest]
-        ghc: ['9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
+        os: [ubuntu-22.04, macOS-latest]
+        ghc: ['9.4', '9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
     steps:
-    - uses: actions/checkout@v2
-    - uses: haskell/actions/setup@v1
+    - uses: actions/checkout@v3
+    - name: Install prerequisites for GHC 8.2 on ubuntu-22.04
+      if: runner.os == 'Linux' && matrix.ghc == '8.2'
+      run: |
+        sudo apt-get install libncurses5 libtinfo5
+    - uses: haskell/actions/setup@v2
       id: setup-haskell-cabal
       with:
         ghc-version: ${{ matrix.ghc }}
-    - uses: actions/cache@v2
+    - uses: actions/cache@v3
       name: Cache cabal stuff
       with:
         path: |
@@ -50,7 +54,7 @@ jobs:
       run: |
         yum install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Test
       run: |
         source ~/.ghcup/env
@@ -69,7 +73,7 @@ jobs:
       run: |
         dnf install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Test
       run: |
         source ~/.ghcup/env
@@ -106,8 +110,8 @@ jobs:
       matrix:
         arch: ['armv7', 'aarch64']
     steps:
-    - uses: actions/checkout@v2
-    - uses: uraimo/run-on-arch-action@v2.1.1
+    - uses: actions/checkout@v3
+    - uses: uraimo/run-on-arch-action@v2
       timeout-minutes: 120
       with:
         arch: ${{ matrix.arch }}
