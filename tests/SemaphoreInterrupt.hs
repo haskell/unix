@@ -8,7 +8,7 @@ import System.Posix
 main :: IO ()
 main = do
 
-  sem <- semOpen "/test" OpenSemFlags {semCreate = True, semExclusive = False} stdFileMode 0
+  sem <- semOpen "/test-interrupt" OpenSemFlags {semCreate = True, semExclusive = False} stdFileMode 0
   ref <- newIORef False
   _ <- forkIO $ do
     res <- semWaitInterruptible sem
