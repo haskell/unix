@@ -36,6 +36,11 @@ import System.Posix.Types
 import Foreign hiding (void)
 import Foreign.C
 
+#if !defined(HAVE_FCHDIR)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 newtype DirStream = DirStream (Ptr CDir)
 
 data {-# CTYPE "DIR" #-} CDir
@@ -111,9 +116,19 @@ foreign import ccall unsafe "telldir"
   c_telldir :: Ptr CDir -> IO CLong
 #endif
 
+#if defined(HAVE_FCHDIR)
+
 changeWorkingDirectoryFd :: Fd -> IO ()
 changeWorkingDirectoryFd (Fd fd) =
   throwErrnoIfMinus1Retry_ "changeWorkingDirectoryFd" (c_fchdir fd)
 
 foreign import ccall unsafe "fchdir"
   c_fchdir :: CInt -> IO CInt
+
+#else
+
+{-# WARNING changeWorkingDirectoryFd "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_FCHDIR@)" #-}
+changeWorkingDirectoryFd :: Fd -> IO ()
+changeWorkingDirectoryFd _ = ioError (ioeSetLocation unsupportedOperation "changeWorkingDirectoryFd")
+
+#endif // HAVE_FCHDIR

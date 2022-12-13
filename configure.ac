@@ -42,6 +42,7 @@ AC_CHECK_FUNCS([mknod])
 AC_CHECK_FUNCS([mkstemp])
 AC_CHECK_FUNCS([pipe])
 AC_CHECK_FUNCS([times])
+AC_CHECK_FUNCS([chown fchdir fchmod])
 
 AC_CHECK_TYPE([struct rlimit],[AC_DEFINE([HAVE_STRUCT_RLIMIT],[1],[HAVE_STRUCT_RLIMIT])],[],[#include <sys/resource.h>])
 
