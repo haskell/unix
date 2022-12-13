@@ -108,7 +108,7 @@ import Data.Monoid ((<>))
 
 import Data.Time.Clock.POSIX (POSIXTime)
 
-#if !defined(HAVE_MKNOD)
+#if !defined(HAVE_MKNOD) || !defined(HAVE_CHOWN)
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
@@ -323,6 +323,8 @@ foreign import ccall unsafe "rename"
 -- -----------------------------------------------------------------------------
 -- chown()
 
+#if defined(HAVE_CHOWN)
+
 -- | @setOwnerAndGroup path uid gid@ changes the owner and group of @path@ to
 -- @uid@ and @gid@, respectively.
 --
@@ -336,6 +338,14 @@ setOwnerAndGroup name uid gid = do
 
 foreign import ccall unsafe "chown"
   c_chown :: CString -> CUid -> CGid -> IO CInt
+
+#else
+
+{-# WARNING setOwnerAndGroup "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_CHOWN@)" #-}
+setOwnerAndGroup :: FilePath -> UserID -> GroupID -> IO ()
+setOwnerAndGroup _ _ _ = ioError (ioeSetLocation unsupportedOperation "setOwnerAndGroup")
+
+#endif // HAVE_CHOWN
 
 #if HAVE_LCHOWN
 -- | Acts as 'setOwnerAndGroup' but does not follow symlinks (and thus

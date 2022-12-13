@@ -98,6 +98,11 @@ import Foreign.Marshal (withArray)
 import Foreign.Ptr
 import Foreign.Storable
 
+#if !defined(HAVE_FCHMOD) || !defined(HAVE_CHOWN)
+import System.IO.Error ( ioeSetLocation )
+import GHC.IO.Exception ( unsupportedOperation )
+#endif
+
 -- -----------------------------------------------------------------------------
 -- POSIX file modes
 
@@ -208,6 +213,8 @@ symbolicLinkMode = (#const S_IFLNK)
 socketMode :: FileMode
 socketMode = (#const S_IFSOCK)
 
+#if defined(HAVE_FCHMOD)
+
 -- | @setFdMode fd mode@ acts like 'setFileMode' but uses a file descriptor
 -- @fd@ instead of a 'FilePath'.
 --
@@ -218,6 +225,14 @@ setFdMode (Fd fd) m =
 
 foreign import ccall unsafe "fchmod"
   c_fchmod :: CInt -> CMode -> IO CInt
+
+#else
+
+{-# WARNING setFdMode "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_FCHMOD@)" #-}
+setFdMode :: Fd -> FileMode -> IO ()
+setFdMode _ _ = ioError (ioeSetLocation unsupportedOperation "setFdMode")
+
+#endif // HAVE_FCHMOD
 
 -- | @setFileCreationMask mode@ sets the file mode creation mask to @mode@.
 -- Modes set by this operation are subtracted from files and directories upon
@@ -540,6 +555,8 @@ touchFd =
 -- -----------------------------------------------------------------------------
 -- fchown()
 
+#if defined(HAVE_CHOWN)
+
 -- | Acts as 'setOwnerAndGroup' but uses a file descriptor instead of a
 -- 'FilePath'.
 --
@@ -550,6 +567,14 @@ setFdOwnerAndGroup (Fd fd) uid gid =
 
 foreign import ccall unsafe "fchown"
   c_fchown :: CInt -> CUid -> CGid -> IO CInt
+
+#else
+
+{-# WARNING setFdOwnerAndGroup "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_CHOWN@)" #-}
+setFdOwnerAndGroup :: Fd -> UserID -> GroupID -> IO ()
+setFdOwnerAndGroup _ _ _ = ioError (ioeSetLocation unsupportedOperation "setFdOwnerAndGroup")
+
+#endif // HAVE_CHOWN
 
 -- -----------------------------------------------------------------------------
 -- ftruncate()
