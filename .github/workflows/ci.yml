@@ -16,26 +16,28 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-22.04, macOS-latest]
-        ghc: ['9.4', '9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
+        ghc: ['9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6', '8.4', '8.2']
     steps:
     - uses: actions/checkout@v3
     - name: Install prerequisites for GHC 8.2 on ubuntu-22.04
       if: runner.os == 'Linux' && matrix.ghc == '8.2'
       run: |
         sudo apt-get install libncurses5 libtinfo5
-    - uses: haskell/actions/setup@v2
-      id: setup-haskell-cabal
-      with:
-        ghc-version: ${{ matrix.ghc }}
+    - name: Setup toolchain
+      run: |
+        which ghcup
+        ghcup install cabal recommended
+        ghcup install ghc --set ${{ matrix.ghc }}
     - uses: actions/cache@v3
       name: Cache cabal stuff
       with:
         path: |
-          ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
+          ~/.cabal/store
           dist-newstyle
         key: ${{ runner.os }}-${{ matrix.ghc }}
     - name: Build
       run: |
+        ghc --version
         cabal --version
         cabal update
         autoreconf --version
