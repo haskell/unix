@@ -29,12 +29,36 @@ module System.Posix.Directory (
 
    -- * Reading directories
    DirStream,
-   DirEnt(..),
+   DirType( DtUnknown
+#ifdef CONST_DT_FIFO
+          , DtFifo
+#endif
+#ifdef CONST_DT_CHR
+          , DtChr
+#endif
+#ifdef CONST_DT_DIR
+          , DtDir
+#endif
+#ifdef CONST_DT_BLK
+          , DtBlk
+#endif
+#ifdef CONST_DT_REG
+          , DtReg
+#endif
+#ifdef CONST_DT_LNK
+          , DtLnk
+#endif
+#ifdef CONST_DT_SOCK
+          , DtSock
+#endif
+#ifdef CONST_DT_WHT
+          , DtWht
+#endif
+          ),
    openDirStream,
    readDirStream,
    readDirStreamMaybe,
-   readDirStreamWith,
-   readDirStreamWithPtr,
+   readDirStreamWithType,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -87,11 +111,11 @@ foreign import capi unsafe "HsUnix.h opendir"
 -- | @readDirStream dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@, and returns the @d_name@ member of that
---  structure.
+--   structure.
 --
---  Note that this function returns an empty filepath if the end of the
---  directory stream is reached. For a safer alternative use
---  'readDirStreamMaybe'.
+--   Note that this function returns an empty filepath if the end of the
+--   directory stream is reached. For a safer alternative use
+--   'readDirStreamMaybe'.
 readDirStream :: DirStream -> IO FilePath
 readDirStream = fmap (fromMaybe "") . readDirStreamMaybe
 
@@ -104,59 +128,24 @@ readDirStreamMaybe :: DirStream -> IO (Maybe FilePath)
 readDirStreamMaybe = readDirStreamWith
   (\(DirEnt dEnt) -> d_name dEnt >>= peekFilePath)
 
--- | @readDirStreamWith f dp@ calls @readdir@ to obtain the next directory entry
---   (@struct dirent@) for the open directory stream @dp@. If an entry is read,
---   it passes the pointer to that structure to the provided function @f@ for
---   processing. It returns the result of that function call wrapped in a @Just@
---   if an entry was read and @Nothing@ if the end of the directory stream was
---   reached.
---
---   __NOTE:__ The lifetime of the pointer wrapped in the `DirEnt` is limited to
---   invocation of the callback and it will be freed automatically after. Do not
---   pass it to the outside world!
-readDirStreamWith :: (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
-readDirStreamWith f dstream = alloca
-  (\ptr_dEnt  -> readDirStreamWithPtr ptr_dEnt f dstream)
-
--- | A version of 'readDirStreamWith' that takes a pre-allocated pointer in
---   addition to the other arguments. This pointer is used to store the pointer
---   to the next directory entry, if there is any. This function is intended for
---   usecases where you need to read a lot of directory entries and want to
---   reuse the pointer for each of them. Using for example 'readDirStream' or
---   'readDirStreamWith' in this scenario would allocate a new pointer for each
---   call of these functions.
---
---   __NOTE__: You are responsible for releasing the pointer after you are done.
-readDirStreamWithPtr :: Ptr DirEnt -> (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
-readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
-  resetErrno
-  r <- c_readdir dirp (castPtr ptr_dEnt)
-  if (r == 0)
-       then do dEnt@(DirEnt dEntPtr) <- peek ptr_dEnt
-               if (dEntPtr == nullPtr)
-                  then return Nothing
-                  else do
-                   res <- f dEnt
-                   c_freeDirEnt dEntPtr
-                   return (Just res)
-       else do errno <- getErrno
-               if (errno == eINTR)
-                  then readDirStreamWithPtr ptr_dEnt f dstream
-                  else do
-                   let (Errno eo) = errno
-                   if (eo == 0)
-                      then return Nothing
-                      else throwErrno "readDirStream"
-
--- traversing directories
-foreign import ccall unsafe "__hscore_readdir"
-  c_readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
-
-foreign import ccall unsafe "__hscore_free_dirent"
-  c_freeDirEnt  :: Ptr CDirent -> IO ()
+-- | @readDirStreamWithType dp@ calls @readdir@ to obtain the
+--   next directory entry (@struct dirent@) for the open directory
+--   stream @dp@. It returns the @d_name@ member of that
+--   structure together with the entry's type (@d_type@) wrapped in a
+--   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
+--   the end of the directory stream was reached.
+readDirStreamWithType :: DirStream -> IO (Maybe (FilePath, DirType))
+readDirStreamWithType = readDirStreamWith
+  (\(DirEnt dEnt) -> (,)
+    <$> (d_name dEnt >>= peekFilePath)
+    <*> (DirType <$> d_type dEnt)
+  )
 
 foreign import ccall unsafe "__hscore_d_name"
   d_name :: Ptr CDirent -> IO CString
+
+foreign import ccall unsafe "__hscore_d_type"
+  d_type :: Ptr CDirent -> IO CChar
 
 
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
