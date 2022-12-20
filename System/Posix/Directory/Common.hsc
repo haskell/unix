@@ -175,6 +175,7 @@ foreign import ccall unsafe "HsUnix.h close"
 foreign import capi unsafe "dirent.h fdopendir"
     c_fdopendir :: CInt -> IO (Ptr CDir)
 
+
 -- | @readDirStreamWith f dp@ calls @readdir@ to obtain the next directory entry
 --   (@struct dirent@) for the open directory stream @dp@. If an entry is read,
 --   it passes the pointer to that structure to the provided function @f@ for
@@ -226,11 +227,6 @@ foreign import ccall unsafe "__hscore_readdir"
 foreign import ccall unsafe "__hscore_free_dirent"
   c_freeDirEnt  :: Ptr CDirent -> IO ()
 
-foreign import ccall unsafe "__hscore_d_name"
-  d_name :: Ptr CDirent -> IO CString
-
-foreign import ccall unsafe "__hscore_d_type"
-  d_type :: Ptr CDirent -> IO CChar
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
 --   the directory stream @dp@ at the beginning of the directory.
