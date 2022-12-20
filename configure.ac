@@ -27,6 +27,12 @@ AC_CHECK_HEADERS([sys/sysmacros.h])
 AC_CHECK_HEADERS([bsd/libutil.h libutil.h pty.h utmp.h])
 AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
+AC_STRUCT_DIRENT_D_TYPE
+FP_CHECK_CONSTS([DT_UNKNOWN DT_FIFO DT_CHR DT_DIR DT_BLK DT_REG DT_LNK DT_SOCK DT_WHT], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif])
+
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
 AC_CHECK_FUNCS([getpwent getgrent])
 AC_CHECK_FUNCS([lchown setenv sysconf unsetenv clearenv])

@@ -29,9 +29,36 @@ module System.Posix.Directory.ByteString (
 
    -- * Reading directories
    DirStream,
+   DirType( DtUnknown
+#ifdef CONST_DT_FIFO
+          , DtFifo
+#endif
+#ifdef CONST_DT_CHR
+          , DtChr
+#endif
+#ifdef CONST_DT_DIR
+          , DtDir
+#endif
+#ifdef CONST_DT_BLK
+          , DtBlk
+#endif
+#ifdef CONST_DT_REG
+          , DtReg
+#endif
+#ifdef CONST_DT_LNK
+          , DtLnk
+#endif
+#ifdef CONST_DT_SOCK
+          , DtSock
+#endif
+#ifdef CONST_DT_WHT
+          , DtWht
+#endif
+          ),
    openDirStream,
    readDirStream,
    readDirStreamMaybe,
+   readDirStreamWithType,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -60,7 +87,7 @@ import System.Posix.ByteString.FilePath
 
 -- | @createDirectory dir mode@ calls @mkdir@ to
 --   create a new directory, @dir@, with permissions based on
---  @mode@.
+--   @mode@.
 createDirectory :: RawFilePath -> FileMode -> IO ()
 createDirectory name mode =
   withFilePath name $ \s ->
@@ -85,50 +112,41 @@ foreign import capi unsafe "HsUnix.h opendir"
 -- | @readDirStream dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@, and returns the @d_name@ member of that
---  structure.
+--   structure.
 --
---  Note that this function returns an empty filepath if the end of the
---  directory stream is reached. For a safer alternative use
---  'readDirStreamMaybe'.
+--   Note that this function returns an empty filepath if the end of the
+--   directory stream is reached. For a safer alternative use
+--   'readDirStreamMaybe'.
 readDirStream :: DirStream -> IO RawFilePath
 readDirStream = fmap (fromMaybe BC.empty) . readDirStreamMaybe
 
 -- | @readDirStreamMaybe dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@. It returns the @d_name@ member of that
---  structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
---  the end of the directory stream was reached.
+--   structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
+--   the end of the directory stream was reached.
 readDirStreamMaybe :: DirStream -> IO (Maybe RawFilePath)
-readDirStreamMaybe (DirStream dirp) =
-  alloca $ \ptr_dEnt  -> loop ptr_dEnt
- where
-  loop ptr_dEnt = do
-    resetErrno
-    r <- c_readdir dirp ptr_dEnt
-    if (r == 0)
-         then do dEnt <- peek ptr_dEnt
-                 if (dEnt == nullPtr)
-                    then return Nothing
-                    else do
-                     entry <- (d_name dEnt >>= peekFilePath)
-                     c_freeDirEnt dEnt
-                     return $ Just entry
-         else do errno <- getErrno
-                 if (errno == eINTR) then loop ptr_dEnt else do
-                 let (Errno eo) = errno
-                 if (eo == 0)
-                    then return Nothing
-                    else throwErrno "readDirStream"
+readDirStreamMaybe = readDirStreamWith
+  (\(DirEnt dEnt) -> d_name dEnt >>= peekFilePath)
 
--- traversing directories
-foreign import ccall unsafe "__hscore_readdir"
-  c_readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
-
-foreign import ccall unsafe "__hscore_free_dirent"
-  c_freeDirEnt  :: Ptr CDirent -> IO ()
+-- | @readDirStreamWithType dp@ calls @readdir@ to obtain the
+--   next directory entry (@struct dirent@) for the open directory
+--   stream @dp@. It returns the @d_name@ member of that
+--   structure together with the entry's type (@d_type@) wrapped in a
+--   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
+--   the end of the directory stream was reached.
+readDirStreamWithType :: DirStream -> IO (Maybe (RawFilePath, DirType))
+readDirStreamWithType = readDirStreamWith
+  (\(DirEnt dEnt) -> (,)
+    <$> (d_name dEnt >>= peekFilePath)
+    <*> (DirType <$> d_type dEnt)
+  )
 
 foreign import ccall unsafe "__hscore_d_name"
   d_name :: Ptr CDirent -> IO CString
+
+foreign import ccall unsafe "__hscore_d_type"
+  d_type :: Ptr CDirent -> IO CChar
 
 
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
