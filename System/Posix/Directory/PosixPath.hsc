@@ -29,31 +29,15 @@ module System.Posix.Directory.PosixPath (
    -- * Reading directories
    Common.DirStream,
    Common.DirType( DtUnknown
-#ifdef CONST_DT_FIFO
-          , DtFifo
-#endif
-#ifdef CONST_DT_CHR
-          , DtChr
-#endif
-#ifdef CONST_DT_DIR
-          , DtDir
-#endif
-#ifdef CONST_DT_BLK
-          , DtBlk
-#endif
-#ifdef CONST_DT_REG
-          , DtReg
-#endif
-#ifdef CONST_DT_LNK
-          , DtLnk
-#endif
-#ifdef CONST_DT_SOCK
-          , DtSock
-#endif
-#ifdef CONST_DT_WHT
-          , DtWht
-#endif
-          ),
+                 , DtFifo
+                 , DtChr
+                 , DtDir
+                 , DtBlk
+                 , DtReg
+                 , DtLnk
+                 , DtSock
+                 , DtWht
+                 ),
    openDirStream,
    readDirStream,
    readDirStreamMaybe,
