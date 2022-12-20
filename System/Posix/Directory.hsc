@@ -30,30 +30,14 @@ module System.Posix.Directory (
    -- * Reading directories
    DirStream,
    DirType( DtUnknown
-#ifdef CONST_DT_FIFO
           , DtFifo
-#endif
-#ifdef CONST_DT_CHR
           , DtChr
-#endif
-#ifdef CONST_DT_DIR
           , DtDir
-#endif
-#ifdef CONST_DT_BLK
           , DtBlk
-#endif
-#ifdef CONST_DT_REG
           , DtReg
-#endif
-#ifdef CONST_DT_LNK
           , DtLnk
-#endif
-#ifdef CONST_DT_SOCK
           , DtSock
-#endif
-#ifdef CONST_DT_WHT
           , DtWht
-#endif
           ),
    openDirStream,
    readDirStream,

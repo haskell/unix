@@ -22,30 +22,14 @@ module System.Posix.Directory.Common (
        DirStream(..), DirEnt(..), CDir, CDirent, DirStreamOffset(..),
        DirType( DirType
               , DtUnknown
-#ifdef CONST_DT_FIFO
               , DtFifo
-#endif
-#ifdef CONST_DT_CHR
               , DtChr
-#endif
-#ifdef CONST_DT_DIR
               , DtDir
-#endif
-#ifdef CONST_DT_BLK
               , DtBlk
-#endif
-#ifdef CONST_DT_REG
               , DtReg
-#endif
-#ifdef CONST_DT_LNK
               , DtLnk
-#endif
-#ifdef CONST_DT_SOCK
               , DtSock
-#endif
-#ifdef CONST_DT_WHT
               , DtWht
-#endif
               ),
        unsafeOpenDirStreamFd,
        readDirStreamWith,
@@ -97,51 +81,31 @@ data {-# CTYPE "struct dirent" #-} CDirent
 newtype DirType = DirType CChar
 
 pattern DtUnknown :: DirType
-#ifdef CONST_DT_UNKNOWN
 pattern DtUnknown = DirType CONST_DT_UNKNOWN
-#else
-pattern DtUnknown = DirType 0
-#endif
 
-#ifdef CONST_DT_FIFO
 pattern DtFifo :: DirType
-pattern DtFifo = DirType CONST_DT_FIFO
-#endif
+pattern DtFifo = DirType (CONST_DT_FIFO)
 
-#ifdef CONST_DT_CHR
 pattern DtChr :: DirType
-pattern DtChr = DirType CONST_DT_CHR
-#endif
+pattern DtChr = DirType (CONST_DT_CHR)
 
-#ifdef CONST_DT_DIR
 pattern DtDir :: DirType
-pattern DtDir = DirType CONST_DT_DIR
-#endif
+pattern DtDir = DirType (CONST_DT_DIR)
 
-#ifdef CONST_DT_BLK
 pattern DtBlk :: DirType
-pattern DtBlk = DirType CONST_DT_BLK
-#endif
+pattern DtBlk = DirType (CONST_DT_BLK)
 
-#ifdef CONST_DT_REG
 pattern DtReg :: DirType
-pattern DtReg = DirType CONST_DT_REG
-#endif
+pattern DtReg = DirType (CONST_DT_REG)
 
-#ifdef CONST_DT_LNK
 pattern DtLnk :: DirType
-pattern DtLnk = DirType CONST_DT_LNK
-#endif
+pattern DtLnk = DirType (CONST_DT_LNK)
 
-#ifdef CONST_DT_SOCK
 pattern DtSock :: DirType
-pattern DtSock = DirType CONST_DT_SOCK
-#endif
+pattern DtSock = DirType (CONST_DT_SOCK)
 
-#ifdef CONST_DT_WHT
 pattern DtWht :: DirType
-pattern DtWht = DirType CONST_DT_WHT
-#endif
+pattern DtWht = DirType (CONST_DT_WHT)
 
 -- | Call @fdopendir@ to obtain a directory stream for @fd@. @fd@ must not be
 -- otherwise used after this.
