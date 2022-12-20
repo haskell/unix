@@ -12,6 +12,10 @@
 --
 -----------------------------------------------------------------------------
 
-module System.Posix.Directory.Internals ( DirStream(..), CDir, CDirent, DirStreamOffset(..) ) where
+module System.Posix.Directory.Internals (
+    DirStream(..), DirEnt(..), DirType(..), CDir, CDirent, DirStreamOffset(..),
+    readDirStreamWith, 
+    readDirStreamWithPtr, 
+    ) where
 
 import System.Posix.Directory.Common
