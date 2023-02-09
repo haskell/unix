@@ -45,6 +45,7 @@ main = defaultMain $ testGroup "All"
   , posix010
   , emptyDirStream
   , nonEmptyDirStream
+  , dirStreamWithTypes
   ]
 
 executeFile001 :: TestTree
@@ -233,6 +234,9 @@ emptyDirStream = testCase "emptyDirStream" ReadDirStream.emptyDirStream
 
 nonEmptyDirStream :: TestTree
 nonEmptyDirStream = testCase "nonEmptyDirStream" ReadDirStream.nonEmptyDirStream
+
+dirStreamWithTypes :: TestTree
+dirStreamWithTypes = testCase "dirStreamWithTypes" ReadDirStream.dirStreamWithTypes
 
 -------------------------------------------------------------------------------
 -- Utils

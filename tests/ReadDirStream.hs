@@ -1,8 +1,10 @@
 module ReadDirStream
   ( emptyDirStream
   , nonEmptyDirStream
+  , dirStreamWithTypes
   ) where
 
+import qualified Data.List
 import System.Posix.Files
 import System.Posix.Directory
 import System.Posix.IO
@@ -33,6 +35,18 @@ nonEmptyDirStream = do
   cleanup
   entries @?= ["file"]
 
+dirStreamWithTypes :: IO ()
+dirStreamWithTypes = do
+  cleanup
+  createDirectory dir ownerModes
+  createDirectory (dir ++ "/somedir") ownerModes
+  _ <- createFile (dir ++ "/somefile") ownerReadMode
+  dir_p <- openDirStreamWithPath dir
+  entries <- readDirStreamEntriesWithTypes dir_p
+  closeDirStream (fromDirStreamWithPath dir_p)
+  cleanup
+  Data.List.sort entries @?= [("somedir", DirectoryType), ("somefile", RegularFileType)]
+
 readDirStreamEntries :: DirStream -> IO [FilePath]
 readDirStreamEntries dir_p = do
   ment <- readDirStreamMaybe dir_p
@@ -41,6 +55,15 @@ readDirStreamEntries dir_p = do
     Just "." -> readDirStreamEntries dir_p
     Just ".." -> readDirStreamEntries dir_p
     Just ent -> (ent :) <$> readDirStreamEntries dir_p
+
+readDirStreamEntriesWithTypes :: DirStreamWithPath FilePath -> IO [(FilePath, DirType)]
+readDirStreamEntriesWithTypes dir_p = do
+  ment <- readDirStreamWithType dir_p
+  case ment of
+    Nothing -> return []
+    Just (".", _) -> readDirStreamEntriesWithTypes dir_p
+    Just ("..", _) -> readDirStreamEntriesWithTypes dir_p
+    Just ent -> (ent :) <$> readDirStreamEntriesWithTypes dir_p
 
 cleanup :: IO ()
 cleanup = do
