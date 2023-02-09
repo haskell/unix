@@ -28,10 +28,42 @@ AC_CHECK_HEADERS([bsd/libutil.h libutil.h pty.h utmp.h])
 AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
 AC_STRUCT_DIRENT_D_TYPE
-FP_CHECK_CONSTS([DT_UNKNOWN DT_FIFO DT_CHR DT_DIR DT_BLK DT_REG DT_LNK DT_SOCK DT_WHT], [
+FP_CHECK_CONST([DT_UNKNOWN], [
 #if HAVE_STRUCT_DIRENT_D_TYPE
 #include <dirent.h>
-#endif])
+#endif], [-1])
+FP_CHECK_CONST([DT_FIFO], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-2])
+FP_CHECK_CONST([DT_CHR], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-3])
+FP_CHECK_CONST([DT_DIR], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-4])
+FP_CHECK_CONST([DT_BLK], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-5])
+FP_CHECK_CONST([DT_REG], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-6])
+FP_CHECK_CONST([DT_LNK], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-7])
+FP_CHECK_CONST([DT_SOCK], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-8])
+FP_CHECK_CONST([DT_WHT], [
+#if HAVE_STRUCT_DIRENT_D_TYPE
+#include <dirent.h>
+#endif], [-9])
 
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
 AC_CHECK_FUNCS([getpwent getgrent])

@@ -28,7 +28,8 @@ module System.Posix.Directory (
    createDirectory, removeDirectory,
 
    -- * Reading directories
-   DirStream,
+   DirStream, DirStreamWithPath,
+   fromDirStreamWithPath,
    DirType( UnknownType
           , NamedPipeType
           , CharacterDeviceType
@@ -43,6 +44,7 @@ module System.Posix.Directory (
    isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
    isWhiteoutType,
    openDirStream,
+   openDirStreamWithPath,
    readDirStream,
    readDirStreamMaybe,
    readDirStreamWithType,
@@ -63,12 +65,14 @@ module System.Posix.Directory (
   ) where
 
 import Data.Maybe
+import System.FilePath ((</>))
 import System.Posix.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C
 
 import System.Posix.Directory.Common
+import System.Posix.Files
 import System.Posix.Internals (withFilePath, peekFilePath)
 
 -- | @createDirectory dir mode@ calls @mkdir@ to
@@ -91,6 +95,11 @@ openDirStream name =
   withFilePath name $ \s -> do
     dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
     return (DirStream dirp)
+
+-- | A version of 'openDirStream' where the path of the directory is stored in
+-- the returned 'DirStreamWithPath'.
+openDirStreamWithPath :: FilePath -> IO (DirStreamWithPath FilePath)
+openDirStreamWithPath name = toDirStreamWithPath name <$> openDirStream name
 
 foreign import capi unsafe "HsUnix.h opendir"
    c_opendir :: CString  -> IO (Ptr CDir)
@@ -124,12 +133,15 @@ readDirStreamMaybe = readDirStreamWith
 --
 --   __Note__: The returned 'DirType' has some limitations; Please see its
 --   documentation.
-readDirStreamWithType :: DirStream -> IO (Maybe (FilePath, DirType))
-readDirStreamWithType = readDirStreamWith
-  (\(DirEnt dEnt) -> (,)
-    <$> (d_name dEnt >>= peekFilePath)
-    <*> (DirType <$> d_type dEnt)
+readDirStreamWithType :: DirStreamWithPath FilePath -> IO (Maybe (FilePath, DirType))
+readDirStreamWithType (DirStreamWithPath (base, ptr)) = readDirStreamWith
+  (\(DirEnt dEnt) -> do
+    name <- d_name dEnt >>= peekFilePath
+    let getStat = getFileStatus (base </> name)
+    dtype <- d_type dEnt >>= getRealDirType getStat . DirType
+    return (name, dtype)
   )
+  (DirStream ptr)
 
 foreign import ccall unsafe "__hscore_d_name"
   d_name :: Ptr CDirent -> IO CString

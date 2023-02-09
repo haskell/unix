@@ -27,7 +27,8 @@ module System.Posix.Directory.PosixPath (
    createDirectory, removeDirectory,
 
    -- * Reading directories
-   Common.DirStream,
+   Common.DirStream, Common.DirStreamWithPath,
+   Common.fromDirStreamWithPath,
    Common.DirType( UnknownType
                  , NamedPipeType
                  , CharacterDeviceType
@@ -42,6 +43,7 @@ module System.Posix.Directory.PosixPath (
    Common.isNamedPipeType, Common.isRegularFileType, Common.isDirectoryType,
    Common.isSymbolicLinkType, Common.isSocketType, Common.isWhiteoutType,
    openDirStream,
+   openDirStreamWithPath,
    readDirStream,
    readDirStreamMaybe,
    readDirStreamWithType,
@@ -66,8 +68,9 @@ import System.Posix.Types
 import Foreign
 import Foreign.C
 
-import System.OsPath.Types
+import System.OsPath.Posix
 import qualified System.Posix.Directory.Common as Common
+import System.Posix.Files.PosixString
 import System.Posix.PosixPath.FilePath
 
 -- | @createDirectory dir mode@ calls @mkdir@ to
@@ -90,6 +93,11 @@ openDirStream name =
   withFilePath name $ \s -> do
     dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
     return (Common.DirStream dirp)
+
+-- | A version of 'openDirStream' where the path of the directory is stored in
+-- the returned 'DirStreamWithPath'.
+openDirStreamWithPath :: PosixPath -> IO (Common.DirStreamWithPath PosixPath)
+openDirStreamWithPath name = Common.toDirStreamWithPath name <$> openDirStream name
 
 foreign import capi unsafe "HsUnix.h opendir"
    c_opendir :: CString  -> IO (Ptr Common.CDir)
@@ -123,12 +131,15 @@ readDirStreamMaybe = Common.readDirStreamWith
 --
 --   __Note__: The returned 'DirType' has some limitations; Please see its
 --   documentation.
-readDirStreamWithType :: Common.DirStream -> IO (Maybe (PosixPath, Common.DirType))
-readDirStreamWithType = Common.readDirStreamWith
-  (\(Common.DirEnt dEnt) -> (,)
-    <$> (d_name dEnt >>= peekFilePath)
-    <*> (Common.DirType <$> d_type dEnt)
+readDirStreamWithType :: Common.DirStreamWithPath PosixPath -> IO (Maybe (PosixPath, Common.DirType))
+readDirStreamWithType (Common.DirStreamWithPath (base, ptr))= Common.readDirStreamWith
+  (\(Common.DirEnt dEnt) -> do
+    name <- d_name dEnt >>= peekFilePath
+    let getStat = getFileStatus (base </> name)
+    dtype <- d_type dEnt >>= Common.getRealDirType getStat . Common.DirType
+    return (name, dtype)
   )
+  (Common.DirStream ptr)
 
 foreign import ccall unsafe "__hscore_d_name"
   d_name :: Ptr Common.CDirent -> IO CString
