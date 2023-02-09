@@ -21,16 +21,19 @@
 module System.Posix.Directory.Common (
        DirStream(..), DirEnt(..), CDir, CDirent, DirStreamOffset(..),
        DirType( DirType
-              , DtUnknown
-              , DtFifo
-              , DtChr
-              , DtDir
-              , DtBlk
-              , DtReg
-              , DtLnk
-              , DtSock
-              , DtWht
+              , UnknownType
+              , NamedPipeType
+              , CharacterDeviceType
+              , DirectoryType
+              , BlockDeviceType
+              , RegularFileType
+              , SymbolicLinkType
+              , SocketType
+              , WhiteoutType
               ),
+       isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
+       isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
+       isWhiteoutType,
        unsafeOpenDirStreamFd,
        readDirStreamWith,
        readDirStreamWithPtr,
@@ -78,34 +81,88 @@ instance Storable DirEnt where
 data {-# CTYPE "DIR" #-} CDir
 data {-# CTYPE "struct dirent" #-} CDirent
 
+-- | The value of the @d_type@ field of a @dirent@ struct.
+-- Note that the possible values of that type depend on the filesystem that is
+-- queried. From @readdir(3)@:
+--
+-- > Currently, only some filesystems (among them: Btrfs, ext2, ext3, and ext4)
+-- > have full support for returning the file type in d_type. All applications
+-- > must properly handle a return of DT_UNKNOWN.
+--
+-- For example, JFS is a filesystem that does not support @d_type@;
+-- See https://github.com/haskell/ghcup-hs/issues/766
+--
+-- Furthermore, @dirent@ or the constants represented by the associated pattern
+-- synonyms of this type may not be provided by the underlying platform. In that
+-- case none of those patterns will match and the application must handle that
+-- case accordingly.
 newtype DirType = DirType CChar
+    deriving Eq
 
-pattern DtUnknown :: DirType
-pattern DtUnknown = DirType CONST_DT_UNKNOWN
+-- | The 'DirType' refers to an entry of unknown type.
+pattern UnknownType :: DirType
+pattern UnknownType = DirType CONST_DT_UNKNOWN
 
-pattern DtFifo :: DirType
-pattern DtFifo = DirType (CONST_DT_FIFO)
+-- | The 'DirType' refers to an entry that is a named pipe.
+pattern NamedPipeType :: DirType
+pattern NamedPipeType = DirType CONST_DT_FIFO
 
-pattern DtChr :: DirType
-pattern DtChr = DirType (CONST_DT_CHR)
+-- | The 'DirType' refers to an entry that is a character device.
+pattern CharacterDeviceType :: DirType
+pattern CharacterDeviceType = DirType CONST_DT_CHR
 
-pattern DtDir :: DirType
-pattern DtDir = DirType (CONST_DT_DIR)
+-- | The 'DirType' refers to an entry that is a directory.
+pattern DirectoryType :: DirType
+pattern DirectoryType = DirType CONST_DT_DIR
 
-pattern DtBlk :: DirType
-pattern DtBlk = DirType (CONST_DT_BLK)
+-- | The 'DirType' refers to an entry that is a block device.
+pattern BlockDeviceType :: DirType
+pattern BlockDeviceType = DirType CONST_DT_BLK
 
-pattern DtReg :: DirType
-pattern DtReg = DirType (CONST_DT_REG)
+-- | The 'DirType' refers to an entry that is a regular file.
+pattern RegularFileType :: DirType
+pattern RegularFileType = DirType CONST_DT_REG
 
-pattern DtLnk :: DirType
-pattern DtLnk = DirType (CONST_DT_LNK)
+-- | The 'DirType' refers to an entry that is a symbolic link.
+pattern SymbolicLinkType :: DirType
+pattern SymbolicLinkType = DirType CONST_DT_LNK
 
-pattern DtSock :: DirType
-pattern DtSock = DirType (CONST_DT_SOCK)
+-- | The 'DirType' refers to an entry that is a socket.
+pattern SocketType :: DirType
+pattern SocketType = DirType CONST_DT_SOCK
 
-pattern DtWht :: DirType
-pattern DtWht = DirType (CONST_DT_WHT)
+-- | The 'DirType' refers to an entry that is a whiteout.
+pattern WhiteoutType :: DirType
+pattern WhiteoutType = DirType CONST_DT_WHT
+
+-- | Checks if this 'DirType' refers to an entry of unknown type.
+isUnknownType         :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a block device entry.
+isBlockDeviceType     :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a character device entry.
+isCharacterDeviceType :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a named pipe entry.
+isNamedPipeType       :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a regular file entry.
+isRegularFileType     :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a directory entry.
+isDirectoryType       :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a symbolic link entry.
+isSymbolicLinkType    :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a socket entry.
+isSocketType          :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a whiteout entry.
+isWhiteoutType        :: DirType -> Bool
+
+isUnknownType dtype = dtype == UnknownType
+isBlockDeviceType dtype = dtype == BlockDeviceType
+isCharacterDeviceType dtype = dtype == CharacterDeviceType
+isNamedPipeType dtype = dtype == NamedPipeType
+isRegularFileType dtype = dtype == RegularFileType
+isDirectoryType dtype = dtype == DirectoryType
+isSymbolicLinkType dtype = dtype == SymbolicLinkType
+isSocketType dtype = dtype == SocketType
+isWhiteoutType dtype = dtype == WhiteoutType
 
 -- | Call @fdopendir@ to obtain a directory stream for @fd@. @fd@ must not be
 -- otherwise used after this.
