@@ -101,39 +101,39 @@ newtype DirType = DirType CChar
 
 -- | The 'DirType' refers to an entry of unknown type.
 pattern UnknownType :: DirType
-pattern UnknownType = DirType CONST_DT_UNKNOWN
+pattern UnknownType = DirType (CONST_DT_UNKNOWN)
 
 -- | The 'DirType' refers to an entry that is a named pipe.
 pattern NamedPipeType :: DirType
-pattern NamedPipeType = DirType CONST_DT_FIFO
+pattern NamedPipeType = DirType (CONST_DT_FIFO)
 
 -- | The 'DirType' refers to an entry that is a character device.
 pattern CharacterDeviceType :: DirType
-pattern CharacterDeviceType = DirType CONST_DT_CHR
+pattern CharacterDeviceType = DirType (CONST_DT_CHR)
 
 -- | The 'DirType' refers to an entry that is a directory.
 pattern DirectoryType :: DirType
-pattern DirectoryType = DirType CONST_DT_DIR
+pattern DirectoryType = DirType (CONST_DT_DIR)
 
 -- | The 'DirType' refers to an entry that is a block device.
 pattern BlockDeviceType :: DirType
-pattern BlockDeviceType = DirType CONST_DT_BLK
+pattern BlockDeviceType = DirType (CONST_DT_BLK)
 
 -- | The 'DirType' refers to an entry that is a regular file.
 pattern RegularFileType :: DirType
-pattern RegularFileType = DirType CONST_DT_REG
+pattern RegularFileType = DirType (CONST_DT_REG)
 
 -- | The 'DirType' refers to an entry that is a symbolic link.
 pattern SymbolicLinkType :: DirType
-pattern SymbolicLinkType = DirType CONST_DT_LNK
+pattern SymbolicLinkType = DirType (CONST_DT_LNK)
 
 -- | The 'DirType' refers to an entry that is a socket.
 pattern SocketType :: DirType
-pattern SocketType = DirType CONST_DT_SOCK
+pattern SocketType = DirType (CONST_DT_SOCK)
 
 -- | The 'DirType' refers to an entry that is a whiteout.
 pattern WhiteoutType :: DirType
-pattern WhiteoutType = DirType CONST_DT_WHT
+pattern WhiteoutType = DirType (CONST_DT_WHT)
 
 -- | Checks if this 'DirType' refers to an entry of unknown type.
 isUnknownType         :: DirType -> Bool
