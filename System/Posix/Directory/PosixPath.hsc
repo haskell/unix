@@ -28,16 +28,19 @@ module System.Posix.Directory.PosixPath (
 
    -- * Reading directories
    Common.DirStream,
-   Common.DirType( DtUnknown
-                 , DtFifo
-                 , DtChr
-                 , DtDir
-                 , DtBlk
-                 , DtReg
-                 , DtLnk
-                 , DtSock
-                 , DtWht
+   Common.DirType( UnknownType
+                 , NamedPipeType
+                 , CharacterDeviceType
+                 , DirectoryType
+                 , BlockDeviceType
+                 , RegularFileType
+                 , SymbolicLinkType
+                 , SocketType
+                 , WhiteoutType
                  ),
+   Common.isUnknownType, Common.isBlockDeviceType, Common.isCharacterDeviceType,
+   Common.isNamedPipeType, Common.isRegularFileType, Common.isDirectoryType,
+   Common.isSymbolicLinkType, Common.isSocketType, Common.isWhiteoutType,
    openDirStream,
    readDirStream,
    readDirStreamMaybe,
@@ -117,6 +120,9 @@ readDirStreamMaybe = Common.readDirStreamWith
 --   structure together with the entry's type (@d_type@) wrapped in a
 --   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
 --   the end of the directory stream was reached.
+--
+--   __Note__: The returned 'DirType' has some limitations; Please see its
+--   documentation.
 readDirStreamWithType :: Common.DirStream -> IO (Maybe (PosixPath, Common.DirType))
 readDirStreamWithType = Common.readDirStreamWith
   (\(Common.DirEnt dEnt) -> (,)
