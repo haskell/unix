@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, Safe, CApiFFI, PatternSynonyms #-}
+{-# LANGUAGE CPP, Safe, CApiFFI, MultiWayIf, PatternSynonyms #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -19,7 +19,9 @@
 ##include "HsUnixConfig.h"
 
 module System.Posix.Directory.Common (
-       DirStream(..), DirEnt(..), CDir, CDirent, DirStreamOffset(..),
+       DirStream(..), DirStreamWithPath(..),
+       fromDirStreamWithPath, toDirStreamWithPath,
+       DirEnt(..), CDir, CDirent, DirStreamOffset(..),
        DirType( DirType
               , UnknownType
               , NamedPipeType
@@ -34,6 +36,7 @@ module System.Posix.Directory.Common (
        isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
        isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
        isWhiteoutType,
+       getRealDirType,
        unsafeOpenDirStreamFd,
        readDirStreamWith,
        readDirStreamWithPtr,
@@ -59,7 +62,25 @@ import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
 
+import System.Posix.Files.Common
+
 newtype DirStream = DirStream (Ptr CDir)
+
+newtype DirStreamWithPath a = DirStreamWithPath (a, Ptr CDir)
+
+-- | Convert a 'DirStreamWithPath' to a 'DirStream'.
+-- Note that the underlying pointer is shared by both values, hence any
+-- modification to the resulting 'DirStream' will also modify the original
+-- 'DirStreamWithPath'.
+fromDirStreamWithPath :: DirStreamWithPath a -> DirStream
+fromDirStreamWithPath (DirStreamWithPath (_, ptr)) = DirStream ptr
+
+-- | Construct a 'DirStreamWithPath' from a 'DirStream'.
+-- Note that the underlying pointer is shared by both values, hence any
+-- modification to the pointer of the resulting 'DirStreamWithPath' will also
+-- modify the original 'DirStream'.
+toDirStreamWithPath :: a -> DirStream -> DirStreamWithPath a
+toDirStreamWithPath path (DirStream ptr) = DirStreamWithPath (path, ptr)
 
 newtype DirEnt = DirEnt (Ptr CDirent)
 
@@ -97,7 +118,7 @@ data {-# CTYPE "struct dirent" #-} CDirent
 -- case none of those patterns will match and the application must handle that
 -- case accordingly.
 newtype DirType = DirType CChar
-    deriving Eq
+    deriving (Eq, Ord, Show)
 
 -- | The 'DirType' refers to an entry of unknown type.
 pattern UnknownType :: DirType
@@ -163,6 +184,26 @@ isDirectoryType dtype = dtype == DirectoryType
 isSymbolicLinkType dtype = dtype == SymbolicLinkType
 isSocketType dtype = dtype == SocketType
 isWhiteoutType dtype = dtype == WhiteoutType
+
+getRealDirType :: IO FileStatus -> DirType -> IO DirType
+getRealDirType _ BlockDeviceType = return BlockDeviceType
+getRealDirType _ CharacterDeviceType = return CharacterDeviceType
+getRealDirType _ NamedPipeType = return NamedPipeType
+getRealDirType _ RegularFileType = return RegularFileType
+getRealDirType _ DirectoryType = return DirectoryType
+getRealDirType _ SymbolicLinkType = return SymbolicLinkType
+getRealDirType _ SocketType = return SocketType
+getRealDirType _ WhiteoutType = return WhiteoutType
+getRealDirType getFileStatus _ = do
+    stat <- getFileStatus
+    return $ if | isBlockDevice stat -> BlockDeviceType
+                | isCharacterDevice stat -> CharacterDeviceType
+                | isNamedPipe stat -> NamedPipeType
+                | isRegularFile stat -> RegularFileType
+                | isDirectory stat -> DirectoryType
+                | isSymbolicLink stat -> SymbolicLinkType
+                | isSocket stat -> SocketType
+                | otherwise -> UnknownType
 
 -- | Call @fdopendir@ to obtain a directory stream for @fd@. @fd@ must not be
 -- otherwise used after this.
