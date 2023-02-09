@@ -11,9 +11,6 @@ import System.Posix.IO
 import Control.Exception as E
 import Test.Tasty.HUnit
 
-dir :: FilePath
-dir = "dir"
-
 emptyDirStream :: IO ()
 emptyDirStream = do
   cleanup
@@ -23,6 +20,11 @@ emptyDirStream = do
   closeDirStream dir_p
   cleanup
   entries @?= []
+  where
+    dir = "emptyDirStream"
+
+    cleanup = do
+      ignoreIOExceptions $ removeDirectory dir
 
 nonEmptyDirStream :: IO ()
 nonEmptyDirStream = do
@@ -34,6 +36,12 @@ nonEmptyDirStream = do
   closeDirStream dir_p
   cleanup
   entries @?= ["file"]
+  where
+    dir = "nonEmptyDirStream"
+
+    cleanup = do
+      ignoreIOExceptions $ removeLink $ dir ++ "/file"
+      ignoreIOExceptions $ removeDirectory dir
 
 dirStreamWithTypes :: IO ()
 dirStreamWithTypes = do
@@ -46,6 +54,13 @@ dirStreamWithTypes = do
   closeDirStream (fromDirStreamWithPath dir_p)
   cleanup
   Data.List.sort entries @?= [("somedir", DirectoryType), ("somefile", RegularFileType)]
+  where
+    dir = "dirStreamWithTypes"
+
+    cleanup = do
+      ignoreIOExceptions $ removeDirectory $ dir ++ "/somedir"
+      ignoreIOExceptions $ removeLink $ dir ++ "/somefile"
+      ignoreIOExceptions $ removeDirectory dir
 
 readDirStreamEntries :: DirStream -> IO [FilePath]
 readDirStreamEntries dir_p = do
@@ -64,11 +79,6 @@ readDirStreamEntriesWithTypes dir_p = do
     Just (".", _) -> readDirStreamEntriesWithTypes dir_p
     Just ("..", _) -> readDirStreamEntriesWithTypes dir_p
     Just ent -> (ent :) <$> readDirStreamEntriesWithTypes dir_p
-
-cleanup :: IO ()
-cleanup = do
-    ignoreIOExceptions $ removeLink $ dir ++ "/file"
-    ignoreIOExceptions $ removeDirectory dir
 
 ignoreIOExceptions :: IO () -> IO ()
 ignoreIOExceptions io = io `E.catch`
