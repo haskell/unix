@@ -29,16 +29,19 @@ module System.Posix.Directory (
 
    -- * Reading directories
    DirStream,
-   DirType( DtUnknown
-          , DtFifo
-          , DtChr
-          , DtDir
-          , DtBlk
-          , DtReg
-          , DtLnk
-          , DtSock
-          , DtWht
+   DirType( UnknownType
+          , NamedPipeType
+          , CharacterDeviceType
+          , DirectoryType
+          , BlockDeviceType
+          , RegularFileType
+          , SymbolicLinkType
+          , SocketType
+          , WhiteoutType
           ),
+   isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
+   isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
+   isWhiteoutType,
    openDirStream,
    readDirStream,
    readDirStreamMaybe,
@@ -118,6 +121,9 @@ readDirStreamMaybe = readDirStreamWith
 --   structure together with the entry's type (@d_type@) wrapped in a
 --   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
 --   the end of the directory stream was reached.
+--
+--   __Note__: The returned 'DirType' has some limitations; Please see its
+--   documentation.
 readDirStreamWithType :: DirStream -> IO (Maybe (FilePath, DirType))
 readDirStreamWithType = readDirStreamWith
   (\(DirEnt dEnt) -> (,)
