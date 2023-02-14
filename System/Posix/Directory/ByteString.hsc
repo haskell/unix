@@ -71,6 +71,9 @@ import Foreign
 import Foreign.C
 
 import Data.ByteString.Char8 as BC
+#if !MIN_VERSION_base(4,11,0)
+import Data.Monoid ((<>))
+#endif
 
 import System.Posix.Directory.Common
 import System.Posix.Files.ByteString
