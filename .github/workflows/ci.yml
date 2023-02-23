@@ -104,25 +104,29 @@ jobs:
         cabal v2-test --constraint 'optparse-applicative -process' --constraint 'QuickCheck +old-random' --constraint 'tasty -unix' all
 
   arm:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, ARM64]
     strategy:
       fail-fast: false
       matrix:
-        arch: ['armv7', 'aarch64']
+        arch: [arm32v7, arm64v8]
     steps:
-    - uses: actions/checkout@v3
-    - uses: uraimo/run-on-arch-action@v2
-      timeout-minutes: 120
-      with:
-        arch: ${{ matrix.arch }}
-        distro: ubuntu20.04
-        githubToken: ${{ github.token }}
-        install: |
-          apt-get update -y
-          apt-get install -y ghc cabal-install autoconf
-        run: |
-          cabal --version
-          cabal update
-          autoreconf --version
-          autoreconf -i
-          cabal v2-test --constraint 'optparse-applicative -process' --constraint 'QuickCheck +old-random' --constraint 'tasty -unix' all
+      - uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
+        name: Cleanup
+        with:
+          args: "find . -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - if: matrix.arch == 'arm32v7'
+        uses: docker://hasufell/arm32v7-ubuntu-haskell:focal
+        name: Run build (arm32v7 linux)
+        with:
+          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+
+      - if: matrix.arch == 'arm64v8'
+        uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
+        name: Run build (arm64v8 linux)
+        with:
+          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+
