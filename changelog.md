@@ -1,5 +1,32 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.1.0 *Feb 2023*
+  * Fix build if HAVE_ALARM is undefined
+
+  * Add missing autoconf checks for chown/fchdir/fchmod
+
+  * Make TABX constructors and code conditional on underlying #defines
+
+  * Bump bounds to accomodate base-4.18
+
+  * Add semWaitInterruptible
+
+  * semaphore: Teach semThreadWait to use semWait with threaded RTS
+
+  * make the foreign imports of dlopen & dlclose safe
+
+  * do not use capi for dlfcn.h stuff under wasm-wasi
+
+  * Use capi for syscalls that break under musl's handling of 64-bit `time_t`
+
+  * Replace `last` with `unsnoc`
+
+  * Avoid Data.List.{head,tail}
+
+  * Consistently use `throwErrnoPathIf*`
+
+  * Fix WASI build
+
 ## 2.8.0.0 *August 2022*
   * Use ByteString for GroupEntry/UserEntry
 
