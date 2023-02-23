@@ -101,7 +101,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Ptr
 import Foreign.Storable
-#if !defined(HAVE_SIGNAL_H)
+#if !defined(HAVE_SIGNAL_H) || !defined(HAVE_ALARM)
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
