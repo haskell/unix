@@ -109,7 +109,7 @@ char __hscore_d_type( struct dirent* d )
 #ifdef HAVE_DIRENT_D_TYPE
   return (d->d_type);
 #else
-  return 0;
+  return CONST_DT_UNKNOWN;
 #endif
 }
 
