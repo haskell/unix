@@ -196,12 +196,12 @@ getRealDirType _ SocketType = return SocketType
 getRealDirType _ WhiteoutType = return WhiteoutType
 getRealDirType getFileStatus _ = do
     stat <- getFileStatus
-    return $ if | isBlockDevice stat -> BlockDeviceType
-                | isCharacterDevice stat -> CharacterDeviceType
-                | isNamedPipe stat -> NamedPipeType
-                | isRegularFile stat -> RegularFileType
+    return $ if | isRegularFile stat -> RegularFileType
                 | isDirectory stat -> DirectoryType
                 | isSymbolicLink stat -> SymbolicLinkType
+                | isBlockDevice stat -> BlockDeviceType
+                | isCharacterDevice stat -> CharacterDeviceType
+                | isNamedPipe stat -> NamedPipeType
                 | isSocket stat -> SocketType
                 | otherwise -> UnknownType
 
@@ -255,7 +255,7 @@ readDirStreamWith f dstream = alloca
 -- | A version of 'readDirStreamWith' that takes a pre-allocated pointer in
 --   addition to the other arguments. This pointer is used to store the pointer
 --   to the next directory entry, if there is any. This function is intended for
---   usecases where you need to read a lot of directory entries and want to
+--   use cases where you need to read a lot of directory entries and want to
 --   reuse the pointer for each of them. Using for example 'readDirStream' or
 --   'readDirStreamWith' in this scenario would allocate a new pointer for each
 --   call of these functions.
