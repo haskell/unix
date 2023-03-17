@@ -1,7 +1,10 @@
 name: ci
 on:
-  - push
-  - pull_request
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: 0 0 * * *
 
 defaults:
   run:
