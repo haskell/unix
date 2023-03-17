@@ -45,6 +45,8 @@ import System.OsString.Internal.Types
 import qualified System.OsPath.Data.ByteString.Short as B
 import Data.ByteString.Short.Internal ( copyToPtr )
 
+import qualified System.Posix.Env.Internal as Internal
+
 -- |'getEnv' looks up a variable in the environment.
 
 getEnv ::
@@ -70,25 +72,7 @@ foreign import ccall unsafe "getenv"
    c_getenv :: CString -> IO CString
 
 getEnvironmentPrim :: IO [PosixString]
-getEnvironmentPrim = do
-  c_environ <- getCEnviron
-  arr <- peekArray0 nullPtr c_environ
-  mapM (fmap PS . B.packCString) arr
-
-getCEnviron :: IO (Ptr CString)
-#if HAVE__NSGETENVIRON
--- You should not access @char **environ@ directly on Darwin in a bundle/shared library.
--- See #2458 and http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man7/environ.7.html
-getCEnviron = nsGetEnviron >>= peek
-
-foreign import ccall unsafe "_NSGetEnviron"
-   nsGetEnviron :: IO (Ptr (Ptr CString))
-#else
-getCEnviron = peek c_environ_p
-
-foreign import ccall unsafe "&environ"
-   c_environ_p :: Ptr (Ptr CString)
-#endif
+getEnvironmentPrim = Internal.getEnvironmentPrim >>= mapM (fmap PS . B.packCString)
 
 -- |'getEnvironment' retrieves the entire environment as a
 -- list of @(key,value)@ pairs.

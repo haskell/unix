@@ -28,15 +28,15 @@ module System.Posix.Env (
 
 #include "HsUnix.h"
 
+import Foreign hiding (void)
 import Foreign.C.Error (throwErrnoIfMinus1_)
 import Foreign.C.Types
 import Foreign.C.String
-import Foreign.Marshal.Array
-import Foreign.Ptr
-import Foreign.Storable
 import Control.Monad
 import Data.Maybe (fromMaybe)
 import System.Posix.Internals
+
+import qualified System.Posix.Env.Internal as Internal
 
 -- |'getEnv' looks up a variable in the environment.
 
@@ -63,28 +63,7 @@ foreign import ccall unsafe "getenv"
    c_getenv :: CString -> IO CString
 
 getEnvironmentPrim :: IO [String]
-getEnvironmentPrim = do
-  c_environ <- getCEnviron
-  -- environ can be NULL
-  if c_environ == nullPtr
-    then return []
-    else do
-      arr <- peekArray0 nullPtr c_environ
-      mapM peekFilePath arr
-
-getCEnviron :: IO (Ptr CString)
-#if HAVE__NSGETENVIRON
--- You should not access @char **environ@ directly on Darwin in a bundle/shared library.
--- See #2458 and http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man7/environ.7.html
-getCEnviron = nsGetEnviron >>= peek
-
-foreign import ccall unsafe "_NSGetEnviron"
-   nsGetEnviron :: IO (Ptr (Ptr CString))
-#else
-getCEnviron = peek c_environ_p
-foreign import ccall unsafe "&environ"
-   c_environ_p :: Ptr (Ptr CString)
-#endif
+getEnvironmentPrim = Internal.getEnvironmentPrim >>= mapM peekFilePath 
 
 -- |'getEnvironment' retrieves the entire environment as a
 -- list of @(key,value)@ pairs.
@@ -184,7 +163,7 @@ foreign import ccall unsafe "clearenv"
 #else
 -- Fallback to 'environ[0] = NULL'.
 clearEnv = do
-  c_environ <- getCEnviron
+  c_environ <- Internal.getCEnviron
   unless (c_environ == nullPtr) $
     poke c_environ nullPtr
 #endif

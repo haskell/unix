@@ -141,6 +141,7 @@ library
         System.Posix.Process.Common
         System.Posix.Terminal.Common
         System.Posix.User.Common
+        System.Posix.Env.Internal
 
     ghc-options: -Wall
 

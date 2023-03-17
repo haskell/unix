@@ -13,7 +13,7 @@ import Data.List (sort)
 import System.Exit
 import System.IO
 import System.Posix
-import qualified System.Posix.Env.ByteString
+import qualified System.Posix.Env.ByteString as ByteString
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -28,7 +28,7 @@ main = defaultMain $ testGroup "All"
   , fileStatus
   , fileStatusByteString
   , getEnvironment01
-  , getEnvironment02
+  , testSystemPosixEnvByteString
   , getGroupEntry
   , getUserEntry
   , processGroup001
@@ -69,11 +69,24 @@ getEnvironment01 = testCase "getEnvironment01" $ do
   not (null env)
     @? "environment should be non-empty"
 
-getEnvironment02 :: TestTree
-getEnvironment02 = testCase "getEnvironment02" $ do
-  env <- System.Posix.Env.ByteString.getEnvironment
-  not (null env)
-    @? "environment should be non-empty"
+protectEnvironment :: IO a -> IO a
+protectEnvironment action = E.bracket ByteString.getEnvironment ByteString.setEnvironment $ \ _ -> action
+
+testSystemPosixEnvByteString :: TestTree
+testSystemPosixEnvByteString =
+  testGroup "System.Posix.Env.ByteString" [
+    testGroup "getEnvironment" [
+      testCase "returns the environment" $ do
+        env <- ByteString.getEnvironment
+        not (null env)
+          @? "environment should be non-empty"
+    ]
+  , testGroup "clearEnv" [
+      testCase "clears the environment" $ protectEnvironment $ do
+        ByteString.clearEnv
+        ByteString.getEnvironment >>= (@?= [])
+    ]
+  ]
 
 getGroupEntry :: TestTree
 getGroupEntry = testCase "getGroupEntry" $ do
@@ -174,7 +187,7 @@ posix002 = testCase "posix002" $ do
   sort (lines actual) @?= ["ONE=1", "TWO=2"]
 
 posix005 :: TestTree
-posix005 = testCase "posix005" $ do
+posix005 = testCase "posix005" $ protectEnvironment $ do
     hSetBuffering stdout NoBuffering
 
     setEnvironment [("one","1"),("two","2")]
