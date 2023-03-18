@@ -1,5 +1,8 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.1.1 *Mar 2023*
+  * Fix `System.Posix.Env.ByteString.getEnvironment` segfaulting on empty environment
+
 ## 2.8.1.0 *Feb 2023*
   * Fix build if HAVE_ALARM is undefined
 
