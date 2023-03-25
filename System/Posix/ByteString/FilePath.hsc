@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE TypeApplications #-}
 
 -----------------------------------------------------------------------------
@@ -41,8 +41,10 @@ import Foreign.C hiding (
 
 import Control.Monad
 import Control.Exception
+import Data.ByteString.Internal (c_strlen)
 import GHC.Foreign as GHC ( peekCStringLen )
 import GHC.IO.Encoding ( getFileSystemEncoding )
+import GHC.IO.Exception
 import Data.ByteString as B
 import Data.ByteString.Char8 as BC
 import Prelude hiding (FilePath)
@@ -54,7 +56,7 @@ import Data.Monoid ((<>))
 type RawFilePath = ByteString
 
 withFilePath :: RawFilePath -> (CString -> IO a) -> IO a
-withFilePath = useAsCString
+withFilePath path = useAsCStringSafe path
 
 peekFilePath :: CString -> IO RawFilePath
 peekFilePath = packCString
@@ -147,3 +149,24 @@ decodeWithBasePosix ba = B.useAsCStringLen ba $ \fp -> peekFilePathPosix fp
  where
   peekFilePathPosix :: CStringLen -> IO String
   peekFilePathPosix fp = getFileSystemEncoding >>= \enc -> GHC.peekCStringLen enc fp
+
+-- | Wrapper around 'useAsCString', checking the encoded 'FilePath' for internal NUL octets as these are
+-- disallowed in POSIX filepaths. See https://gitlab.haskell.org/ghc/ghc/-/issues/13660
+useAsCStringSafe :: RawFilePath -> (CString -> IO a) -> IO a
+useAsCStringSafe path f = useAsCStringLen path $ \(ptr, len) -> do
+    clen <- c_strlen ptr
+    if clen == fromIntegral len
+        then f ptr
+        else do
+          path' <- either (const (BC.unpack path)) id <$> try @IOException (decodeWithBasePosix path)
+          ioError (err path')
+  where
+    err path' =
+        IOError
+          { ioe_handle = Nothing
+          , ioe_type = InvalidArgument
+          , ioe_location = "checkForInteriorNuls"
+          , ioe_description = "POSIX filepaths must not contain internal NUL octets."
+          , ioe_errno = Nothing
+          , ioe_filename = Just path'
+          }
