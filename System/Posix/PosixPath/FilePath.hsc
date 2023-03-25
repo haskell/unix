@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -40,12 +41,14 @@ import Foreign.C hiding (
      throwErrnoPathIfMinus1_ )
 
 import System.OsPath.Types
+import Data.ByteString.Internal (c_strlen)
 import Control.Monad
 import Control.Exception
 import System.OsPath.Posix as PS
 import System.OsPath.Data.ByteString.Short
 import Prelude hiding (FilePath)
-import System.OsString.Internal.Types (PosixString(..))
+import System.OsString.Internal.Types (PosixString(..), pattern PS)
+import GHC.IO.Exception
 
 #if !MIN_VERSION_base(4, 11, 0)
 import Data.Monoid ((<>))
@@ -53,7 +56,7 @@ import Data.Monoid ((<>))
 
 
 withFilePath :: PosixPath -> (CString -> IO a) -> IO a
-withFilePath = useAsCString . getPosixString
+withFilePath path = useAsCStringSafe path
 
 peekFilePath :: CString -> IO PosixPath
 peekFilePath = fmap PosixString . packCString
@@ -140,3 +143,24 @@ throwErrnoTwoPathsIfMinus1_ loc path1 path2 action = do
 
 _toStr :: PosixPath -> String
 _toStr = fmap PS.toChar . PS.unpack
+
+-- | Wrapper around 'useAsCString', checking the encoded 'FilePath' for internal NUL octets as these are
+-- disallowed in POSIX filepaths. See https://gitlab.haskell.org/ghc/ghc/-/issues/13660
+useAsCStringSafe :: PosixPath -> (CString -> IO a) -> IO a
+useAsCStringSafe pp@(PS path) f = useAsCStringLen path $ \(ptr, len) -> do
+    clen <- c_strlen ptr
+    if clen == fromIntegral len
+        then f ptr
+        else do
+          path' <- either (const (_toStr pp)) id <$> try @IOException (PS.decodeFS pp)
+          ioError (err path')
+  where
+    err path' =
+        IOError
+          { ioe_handle = Nothing
+          , ioe_type = InvalidArgument
+          , ioe_location = "checkForInteriorNuls"
+          , ioe_description = "POSIX filepaths must not contain internal NUL octets."
+          , ioe_errno = Nothing
+          , ioe_filename = Just path'
+          }
