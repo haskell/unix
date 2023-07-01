@@ -31,12 +31,12 @@ task:
     image: family/pg-ci-netbsd-vanilla-9-3
     platform: netbsd
   install_script:
-    - export PKG_PATH="http://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f '1 2' -d.)/All/"
-    - pkg_add ghc cabal-install git autoconf
+    - export PKG_PATH="http://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f '1 2' -d.)/All/;http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/x86_64/9.0_2022Q3/All/"
+    - pkg_add ghc cabal-install git autoconf libcxx libcxxabi
   script:
     - export CABAL_DIR=/tmp/.cabal
     - ghc --version
     - cabal --version
     - cabal update
     - autoreconf -i
-    - cabal test --test-show-details=direct
+    - cabal test -f-simdutf --test-show-details=direct
