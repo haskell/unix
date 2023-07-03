@@ -28,10 +28,26 @@ module System.Posix.Directory (
    createDirectory, removeDirectory,
 
    -- * Reading directories
-   DirStream,
+   DirStream, DirStreamWithPath,
+   fromDirStreamWithPath,
+   DirType( UnknownType
+          , NamedPipeType
+          , CharacterDeviceType
+          , DirectoryType
+          , BlockDeviceType
+          , RegularFileType
+          , SymbolicLinkType
+          , SocketType
+          , WhiteoutType
+          ),
+   isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
+   isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
+   isWhiteoutType,
    openDirStream,
+   openDirStreamWithPath,
    readDirStream,
    readDirStreamMaybe,
+   readDirStreamWithType,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -49,12 +65,14 @@ module System.Posix.Directory (
   ) where
 
 import Data.Maybe
+import System.FilePath ((</>))
 import System.Posix.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C
 
 import System.Posix.Directory.Common
+import System.Posix.Files
 import System.Posix.Internals (withFilePath, peekFilePath)
 
 -- | @createDirectory dir mode@ calls @mkdir@ to
@@ -78,56 +96,58 @@ openDirStream name =
     dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
+-- | A version of 'openDirStream' where the path of the directory is stored in
+-- the returned 'DirStreamWithPath'.
+openDirStreamWithPath :: FilePath -> IO (DirStreamWithPath FilePath)
+openDirStreamWithPath name = toDirStreamWithPath name <$> openDirStream name
+
 foreign import capi unsafe "HsUnix.h opendir"
    c_opendir :: CString  -> IO (Ptr CDir)
 
 -- | @readDirStream dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@, and returns the @d_name@ member of that
---  structure.
+--   structure.
 --
---  Note that this function returns an empty filepath if the end of the
---  directory stream is reached. For a safer alternative use
---  'readDirStreamMaybe'.
+--   Note that this function returns an empty filepath if the end of the
+--   directory stream is reached. For a safer alternative use
+--   'readDirStreamMaybe'.
 readDirStream :: DirStream -> IO FilePath
 readDirStream = fmap (fromMaybe "") . readDirStreamMaybe
 
 -- | @readDirStreamMaybe dp@ calls @readdir@ to obtain the
 --   next directory entry (@struct dirent@) for the open directory
 --   stream @dp@. It returns the @d_name@ member of that
---  structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
---  the end of the directory stream was reached.
+--   structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
+--   the end of the directory stream was reached.
 readDirStreamMaybe :: DirStream -> IO (Maybe FilePath)
-readDirStreamMaybe (DirStream dirp) =
-  alloca $ \ptr_dEnt  -> loop ptr_dEnt
- where
-  loop ptr_dEnt = do
-    resetErrno
-    r <- c_readdir dirp ptr_dEnt
-    if (r == 0)
-         then do dEnt <- peek ptr_dEnt
-                 if (dEnt == nullPtr)
-                    then return Nothing
-                    else do
-                     entry <- (d_name dEnt >>= peekFilePath)
-                     c_freeDirEnt dEnt
-                     return $ Just entry
-         else do errno <- getErrno
-                 if (errno == eINTR) then loop ptr_dEnt else do
-                 let (Errno eo) = errno
-                 if (eo == 0)
-                    then return Nothing
-                    else throwErrno "readDirStream"
+readDirStreamMaybe = readDirStreamWith
+  (\(DirEnt dEnt) -> d_name dEnt >>= peekFilePath)
 
--- traversing directories
-foreign import ccall unsafe "__hscore_readdir"
-  c_readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
-
-foreign import ccall unsafe "__hscore_free_dirent"
-  c_freeDirEnt  :: Ptr CDirent -> IO ()
+-- | @readDirStreamWithType dp@ calls @readdir@ to obtain the
+--   next directory entry (@struct dirent@) for the open directory
+--   stream @dp@. It returns the @d_name@ member of that
+--   structure together with the entry's type (@d_type@) wrapped in a
+--   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
+--   the end of the directory stream was reached.
+--
+--   __Note__: The returned 'DirType' has some limitations; Please see its
+--   documentation.
+readDirStreamWithType :: DirStreamWithPath FilePath -> IO (Maybe (FilePath, DirType))
+readDirStreamWithType (DirStreamWithPath (base, ptr)) = readDirStreamWith
+  (\(DirEnt dEnt) -> do
+    name <- d_name dEnt >>= peekFilePath
+    let getStat = getFileStatus (base </> name)
+    dtype <- d_type dEnt >>= getRealDirType getStat . DirType
+    return (name, dtype)
+  )
+  (DirStream ptr)
 
 foreign import ccall unsafe "__hscore_d_name"
   d_name :: Ptr CDirent -> IO CString
+
+foreign import ccall unsafe "__hscore_d_type"
+  d_type :: Ptr CDirent -> IO CChar
 
 
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name

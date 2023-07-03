@@ -1,4 +1,4 @@
-{-# LANGUAGE Safe, CApiFFI #-}
+{-# LANGUAGE CPP, Safe, CApiFFI, MultiWayIf, PatternSynonyms #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -15,10 +15,31 @@
 -----------------------------------------------------------------------------
 
 #include "HsUnix.h"
+#include "HsUnixConfig.h"
+##include "HsUnixConfig.h"
 
 module System.Posix.Directory.Common (
-       DirStream(..), CDir, CDirent, DirStreamOffset(..),
+       DirStream(..), DirStreamWithPath(..),
+       fromDirStreamWithPath, toDirStreamWithPath,
+       DirEnt(..), CDir, CDirent, DirStreamOffset(..),
+       DirType( DirType
+              , UnknownType
+              , NamedPipeType
+              , CharacterDeviceType
+              , DirectoryType
+              , BlockDeviceType
+              , RegularFileType
+              , SymbolicLinkType
+              , SocketType
+              , WhiteoutType
+              ),
+       isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
+       isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
+       isWhiteoutType,
+       getRealDirType,
        unsafeOpenDirStreamFd,
+       readDirStreamWith,
+       readDirStreamWithPtr,
        rewindDirStream,
        closeDirStream,
 #ifdef HAVE_SEEKDIR
@@ -41,10 +62,148 @@ import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
 
+import System.Posix.Files.Common
+
 newtype DirStream = DirStream (Ptr CDir)
+
+newtype DirStreamWithPath a = DirStreamWithPath (a, Ptr CDir)
+
+-- | Convert a 'DirStreamWithPath' to a 'DirStream'.
+-- Note that the underlying pointer is shared by both values, hence any
+-- modification to the resulting 'DirStream' will also modify the original
+-- 'DirStreamWithPath'.
+fromDirStreamWithPath :: DirStreamWithPath a -> DirStream
+fromDirStreamWithPath (DirStreamWithPath (_, ptr)) = DirStream ptr
+
+-- | Construct a 'DirStreamWithPath' from a 'DirStream'.
+-- Note that the underlying pointer is shared by both values, hence any
+-- modification to the pointer of the resulting 'DirStreamWithPath' will also
+-- modify the original 'DirStream'.
+toDirStreamWithPath :: a -> DirStream -> DirStreamWithPath a
+toDirStreamWithPath path (DirStream ptr) = DirStreamWithPath (path, ptr)
+
+newtype DirEnt = DirEnt (Ptr CDirent)
+
+-- We provide a hand-written instance here since GeneralizedNewtypeDeriving and
+-- DerivingVia are not allowed in Safe Haskell.
+instance Storable DirEnt where
+  sizeOf _ = sizeOf (undefined :: Ptr CDirent)
+  {-# INLINE sizeOf #-}
+
+  alignment _ = alignment (undefined :: Ptr CDirent)
+  {-# INLINE alignment #-}
+
+  peek ptr = DirEnt <$> peek (castPtr ptr)
+  {-# INLINE peek #-}
+
+  poke ptr (DirEnt dEnt) = poke (castPtr ptr) dEnt
+  {-# INLINE poke#-}
 
 data {-# CTYPE "DIR" #-} CDir
 data {-# CTYPE "struct dirent" #-} CDirent
+
+-- | The value of the @d_type@ field of a @dirent@ struct.
+-- Note that the possible values of that type depend on the filesystem that is
+-- queried. From @readdir(3)@:
+--
+-- > Currently, only some filesystems (among them: Btrfs, ext2, ext3, and ext4)
+-- > have full support for returning the file type in d_type. All applications
+-- > must properly handle a return of DT_UNKNOWN.
+--
+-- For example, JFS is a filesystem that does not support @d_type@;
+-- See https://github.com/haskell/ghcup-hs/issues/766
+--
+-- Furthermore, @dirent@ or the constants represented by the associated pattern
+-- synonyms of this type may not be provided by the underlying platform. In that
+-- case none of those patterns will match and the application must handle that
+-- case accordingly.
+newtype DirType = DirType CChar
+    deriving (Eq, Ord, Show)
+
+-- | The 'DirType' refers to an entry of unknown type.
+pattern UnknownType :: DirType
+pattern UnknownType = DirType (CONST_DT_UNKNOWN)
+
+-- | The 'DirType' refers to an entry that is a named pipe.
+pattern NamedPipeType :: DirType
+pattern NamedPipeType = DirType (CONST_DT_FIFO)
+
+-- | The 'DirType' refers to an entry that is a character device.
+pattern CharacterDeviceType :: DirType
+pattern CharacterDeviceType = DirType (CONST_DT_CHR)
+
+-- | The 'DirType' refers to an entry that is a directory.
+pattern DirectoryType :: DirType
+pattern DirectoryType = DirType (CONST_DT_DIR)
+
+-- | The 'DirType' refers to an entry that is a block device.
+pattern BlockDeviceType :: DirType
+pattern BlockDeviceType = DirType (CONST_DT_BLK)
+
+-- | The 'DirType' refers to an entry that is a regular file.
+pattern RegularFileType :: DirType
+pattern RegularFileType = DirType (CONST_DT_REG)
+
+-- | The 'DirType' refers to an entry that is a symbolic link.
+pattern SymbolicLinkType :: DirType
+pattern SymbolicLinkType = DirType (CONST_DT_LNK)
+
+-- | The 'DirType' refers to an entry that is a socket.
+pattern SocketType :: DirType
+pattern SocketType = DirType (CONST_DT_SOCK)
+
+-- | The 'DirType' refers to an entry that is a whiteout.
+pattern WhiteoutType :: DirType
+pattern WhiteoutType = DirType (CONST_DT_WHT)
+
+-- | Checks if this 'DirType' refers to an entry of unknown type.
+isUnknownType         :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a block device entry.
+isBlockDeviceType     :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a character device entry.
+isCharacterDeviceType :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a named pipe entry.
+isNamedPipeType       :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a regular file entry.
+isRegularFileType     :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a directory entry.
+isDirectoryType       :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a symbolic link entry.
+isSymbolicLinkType    :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a socket entry.
+isSocketType          :: DirType -> Bool
+-- | Checks if this 'DirType' refers to a whiteout entry.
+isWhiteoutType        :: DirType -> Bool
+
+isUnknownType dtype = dtype == UnknownType
+isBlockDeviceType dtype = dtype == BlockDeviceType
+isCharacterDeviceType dtype = dtype == CharacterDeviceType
+isNamedPipeType dtype = dtype == NamedPipeType
+isRegularFileType dtype = dtype == RegularFileType
+isDirectoryType dtype = dtype == DirectoryType
+isSymbolicLinkType dtype = dtype == SymbolicLinkType
+isSocketType dtype = dtype == SocketType
+isWhiteoutType dtype = dtype == WhiteoutType
+
+getRealDirType :: IO FileStatus -> DirType -> IO DirType
+getRealDirType _ BlockDeviceType = return BlockDeviceType
+getRealDirType _ CharacterDeviceType = return CharacterDeviceType
+getRealDirType _ NamedPipeType = return NamedPipeType
+getRealDirType _ RegularFileType = return RegularFileType
+getRealDirType _ DirectoryType = return DirectoryType
+getRealDirType _ SymbolicLinkType = return SymbolicLinkType
+getRealDirType _ SocketType = return SocketType
+getRealDirType _ WhiteoutType = return WhiteoutType
+getRealDirType getFileStatus _ = do
+    stat <- getFileStatus
+    return $ if | isRegularFile stat -> RegularFileType
+                | isDirectory stat -> DirectoryType
+                | isSymbolicLink stat -> SymbolicLinkType
+                | isBlockDevice stat -> BlockDeviceType
+                | isCharacterDevice stat -> CharacterDeviceType
+                | isNamedPipe stat -> NamedPipeType
+                | isSocket stat -> SocketType
+                | otherwise -> UnknownType
 
 -- | Call @fdopendir@ to obtain a directory stream for @fd@. @fd@ must not be
 -- otherwise used after this.
@@ -77,6 +236,59 @@ foreign import ccall unsafe "HsUnix.h close"
 --
 foreign import capi unsafe "dirent.h fdopendir"
     c_fdopendir :: CInt -> IO (Ptr CDir)
+
+
+-- | @readDirStreamWith f dp@ calls @readdir@ to obtain the next directory entry
+--   (@struct dirent@) for the open directory stream @dp@. If an entry is read,
+--   it passes the pointer to that structure to the provided function @f@ for
+--   processing. It returns the result of that function call wrapped in a @Just@
+--   if an entry was read and @Nothing@ if the end of the directory stream was
+--   reached.
+--
+--   __NOTE:__ The lifetime of the pointer wrapped in the `DirEnt` is limited to
+--   invocation of the callback and it will be freed automatically after. Do not
+--   pass it to the outside world!
+readDirStreamWith :: (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
+readDirStreamWith f dstream = alloca
+  (\ptr_dEnt  -> readDirStreamWithPtr ptr_dEnt f dstream)
+
+-- | A version of 'readDirStreamWith' that takes a pre-allocated pointer in
+--   addition to the other arguments. This pointer is used to store the pointer
+--   to the next directory entry, if there is any. This function is intended for
+--   use cases where you need to read a lot of directory entries and want to
+--   reuse the pointer for each of them. Using for example 'readDirStream' or
+--   'readDirStreamWith' in this scenario would allocate a new pointer for each
+--   call of these functions.
+--
+--   __NOTE__: You are responsible for releasing the pointer after you are done.
+readDirStreamWithPtr :: Ptr DirEnt -> (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
+readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
+  resetErrno
+  r <- c_readdir dirp (castPtr ptr_dEnt)
+  if (r == 0)
+       then do dEnt@(DirEnt dEntPtr) <- peek ptr_dEnt
+               if (dEntPtr == nullPtr)
+                  then return Nothing
+                  else do
+                   res <- f dEnt
+                   c_freeDirEnt dEntPtr
+                   return (Just res)
+       else do errno <- getErrno
+               if (errno == eINTR)
+                  then readDirStreamWithPtr ptr_dEnt f dstream
+                  else do
+                   let (Errno eo) = errno
+                   if (eo == 0)
+                      then return Nothing
+                      else throwErrno "readDirStream"
+
+-- traversing directories
+foreign import ccall unsafe "__hscore_readdir"
+  c_readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
+
+foreign import ccall unsafe "__hscore_free_dirent"
+  c_freeDirEnt  :: Ptr CDirent -> IO ()
+
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
 --   the directory stream @dp@ at the beginning of the directory.
