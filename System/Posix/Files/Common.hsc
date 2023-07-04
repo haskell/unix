@@ -75,6 +75,11 @@ module System.Posix.Files.Common (
     toCTimeSpec,
     c_utimensat,
 #endif
+#if defined(javascript_HOST_ARCH)
+    js_futimes,
+    js_utimes,
+    js_lutimes,
+#endif
     CTimeVal(..),
     toCTimeVal,
     c_utimes,
@@ -509,6 +514,15 @@ foreign import capi unsafe "sys/time.h futimes"
     c_futimes :: CInt -> Ptr CTimeVal -> IO CInt
 #endif
 
+#if defined(javascript_HOST_ARCH)
+foreign import ccall unsafe "js_futimes"
+    js_futimes :: CInt -> CDouble -> CDouble -> IO CInt
+foreign import ccall unsafe "js_lutimes"
+    js_lutimes :: CFilePath -> CDouble -> CDouble -> IO CInt
+foreign import ccall unsafe "js_utimes"
+    js_utimes :: CFilePath -> CDouble -> CDouble -> IO CInt
+#endif
+
 -- | Like 'setFileTimesHiRes' but uses a file descriptor instead of a path.
 -- This operation is not supported on all platforms. On these platforms,
 -- this function will raise an exception.
@@ -521,7 +535,10 @@ foreign import capi unsafe "sys/time.h futimes"
 --
 -- @since 2.7.0.0
 setFdTimesHiRes :: Fd -> POSIXTime -> POSIXTime -> IO ()
-#if HAVE_FUTIMENS
+#if defined(javascript_HOST_ARCH)
+setFdTimesHiRes (Fd fd) atime mtime =
+  throwErrnoIfMinus1_ "setFdTimesHiRes" (js_futimes fd (realToFrac atime) (realToFrac mtime))
+#elif HAVE_FUTIMENS
 setFdTimesHiRes (Fd fd) atime mtime =
   withArray [toCTimeSpec atime, toCTimeSpec mtime] $ \times ->
     throwErrnoIfMinus1_ "setFdTimesHiRes" (c_futimens fd times)
@@ -543,7 +560,11 @@ setFdTimesHiRes =
 --
 -- @since 2.7.0.0
 touchFd :: Fd -> IO ()
-#if HAVE_FUTIMES
+#if defined(javascript_HOST_ARCH)
+touchFd (Fd fd) =
+  -- (-1) indicates that current time must be used
+  throwErrnoIfMinus1_ "touchFd" (js_futimes fd (-1) (-1))
+#elif HAVE_FUTIMES
 touchFd (Fd fd) =
   throwErrnoIfMinus1_ "touchFd" (c_futimes fd nullPtr)
 #else

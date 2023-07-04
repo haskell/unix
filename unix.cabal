@@ -152,9 +152,15 @@ library
     install-includes:
         HsUnix.h
         execvpe.h
-    c-sources:
-        cbits/HsUnix.c
-        cbits/execvpe.c
+
+    if !arch(javascript)
+      c-sources:
+          cbits/HsUnix.c
+          cbits/execvpe.c
+
+    if arch(javascript)
+      js-sources:
+          jsbits/time.js
 
 test-suite unix-tests
     hs-source-dirs: tests

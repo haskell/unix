@@ -386,7 +386,12 @@ setFileTimes name atime mtime = do
 --
 -- @since 2.7.0.0
 setFileTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()
-#ifdef HAVE_UTIMENSAT
+#if defined(javascript_HOST_ARCH)
+setFileTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    throwErrnoPathIfMinus1_ "setFileTimesHiRes" name
+      (js_utimes s (realToFrac atime) (realToFrac mtime))
+#elif defined(HAVE_UTIMENSAT)
 setFileTimesHiRes name atime mtime =
   withFilePath name $ \s ->
     withArray [toCTimeSpec atime, toCTimeSpec mtime] $ \times ->
@@ -410,7 +415,12 @@ setFileTimesHiRes name atime mtime =
 --
 -- @since 2.7.0.0
 setSymbolicLinkTimesHiRes :: FilePath -> POSIXTime -> POSIXTime -> IO ()
-#if HAVE_UTIMENSAT
+#if defined(javascript_HOST_ARCH)
+setSymbolicLinkTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    throwErrnoPathIfMinus1_ "setSymbolicLinkTimesHiRes" name $
+      js_lutimes s (realToFrac atime) (realToFrac mtime)
+#elif HAVE_UTIMENSAT
 setSymbolicLinkTimesHiRes name atime mtime =
   withFilePath name $ \s ->
     withArray [toCTimeSpec atime, toCTimeSpec mtime] $ \times ->
@@ -447,7 +457,11 @@ touchFile name = do
 --
 -- @since 2.7.0.0
 touchSymbolicLink :: FilePath -> IO ()
-#if HAVE_LUTIMES
+#if defined(javascript_HOST_ARCH)
+touchSymbolicLink name =
+  withFilePath name $ \s ->
+    throwErrnoPathIfMinus1_ "touchSymbolicLink" name (js_lutimes s (-1) (-1))
+#elif HAVE_LUTIMES
 touchSymbolicLink name =
   withFilePath name $ \s ->
     throwErrnoPathIfMinus1_ "touchSymbolicLink" name (c_lutimes s nullPtr)
