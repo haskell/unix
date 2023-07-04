@@ -378,7 +378,12 @@ setFileTimes name atime mtime = do
 -- - HFS+ volumes on OS X truncate the sub-second part of the timestamp.
 --
 setFileTimesHiRes :: PosixPath -> POSIXTime -> POSIXTime -> IO ()
-#ifdef HAVE_UTIMENSAT
+#if defined(javascript_HOST_ARCH)
+setFileTimesHiRes name atime mtime =
+  withFilePath name $ \s ->
+    throwErrnoPathIfMinus1_ "setFileTimesHiRes" name $
+      Common.js_utimes s (realToFrac atime) (realToFrac mtime)
+#elif defined(HAVE_UTIMENSAT)
 setFileTimesHiRes name atime mtime =
   withFilePath name $ \s ->
     withArray [Common.toCTimeSpec atime, Common.toCTimeSpec mtime] $ \times ->
