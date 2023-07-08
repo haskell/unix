@@ -70,7 +70,7 @@ library
 
     build-depends:
         base        >= 4.10    && < 4.20,
-        bytestring  >= 0.9.2   && < 0.12,
+        bytestring  >= 0.9.2   && < 0.13,
         filepath    >= 1.4.100.0 && < 1.5,
         time        >= 1.2     && < 1.13
 

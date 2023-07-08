@@ -42,7 +42,7 @@ import System.Posix.Env ( clearEnv )
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.ByteString (ByteString)
-import Data.ByteString.Internal (ByteString (PS), memcpy)
+import Data.ByteString.Internal (ByteString (PS))
 
 import qualified System.Posix.Env.Internal as Internal
 
@@ -133,7 +133,7 @@ putEnv (PS fp o l) = withForeignPtr fp $ \p -> do
   --
   -- hence we must not free the buffer
   buf <- mallocBytes (l+1)
-  memcpy buf (p `plusPtr` o) l
+  copyBytes buf (p `plusPtr` o) l
   pokeByteOff buf l (0::Word8)
   throwErrnoIfMinus1_ "putenv" (c_putenv (castPtr buf))
 
