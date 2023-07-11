@@ -12,6 +12,8 @@ task:
   name: OpenBSD
   compute_engine_instance:
     image_project: pg-ci-images
+    # OpenBSD version should match
+    # https://github.com/anarazel/pg-vm-images/blob/main/packer/openbsd.pkrvars.hcl
     image: family/pg-ci-openbsd-vanilla-7-2
     platform: openbsd
   install_script: pkg_add ghc cabal-install git autoconf-2.71
@@ -24,3 +26,24 @@ task:
     - autoreconf -i
     - cabal test --test-show-details=direct
 
+task:
+  name: NetBSD
+  compute_engine_instance:
+    image_project: pg-ci-images
+    # NetBSD version should match
+    # https://github.com/anarazel/pg-vm-images/blob/main/packer/netbsd.pkrvars.hcl
+    image: family/pg-ci-netbsd-vanilla-9-3
+    platform: netbsd
+  install_script:
+    # Folders should be updated in line with
+    # http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/x86_64/
+    - export PKG_PATH="http://cdn.NetBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f '1 2' -d.)/All/;http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/x86_64/9.0_2023Q1/All/"
+    - pkg_add ghc cabal-install git autoconf
+  script:
+    - export CABAL_DIR=/tmp/.cabal
+    - ghc --version
+    - cabal --version
+    - cabal update
+    - autoreconf -i
+    # Select a build plan which does not involve 'text'
+    - cabal test --test-show-details=direct --constraint 'text < 0'
