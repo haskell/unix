@@ -40,12 +40,11 @@ import Foreign.C hiding (
 
 import System.OsPath.Types
 import Control.Monad
-import GHC.IO.Encoding.UTF8 ( mkUTF8 )
-import GHC.IO.Encoding.Failure ( CodingFailureMode(..) )
-import System.OsPath.Posix
+import System.OsPath.Posix as PS
 import System.OsPath.Data.ByteString.Short
 import Prelude hiding (FilePath)
 import System.OsString.Internal.Types (PosixString(..))
+
 #if !MIN_VERSION_base(4, 11, 0)
 import Data.Monoid ((<>))
 #endif
@@ -136,5 +135,5 @@ throwErrnoTwoPathsIfMinus1_  loc path1 path2 =
 
 
 _toStr :: PosixPath -> String
-_toStr fp = either (error . show) id $ decodeWith (mkUTF8 TransliterateCodingFailure) fp
+_toStr = fmap PS.toChar . PS.unpack
 
