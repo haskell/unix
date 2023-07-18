@@ -1,4 +1,5 @@
 {-# LANGUAGE Safe #-}
+{-# LANGUAGE TypeApplications #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -39,7 +40,10 @@ import Foreign.C hiding (
      throwErrnoPathIfMinus1_ )
 
 import Control.Monad
-import Data.ByteString
+import Control.Exception
+import GHC.Foreign as GHC ( peekCStringLen )
+import GHC.IO.Encoding ( getFileSystemEncoding )
+import Data.ByteString as B
 import Data.ByteString.Char8 as BC
 import Prelude hiding (FilePath)
 #if !MIN_VERSION_base(4, 11, 0)
@@ -91,7 +95,8 @@ throwErrnoPath :: String -> RawFilePath -> IO a
 throwErrnoPath loc path =
   do
     errno <- getErrno
-    ioError (errnoToIOError loc errno Nothing (Just (BC.unpack path)))
+    path' <- either (const (BC.unpack path)) id <$> try @IOException (decodeWithBasePosix path)
+    ioError (errnoToIOError loc errno Nothing (Just path'))
 
 -- | as 'throwErrnoIf', but exceptions include the given path when
 --   appropriate.
@@ -129,5 +134,16 @@ throwErrnoPathIfMinus1_  = throwErrnoPathIf_ (== -1)
 -- | as 'throwErrnoTwoPathsIfMinus1_', but exceptions include two paths when appropriate.
 --
 throwErrnoTwoPathsIfMinus1_ :: (Eq a, Num a) => String -> RawFilePath -> RawFilePath -> IO a -> IO ()
-throwErrnoTwoPathsIfMinus1_  loc path1 path2 =
-    throwErrnoIfMinus1_ (loc <> " '" <> BC.unpack path1 <> "' to '" <> BC.unpack path2 <> "'")
+throwErrnoTwoPathsIfMinus1_  loc path1 path2 action = do
+    path1' <- either (const (BC.unpack path1)) id <$> try @IOException (decodeWithBasePosix path1)
+    path2' <- either (const (BC.unpack path2)) id <$> try @IOException (decodeWithBasePosix path2)
+    throwErrnoIfMinus1_ (loc <> " '" <> path1' <> "' to '" <> path2' <> "'") action
+
+-- | This mimics the filepath decoder base uses on unix,
+-- with the small distinction that we're not truncating at NUL bytes (because we're not at
+-- the outer FFI layer).
+decodeWithBasePosix :: RawFilePath -> IO String
+decodeWithBasePosix ba = B.useAsCStringLen ba $ \fp -> peekFilePathPosix fp
+ where
+  peekFilePathPosix :: CStringLen -> IO String
+  peekFilePathPosix fp = getFileSystemEncoding >>= \enc -> GHC.peekCStringLen enc fp
