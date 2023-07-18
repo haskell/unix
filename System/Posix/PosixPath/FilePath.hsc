@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE TypeApplications #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -40,12 +41,12 @@ import Foreign.C hiding (
 
 import System.OsPath.Types
 import Control.Monad
-import GHC.IO.Encoding.UTF8 ( mkUTF8 )
-import GHC.IO.Encoding.Failure ( CodingFailureMode(..) )
-import System.OsPath.Posix
+import Control.Exception
+import System.OsPath.Posix as PS
 import System.OsPath.Data.ByteString.Short
 import Prelude hiding (FilePath)
 import System.OsString.Internal.Types (PosixString(..))
+
 #if !MIN_VERSION_base(4, 11, 0)
 import Data.Monoid ((<>))
 #endif
@@ -93,7 +94,8 @@ throwErrnoPath :: String -> PosixPath -> IO a
 throwErrnoPath loc path =
   do
     errno <- getErrno
-    ioError (errnoToIOError loc errno Nothing (Just (_toStr path)))
+    path' <- either (const (_toStr path)) id <$> try @IOException (PS.decodeFS path)
+    ioError (errnoToIOError loc errno Nothing (Just path'))
 
 -- | as 'throwErrnoIf', but exceptions include the given path when
 --   appropriate.
@@ -131,10 +133,10 @@ throwErrnoPathIfMinus1_  = throwErrnoPathIf_ (== -1)
 -- | as 'throwErrnoTwoPathsIfMinus1_', but exceptions include two paths when appropriate.
 --
 throwErrnoTwoPathsIfMinus1_ :: (Eq a, Num a) => String -> PosixPath -> PosixPath -> IO a -> IO ()
-throwErrnoTwoPathsIfMinus1_  loc path1 path2 =
-    throwErrnoIfMinus1_ (loc <> " '" <> _toStr path1 <> "' to '" <> _toStr path2 <> "'")
-
+throwErrnoTwoPathsIfMinus1_ loc path1 path2 action = do
+    path1' <- either (const (_toStr path1)) id <$> try @IOException (PS.decodeFS path1)
+    path2' <- either (const (_toStr path2)) id <$> try @IOException (PS.decodeFS path2)
+    throwErrnoIfMinus1_ (loc <> " '" <> path1' <> "' to '" <> path2' <> "'") action
 
 _toStr :: PosixPath -> String
-_toStr fp = either (error . show) id $ decodeWith (mkUTF8 TransliterateCodingFailure) fp
-
+_toStr = fmap PS.toChar . PS.unpack
