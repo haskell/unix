@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP #-}
 
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
@@ -23,25 +24,31 @@ import qualified Signals001
 
 main :: IO ()
 main = defaultMain $ testGroup "All"
-  [ executeFile001
-  , fileExist01
-  , fileStatus
-  , fileStatusByteString
-  , getEnvironment01
-  , testSystemPosixEnvByteString
-  , getGroupEntry
-  , getUserEntry
-  , processGroup001
-  , processGroup002
-  , queryFdOption01
-  , signals001
-  , t1185
-  , t3816
-  , user001
-  , posix002
-  , posix005
-  , posix006
-  , posix010
+  [ testGroup "Common" -- common to JS and native platforms
+    [ fileExist01
+    ]
+#if !defined(javascript_HOST_ARCH)
+  , testGroup "Native"
+    [ executeFile001               -- JS: missing "pipe"
+    , fileStatus                   -- JS: missing "openat"
+    , fileStatusByteString         -- JS: missing "openat"
+    , getEnvironment01             -- JS: missing "environ"
+    , testSystemPosixEnvByteString -- JS: missing "environ"
+    , getGroupEntry                -- JS: missing "sysconf"
+    , getUserEntry                 -- JS: missing "sysconf"
+    , processGroup001              -- JS: missing "getpgrp"
+    , processGroup002              -- JS: missing "getppid"
+    , queryFdOption01              -- JS: unimplemented "fcntl_read/write/lock"
+    , signals001                   -- JS: missing "sigismember"
+    , t1185                        -- JS: missing "pipe"
+    , t3816                        -- JS: missing "setgrent"
+    , user001                      -- JS: missing "getuid"
+    , posix002                     -- JS: missing "pipe"
+    , posix005                     -- JS: missing "environ"
+    , posix006                     -- JS: missing "time"
+    , posix010                     -- JS: missing "sysconf"
+    ]
+#endif
   ]
 
 executeFile001 :: TestTree
