@@ -169,6 +169,11 @@ test-suite unix-tests
     ghc-options: -Wall -with-rtsopts=-V0
 
 test-suite FdReadBuf001
+    -- JS: missing "pipe"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: FdReadBuf001.hs
     type: exitcode-stdio-1.0
@@ -177,6 +182,11 @@ test-suite FdReadBuf001
     ghc-options: -Wall -threaded
 
 test-suite ForkProcess01
+    -- JS: missing "forkProcess"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: ForkProcess01.hs
     type: exitcode-stdio-1.0
@@ -185,6 +195,11 @@ test-suite ForkProcess01
     ghc-options: -Wall
 
 test-suite Signals002
+    -- JS: missing "raise"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Signals002.hs
     type: exitcode-stdio-1.0
@@ -193,6 +208,11 @@ test-suite Signals002
     ghc-options: -Wall
 
 test-suite Signals004
+    -- JS: missing "raise"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Signals004.hs
     type: exitcode-stdio-1.0
@@ -201,6 +221,11 @@ test-suite Signals004
     ghc-options: -Wall
 
 test-suite Posix004
+    -- JS: missing "forkProcess"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Posix004.hs
     type: exitcode-stdio-1.0
@@ -209,6 +234,11 @@ test-suite Posix004
     ghc-options: -Wall
 
 test-suite Posix009
+    -- JS: missing "rtsTimerSignal"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Posix009.hs
     type: exitcode-stdio-1.0
@@ -217,6 +247,11 @@ test-suite Posix009
     ghc-options: -Wall -with-rtsopts=-V0
 
 test-suite Posix014
+    -- JS: missing "pipe"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Posix014.hs
     type: exitcode-stdio-1.0
@@ -225,6 +260,11 @@ test-suite Posix014
     ghc-options: -Wall
 
 test-suite T8108
+    -- JS: missing "sysconf"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: T8108.hs
     type: exitcode-stdio-1.0
@@ -233,6 +273,11 @@ test-suite T8108
     ghc-options: -Wall
 
 test-suite ResourceLimit
+    -- JS: missing "setrlimit"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: ResourceLimit.hs
     type: exitcode-stdio-1.0
@@ -241,6 +286,11 @@ test-suite ResourceLimit
     ghc-options: -Wall
 
 test-suite Terminal
+    -- JS: missing "openpty"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Terminal.hs
     type: exitcode-stdio-1.0
@@ -249,6 +299,11 @@ test-suite Terminal
     ghc-options: -Wall
 
 test-suite PutEnv001
+    -- JS: missing "performGC"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: PutEnv001.hs
     type: exitcode-stdio-1.0
@@ -257,6 +312,11 @@ test-suite PutEnv001
     ghc-options: -Wall -with-rtsopts=-V0 -O0
 
 test-suite Semaphore001
+    -- JS: missing "sem_open"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Semaphore001.hs
     type: exitcode-stdio-1.0
@@ -265,6 +325,11 @@ test-suite Semaphore001
     ghc-options: -Wall
 
 test-suite Semaphore002
+    -- JS: missing "sem_open"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: Semaphore002.hs
     type: exitcode-stdio-1.0
@@ -273,6 +338,11 @@ test-suite Semaphore002
     ghc-options: -Wall -threaded
 
 test-suite SemaphoreInterrupt
+    -- JS: missing "sem_open"
+    if arch(javascript)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
     main-is: SemaphoreInterrupt.hs
     type: exitcode-stdio-1.0

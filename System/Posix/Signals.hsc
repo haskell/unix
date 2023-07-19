@@ -112,7 +112,17 @@ import System.Posix.Process
 import System.Posix.Process.Internals
 import Data.Dynamic
 
+#if defined(javascript_HOST_ARCH)
+-- These signals aren't supported by the JS RTS
+-- and the header isn't exposed.
+##define STG_SIG_DFL   (-1)
+##define STG_SIG_IGN   (-2)
+##define STG_SIG_ERR   (-3)
+##define STG_SIG_HAN   (-4)
+##define STG_SIG_RST   (-5)
+#else
 ##include "rts/Signals.h"
+#endif
 
 import GHC.Conc hiding (Signal)
 
