@@ -1,5 +1,13 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.2.0 *Sep 2023*
+
+  * Bump bounds to accomodate `base-4.19` and `bytestring-0.12`.
+
+  * Ensure that `FilePath`s don't contain interior `NUL`s.
+
+  * JavaScript backend: add support for `utimes` / `lutimes` / `futimes`.
+
 ## 2.8.1.1 *Mar 2023*
   * Fix `System.Posix.Env.ByteString.getEnvironment` segfaulting on empty environment
 
