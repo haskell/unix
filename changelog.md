@@ -1,5 +1,9 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.2.1 *Sep 2023*
+
+  * Fix UB bug in `withFilePath` that causes it to error out (introduced in 2.8.2.0) wrt [#295](https://github.com/haskell/unix/issues/295)
+
 ## 2.8.2.0 *Sep 2023*
 
   * Bump bounds to accomodate `base-4.19` and `bytestring-0.12`.
