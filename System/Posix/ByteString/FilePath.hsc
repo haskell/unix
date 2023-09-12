@@ -153,7 +153,8 @@ decodeWithBasePosix ba = B.useAsCStringLen ba $ \fp -> peekFilePathPosix fp
 -- | Wrapper around 'useAsCString', checking the encoded 'FilePath' for internal NUL octets as these are
 -- disallowed in POSIX filepaths. See https://gitlab.haskell.org/ghc/ghc/-/issues/13660
 useAsCStringSafe :: RawFilePath -> (CString -> IO a) -> IO a
-useAsCStringSafe path f = useAsCStringLen path $ \(ptr, len) -> do
+useAsCStringSafe path f = useAsCString path $ \ptr -> do
+    let len = B.length path
     clen <- c_strlen ptr
     if clen == fromIntegral len
         then f ptr

@@ -45,7 +45,7 @@ import Data.ByteString.Internal (c_strlen)
 import Control.Monad
 import Control.Exception
 import System.OsPath.Posix as PS
-import System.OsPath.Data.ByteString.Short
+import System.OsPath.Data.ByteString.Short as BSS
 import Prelude hiding (FilePath)
 import System.OsString.Internal.Types (PosixString(..), pattern PS)
 import GHC.IO.Exception
@@ -147,7 +147,8 @@ _toStr = fmap PS.toChar . PS.unpack
 -- | Wrapper around 'useAsCString', checking the encoded 'FilePath' for internal NUL octets as these are
 -- disallowed in POSIX filepaths. See https://gitlab.haskell.org/ghc/ghc/-/issues/13660
 useAsCStringSafe :: PosixPath -> (CString -> IO a) -> IO a
-useAsCStringSafe pp@(PS path) f = useAsCStringLen path $ \(ptr, len) -> do
+useAsCStringSafe pp@(PS path) f = useAsCString path $ \ptr -> do
+    let len = BSS.length path
     clen <- c_strlen ptr
     if clen == fromIntegral len
         then f ptr
