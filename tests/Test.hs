@@ -10,13 +10,19 @@ import Control.Applicative
 import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Short as Sh
 import Data.List (sort)
 import System.Exit
 import System.IO
+import System.OsString.Internal.Types
 import System.Posix
 import qualified System.Posix.Env.ByteString as ByteString
+import qualified System.Posix.ByteString.FilePath as BSFP
+import qualified System.Posix.PosixPath.FilePath as PPFP
 import Test.Tasty
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 
 import qualified FileStatus
 import qualified FileStatusByteString
@@ -49,6 +55,7 @@ main = defaultMain $ testGroup "All"
     , posix010                     -- JS: missing "sysconf"
     ]
 #endif
+  , testWithFilePath
   ]
 
 executeFile001 :: TestTree
@@ -244,6 +251,19 @@ posix010 = testCase "posix010" $ do
   userGroupID root' @?= 0
 
   homeDirectory root @?= homeDirectory root'
+
+testWithFilePath :: TestTree
+testWithFilePath =
+  testGroup "withFilePath"
+    [ testProperty "ByteString" $
+      \xs -> let ys = B.pack $ filter (/= 0) xs in
+        ioProperty $ BSFP.withFilePath ys
+          (\ptr -> (=== ys) <$> B.packCString ptr)
+    , testProperty "PosixPath" $
+      \xs -> let ys = Sh.pack $ filter (/= 0) xs in
+        ioProperty $ PPFP.withFilePath (PosixString ys)
+          (\ptr -> (=== ys) <$> Sh.packCString ptr)
+    ]
 
 -------------------------------------------------------------------------------
 -- Utils
