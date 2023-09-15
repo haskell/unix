@@ -254,16 +254,17 @@ posix010 = testCase "posix010" $ do
 
 testWithFilePath :: TestTree
 testWithFilePath =
-  testGroup "withFilePath"
-    [ testProperty "ByteString" $
-      \xs -> let ys = B.pack $ filter (/= 0) xs in
-        ioProperty $ BSFP.withFilePath ys
-          (\ptr -> (=== ys) <$> B.packCString ptr)
-    , testProperty "PosixPath" $
-      \xs -> let ys = Sh.pack $ filter (/= 0) xs in
-        ioProperty $ PPFP.withFilePath (PosixString ys)
-          (\ptr -> (=== ys) <$> Sh.packCString ptr)
-    ]
+  adjustOption (\(QuickCheckTests n) -> QuickCheckTests (n `max` 10000)) $
+    testGroup "withFilePath"
+      [ testProperty "ByteString" $
+        \xs -> let ys = B.pack $ filter (/= 0) xs in
+          ioProperty $ BSFP.withFilePath ys
+            (\ptr -> (=== ys) <$> B.packCString ptr)
+      , testProperty "PosixPath" $
+        \xs -> let ys = Sh.pack $ filter (/= 0) xs in
+          ioProperty $ PPFP.withFilePath (PosixString ys)
+            (\ptr -> (=== ys) <$> Sh.packCString ptr)
+      ]
 
 -------------------------------------------------------------------------------
 -- Utils
