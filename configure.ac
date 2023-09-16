@@ -23,6 +23,7 @@ AC_SYS_LARGEFILE
 AC_CHECK_HEADERS([dirent.h fcntl.h grp.h limits.h pwd.h signal.h string.h])
 AC_CHECK_HEADERS([sys/resource.h sys/stat.h sys/times.h sys/time.h])
 AC_CHECK_HEADERS([sys/utsname.h sys/wait.h])
+AC_CHECK_HEADERS([sys/sysmacros.h])
 AC_CHECK_HEADERS([bsd/libutil.h libutil.h pty.h utmp.h])
 AC_CHECK_HEADERS([termios.h time.h unistd.h utime.h])
 
@@ -45,6 +46,10 @@ AC_CHECK_FUNCS([times])
 AC_CHECK_FUNCS([chown fchdir fchmod])
 
 AC_CHECK_TYPE([struct rlimit],[AC_DEFINE([HAVE_STRUCT_RLIMIT],[1],[HAVE_STRUCT_RLIMIT])],[],[#include <sys/resource.h>])
+
+# check for statx
+AC_CHECK_FUNC([statx], [AC_DEFINE([HAVE_STATX_FUN],[1],[HAVE_STATX_FUN])],[],[#include <sys/stat.h>])
+AC_CHECK_TYPE([struct statx],[AC_DEFINE([HAVE_STRUCT_STATX],[1],[HAVE_STRUCT_STATX])],[],[#include <sys/stat.h>])
 
 AC_MSG_CHECKING(for F_GETLK from fcntl.h)
 AC_EGREP_CPP(yes,

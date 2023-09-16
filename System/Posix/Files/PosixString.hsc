@@ -1,4 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -58,6 +59,69 @@ module System.Posix.Files.PosixString (
     isBlockDevice, isCharacterDevice, isNamedPipe, isRegularFile,
     isDirectory, isSymbolicLink, isSocket,
 
+    -- * Extended file status
+    ExtendedFileStatus(..),
+    CAttributes(..),
+    -- ** Obtaining extended file status
+    getExtendedFileStatus,
+    -- ** Flags
+    StatxFlags(..),
+    defaultStatxFlags,
+    pattern EmptyPath,
+    pattern NoAutoMount,
+    pattern SymlinkNoFollow,
+    pattern SyncAsStat,
+    pattern ForceSync,
+    pattern DontSync,
+    -- ** Mask
+    StatxMask(..),
+    defaultStatxMask,
+    pattern StatxType,
+    pattern StatxMode,
+    pattern StatxNlink,
+    pattern StatxUid,
+    pattern StatxGid,
+    pattern StatxAtime,
+    pattern StatxMtime,
+    pattern StatxCtime,
+    pattern StatxIno,
+    pattern StatxSize,
+    pattern StatxBlocks,
+    pattern StatxBasicStats,
+    pattern StatxBtime,
+    pattern StatxMntId,
+    pattern StatxAll,
+    -- ** Querying extended file status
+    fileBlockSizeX,
+    linkCountX,
+    fileOwnerX,
+    fileGroupX,
+    fileModeX,
+    fileIDX,
+    fileSizeX,
+    fileBlocksX,
+    accessTimeHiResX,
+    creationTimeHiResX,
+    statusChangeTimeHiResX,
+    modificationTimeHiResX,
+    deviceIDX,
+    specialDeviceIDX,
+    mountIDX,
+    fileCompressedX,
+    fileImmutableX,
+    fileAppendX,
+    fileNoDumpX,
+    fileEncryptedX,
+    fileVerityX,
+    fileDaxX,
+    isBlockDeviceX,
+    isCharacterDeviceX,
+    isNamedPipeX,
+    isRegularFileX,
+    isDirectoryX,
+    isSymbolicLinkX,
+    isSocketX,
+
     -- * Creation
     createNamedPipe,
     createDevice,
@@ -102,7 +166,8 @@ import Foreign.C hiding (
      throwErrnoPathIfMinus1_ )
 
 import System.OsPath.Types
-import System.Posix.Files hiding (getFileStatus, getSymbolicLinkStatus, createNamedPipe, createDevice, createLink, removeLink, createSymbolicLink, readSymbolicLink, rename, setOwnerAndGroup, setSymbolicLinkOwnerAndGroup, setFileTimes, setSymbolicLinkTimesHiRes, touchFile, touchSymbolicLink, setFileSize, getPathVar, setFileMode, fileAccess, fileExist, setFdTimesHiRes, setFileTimesHiRes)
+import System.Posix.Files hiding (getFileStatus, getExtendedFileStatus, getSymbolicLinkStatus, createNamedPipe, createDevice, createLink, removeLink, createSymbolicLink, readSymbolicLink, rename, setOwnerAndGroup, setSymbolicLinkOwnerAndGroup, setFileTimes, setSymbolicLinkTimesHiRes, touchFile, touchSymbolicLink, setFileSize, getPathVar, setFileMode, fileAccess, fileExist, setFdTimesHiRes, setFileTimesHiRes)
+import System.Posix.Files.Common (getExtendedFileStatus_)
 import System.Posix.PosixPath.FilePath
 
 import Data.Time.Clock.POSIX (POSIXTime)
@@ -181,6 +246,25 @@ getFileStatus path = do
     withFilePath path $ \s ->
       throwErrnoPathIfMinus1Retry_ "getFileStatus" path (c_stat s p)
   return (Common.FileStatus fp)
+
+-- | Gets extended file status information.
+--
+-- The target file to open is identified in one of the following ways:
+--
+-- - If @pathname@ begins with a slash, then it is an absolute pathname that identifies the target file. In this case, @dirfd@ is ignored
+-- - If @pathname@ is a string that begins with a character other than a slash and @dirfd@ is a file descriptor that refers to a
+--   directory, then pathname is a relative pathname that is interpreted relative to the directory referred to by dirfd.
+--   (See @openat(2)@ for an explanation of why this is useful.)
+-- - If @pathname@ is an empty string and the 'EmptyPath' flag is specified in flags (see below), then the target file is
+--   the one referred to by the file descriptor @dirfd@.
+--
+-- Note: calls @statx@.
+getExtendedFileStatus :: Maybe Fd   -- ^ Optional directory file descriptor (@dirfd@)
+                      -> PosixPath  -- ^ @pathname@ to open
+                      -> StatxFlags -- ^ flags
+                      -> StatxMask  -- ^ mask
+                      -> IO ExtendedFileStatus
+getExtendedFileStatus mfd path flags masks = withFilePath path $ \s -> getExtendedFileStatus_ mfd s flags masks
 
 -- | Acts as 'getFileStatus' except when the 'PosixPath' refers to a symbolic
 -- link. In that case the @FileStatus@ information of the symbolic link itself
