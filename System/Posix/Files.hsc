@@ -62,6 +62,15 @@ module System.Posix.Files (
     fileBlockSize,
     fileBlocks,
 
+    -- * Extended file status
+    StatxFlags(..),
+    defaultStatxFlags,
+    StatxMask(..),
+    defaultStatxMask,
+    ExtendedFileStatus(..),
+    fileSizeX,
+    fileGroupX,
+
     -- * Creation
     createNamedPipe,
     createDevice,

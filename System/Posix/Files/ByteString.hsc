@@ -49,8 +49,14 @@ module System.Posix.Files.ByteString (
 
     -- * File status
     FileStatus,
+    StatxFlags(..),
+    defaultStatxFlags,
+    StatxMask(..),
+    defaultStatxMask,
+    ExtendedFileStatus(..),
     -- ** Obtaining file status
     getFileStatus, getFdStatus, getSymbolicLinkStatus,
+    getExtendedFileStatus,
     -- ** Querying file status
     deviceID, fileID, fileMode, linkCount, fileOwner, fileGroup,
     specialDeviceID, fileSize, accessTime, modificationTime,
@@ -183,6 +189,17 @@ getFileStatus path = do
     withFilePath path $ \s ->
       throwErrnoPathIfMinus1Retry_ "getFileStatus" path (c_stat s p)
   return (FileStatus fp)
+
+-- | @getExtendedFileStatus path@ gets the @FileStatus@ information (user ID,
+-- size, access times, etc.) for the file @path@.
+--
+-- Note: calls @statx@.
+getExtendedFileStatus :: Maybe Fd  -- ^ Optional directory file descriptor
+                      -> RawFilePath   -- ^ Pathname to open
+                      -> StatxFlags
+                      -> StatxMask
+                      -> IO ExtendedFileStatus
+getExtendedFileStatus mfd path flags masks = withFilePath path $ \s -> getExtendedFileStatus_ mfd s flags masks
 
 -- | Acts as 'getFileStatus' except when the 'RawFilePath' refers to a symbolic
 -- link. In that case the @FileStatus@ information of the symbolic link itself

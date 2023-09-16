@@ -1,4 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE Trustworthy #-}
 
 -----------------------------------------------------------------------------
@@ -59,6 +60,17 @@ module System.Posix.Files.Common (
 
     fileBlockSize,
     fileBlocks,
+
+    -- * Extended file status
+    StatxFlags(..),
+    defaultStatxFlags,
+    StatxMask(..),
+    defaultStatxMask,
+    ExtendedFileStatus(..),
+    getExtendedFileStatus_,
+    fileSizeX,
+    fileGroupX,
+    fileOwnerX,
 
     -- * Setting file sizes
     setFdSize,
@@ -688,3 +700,109 @@ getFdPathVar (Fd fd) v =
 
 foreign import ccall unsafe "fpathconf"
   c_fpathconf :: CInt -> CInt -> IO CLong
+
+
+  -- -----------------------------------------------------------------------------
+-- statx
+--
+data StatxFlags =
+ StatxFlags {
+   emptyPath :: Bool
+ , noAutoMount :: Bool
+ , symlinkNoFollow :: Bool
+ }
+ deriving (Read, Show, Eq, Ord)
+
+
+defaultStatxFlags :: StatxFlags
+defaultStatxFlags =
+ StatxFlags {
+    emptyPath       = False,
+    noAutoMount     = False,
+    symlinkNoFollow = False
+  }
+
+data StatxMask =
+ StatxMask {
+   statx_type :: Bool
+ , statx_mode :: Bool
+ , statx_nlink :: Bool
+ , statx_uid :: Bool
+ , statx_gid :: Bool
+ , statx_atime :: Bool
+ , statx_mtime :: Bool
+ , statx_ctime :: Bool
+ , statx_ino :: Bool
+ , statx_size :: Bool
+ , statx_blocks :: Bool
+ , statx_btime :: Bool
+ }
+ deriving (Read, Show, Eq, Ord)
+
+
+defaultStatxMask :: StatxMask
+defaultStatxMask =
+ StatxMask {
+   statx_type = False
+ , statx_mode = False
+ , statx_nlink = False
+ , statx_uid = False
+ , statx_gid = False
+ , statx_atime = False
+ , statx_mtime = False
+ , statx_ctime = False
+ , statx_ino = False
+ , statx_size = False
+ , statx_blocks = False
+ , statx_btime = False
+ }
+
+newtype ExtendedFileStatus = ExtendedFileStatus (ForeignPtr CStatx) -- ^ The constructor is considered internal and may change.
+
+fileOwnerX        :: ExtendedFileStatus -> UserID
+fileGroupX        :: ExtendedFileStatus -> GroupID
+fileSizeX         :: ExtendedFileStatus -> FileOffset
+
+fileOwnerX (ExtendedFileStatus statx) =
+  unsafePerformIO $ withForeignPtr statx $ (#peek struct statx, stx_uid)
+fileGroupX (ExtendedFileStatus statx) =
+  unsafePerformIO $ withForeignPtr statx $ (#peek struct statx, stx_gid)
+fileSizeX (ExtendedFileStatus statx) =
+  unsafePerformIO $ withForeignPtr statx $ (#peek struct statx, stx_size)
+
+data {-# CTYPE "struct statx" #-} CStatx
+
+foreign import ccall unsafe "statx"
+   c_statx :: CInt -> CFilePath -> CInt -> CInt -> Ptr CStatx -> IO CInt
+
+
+getExtendedFileStatus_ :: Maybe Fd  -- ^ Optional directory file descriptor
+                       -> CString   -- ^ Pathname to open
+                       -> StatxFlags
+                       -> StatxMask
+                       -> IO ExtendedFileStatus
+getExtendedFileStatus_ fdMay str StatxFlags{..} StatxMask{..} = do
+  fp <- mallocForeignPtrBytes (#const sizeof(struct statx))
+  withForeignPtr fp $ \p ->
+      throwErrnoIfMinus1Retry_ "getExtendedFileStatus_" (c_statx c_fd str flags masks p)
+  return (ExtendedFileStatus fp)
+ where
+  c_fd = maybe (#const AT_FDCWD) (\ (Fd fd) -> fd) fdMay
+  flags =
+       (if emptyPath       then (#const AT_EMPTY_PATH)       else 0) .|.
+       (if noAutoMount     then (#const AT_NO_AUTOMOUNT)     else 0) .|.
+       (if symlinkNoFollow then (#const AT_SYMLINK_NOFOLLOW) else 0)
+  masks =
+       (if statx_type   then (#const STATX_TYPE)   else 0) .|.
+       (if statx_mode   then (#const STATX_MODE)   else 0) .|.
+       (if statx_nlink  then (#const STATX_NLINK)  else 0) .|.
+       (if statx_uid    then (#const STATX_UID)    else 0) .|.
+       (if statx_gid    then (#const STATX_GID)    else 0) .|.
+       (if statx_atime  then (#const STATX_ATIME)  else 0) .|.
+       (if statx_mtime  then (#const STATX_MTIME)  else 0) .|.
+       (if statx_ctime  then (#const STATX_CTIME)  else 0) .|.
+       (if statx_ino    then (#const STATX_INO)    else 0) .|.
+       (if statx_size   then (#const STATX_SIZE)   else 0) .|.
+       (if statx_blocks then (#const STATX_BLOCKS) else 0) .|.
+       (if statx_btime  then (#const STATX_BTIME)  else 0)
+

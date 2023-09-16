@@ -46,6 +46,11 @@ AC_CHECK_FUNCS([chown fchdir fchmod])
 
 AC_CHECK_TYPE([struct rlimit],[AC_DEFINE([HAVE_STRUCT_RLIMIT],[1],[HAVE_STRUCT_RLIMIT])],[],[#include <sys/resource.h>])
 
+# check for statx
+AC_CHECK_FUNC([statx], [AC_DEFINE([HAVE_STATX_FUN],[1],[HAVE_STATX_FUN])],[],[#include <sys/stat.h>])
+AC_CHECK_TYPE([struct statx],[AC_DEFINE([HAVE_STRUCT_STATX],[1],[HAVE_STRUCT_STATX])],[],[#include <sys/stat.h>])
+AS_IF([test "x$HAVE_STRUCT_STATX" = "x1" && test "x$HAVE_STATX_FUN" = "x1"], [AC_DEFINE([HAVE_STATX],[1],[HAVE_STATX])])
+
 AC_MSG_CHECKING(for F_GETLK from fcntl.h)
 AC_EGREP_CPP(yes,
 [
