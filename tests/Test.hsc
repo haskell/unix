@@ -4,6 +4,8 @@
 {-# OPTIONS_GHC -fno-warn-deprecations #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
+#include "HsUnix.h"
+
 module Main (main) where
 
 import Control.Applicative
@@ -25,6 +27,7 @@ import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
 import qualified FileStatus
+import qualified FileExtendedStatus
 import qualified FileStatusByteString
 import qualified Signals001
 
@@ -37,6 +40,9 @@ main = defaultMain $ testGroup "All"
   , testGroup "Native"
     [ executeFile001               -- JS: missing "pipe"
     , fileStatus                   -- JS: missing "openat"
+#ifdef HAVE_STATX
+    , fileExtendedStatus           -- JS: missing "openat"
+#endif
     , fileStatusByteString         -- JS: missing "openat"
     , getEnvironment01             -- JS: missing "environ"
     , testSystemPosixEnvByteString -- JS: missing "environ"
@@ -73,6 +79,9 @@ fileExist01 = testCase "fileExist01" $ do
 
 fileStatus :: TestTree
 fileStatus = testCase "fileStatus" FileStatus.main
+
+fileExtendedStatus :: TestTree
+fileExtendedStatus = testCase "fileExtendedStatus" FileExtendedStatus.main
 
 fileStatusByteString :: TestTree
 fileStatusByteString = testCase "fileStatusByteString" FileStatusByteString.main
