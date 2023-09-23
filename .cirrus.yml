@@ -14,7 +14,7 @@ task:
     image_project: pg-ci-images
     # OpenBSD version should match
     # https://github.com/anarazel/pg-vm-images/blob/main/packer/openbsd.pkrvars.hcl
-    image: family/pg-ci-openbsd-vanilla-7-2
+    image: family/pg-ci-openbsd-vanilla-7-3
     platform: openbsd
   install_script: pkg_add ghc cabal-install git autoconf-2.71
   script:
