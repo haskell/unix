@@ -8,6 +8,8 @@
 
 #include "HsUnix.h"
 
+char **__hsunix_get_environ (void) {return environ;}
+
 #ifdef HAVE_RTLDNEXT
 void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 #endif

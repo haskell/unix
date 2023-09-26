@@ -22,8 +22,11 @@ getCEnviron = nsGetEnviron >>= peek
 foreign import ccall unsafe "_NSGetEnviron"
    nsGetEnviron :: IO (Ptr (Ptr CString))
 #else
-getCEnviron = peek c_environ_p
+getCEnviron = _getCEnviron
 
-foreign import ccall unsafe "&environ"
-   c_environ_p :: Ptr (Ptr CString)
+-- N.B. we cannot import `environ` directly in Haskell as it may be a weak symbol
+-- which requires special treatment by the compiler, which GHC is not equipped to
+-- provide. See GHC #24011.
+foreign import ccall unsafe "__hsunix_get_environ"
+   _getCEnviron :: IO (Ptr CString)
 #endif
