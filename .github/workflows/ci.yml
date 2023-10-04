@@ -122,11 +122,11 @@ jobs:
         uses: docker://hasufell/arm32v7-ubuntu-haskell:focal
         name: Run build (arm32v7 linux)
         with:
-          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+          args: sh -c "cabal update && autoreconf -i && touch config.sub && cabal test all --test-show-details=direct"
 
       - if: matrix.arch == 'arm64v8'
         uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
         name: Run build (arm64v8 linux)
         with:
-          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+          args: sh -c "cabal update && autoreconf -i && touch config.sub && cabal test all --test-show-details=direct"
 
