@@ -1,9 +1,10 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## 2.8.3.0 *??? 2023*
+## 2.8.3.0 *Oct 2023*
 
   * add `getExtendedFileStatus` (based on `statx`) style functions
   * drop support for GHC < 8.6
+  * Don't `foreign import` `environ`, see [GHC #24011](https://gitlab.haskell.org/ghc/ghc/-/issues/24011)
 
 ## 2.8.2.1 *Sep 2023*
 
