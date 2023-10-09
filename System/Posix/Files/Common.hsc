@@ -122,6 +122,7 @@ module System.Posix.Files.Common (
     isDirectoryX,
     isSymbolicLinkX,
     isSocketX,
+    haveStatx,
 
     -- * Setting file sizes
     setFdSize,
@@ -1346,3 +1347,11 @@ getExtendedFileStatus_ fdMay str (StatxFlags flags) (StatxMask masks) = do
 getExtendedFileStatus_ _ _ _ _ = ioError (ioeSetLocation unsupportedOperation "getExtendedFileStatus")
 #endif
 
+-- | Whether 'statx' is available on this platform and 'getExtendedFileStatus' and
+-- related functions will work.
+haveStatx :: Bool
+#ifdef HAVE_STATX
+haveStatx = True
+#else
+haveStatx = False
+#endif

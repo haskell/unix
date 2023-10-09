@@ -1,5 +1,9 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.4.0 *??? 2023*
+
+  * add `haveStatx`
+
 ## 2.8.3.0 *Oct 2023*
 
   * add `getExtendedFileStatus` (based on `statx`) style functions
