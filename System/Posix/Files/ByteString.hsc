@@ -66,6 +66,7 @@ module System.Posix.Files.ByteString (
     -- * Extended file status
     ExtendedFileStatus(..),
     CAttributes(..),
+    haveStatx,
     -- ** Obtaining extended file status
     getExtendedFileStatus,
     -- ** Flags
