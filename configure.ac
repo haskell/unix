@@ -50,6 +50,23 @@ AC_CHECK_TYPE([struct rlimit],[AC_DEFINE([HAVE_STRUCT_RLIMIT],[1],[HAVE_STRUCT_R
 # check for statx
 AC_CHECK_FUNC([statx], [AC_DEFINE([HAVE_STATX_FUN],[1],[HAVE_STATX_FUN])],[],[#include <sys/stat.h>])
 AC_CHECK_TYPE([struct statx],[AC_DEFINE([HAVE_STRUCT_STATX],[1],[HAVE_STRUCT_STATX])],[],[#include <sys/stat.h>])
+AC_MSG_CHECKING(for statx.stx_mnt_id)
+AC_LINK_IFELSE([
+AC_LANG_PROGRAM([[#include <sys/stat.h>]],
+[[
+struct statx statxbuf;
+statx(0, "", 0, STATX_BASIC_STATS | STATX_MNT_ID, &statxbuf);
+return statxbuf.stx_mnt_id;
+]])],
+[
+AC_MSG_RESULT(yes)
+AC_DEFINE([HAVE_STATX_MNT_ID], [1], [Define to 1 if statx.stx_mnt_id is available.])
+],
+[
+AC_MSG_RESULT(no)
+]
+)
+
 
 AC_MSG_CHECKING(for F_GETLK from fcntl.h)
 AC_EGREP_CPP(yes,

@@ -3,6 +3,7 @@
 ## 2.8.4.0 *??? 2023*
 
   * add `haveStatx`
+  * fix `statx.stx_mnt_id` detection on buggy glibc, see [GHC #24072](https://gitlab.haskell.org/ghc/ghc/-/issues/24072)
 
 ## 2.8.3.0 *Oct 2023*
 

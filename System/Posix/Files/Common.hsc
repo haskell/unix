@@ -940,7 +940,7 @@ pattern StatxBtime = StatxMask 0
 
 -- | Want @stx_mnt_id@.
 pattern StatxMntId :: StatxMask
-#ifdef STATX_MNT_ID
+#ifdef HAVE_STATX_MNT_ID
 pattern StatxMntId = StatxMask (#const STATX_MNT_ID)
 #else
 pattern StatxMntId = StatxMask 0
@@ -1160,11 +1160,11 @@ specialDeviceIDX (ExtendedFileStatus statx) = unsafePerformIO $ do
 {-# WARNING specialDeviceIDX "specialDeviceIDX: not available on this platform, will throw error (CPP guard: @#if HAVE_SYS_SYSMACROS_H@)" #-}
 specialDeviceIDX _ = error "specialDeviceIDX not available on this platform"
 #endif
-#ifdef STATX_MNT_ID
+#ifdef HAVE_STATX_MNT_ID
 mountIDX (ExtendedFileStatus statx) =
   unsafePerformIO $ withForeignPtr statx $ (#peek struct statx, stx_mnt_id)
 #else
-{-# WARNING mountIDX "mountIDX: not available on this platform, will throw error (CPP guard: @#if STATX_MNT_ID@)" #-}
+{-# WARNING mountIDX "mountIDX: not available on this platform, will throw error (CPP guard: @#if HAVE_STATX_MNT_ID@)" #-}
 mountIDX _ = error "mountIDX not available on this platform"
 #endif
 fileBlockSizeX (ExtendedFileStatus statx) = unsafePerformIO $ do
