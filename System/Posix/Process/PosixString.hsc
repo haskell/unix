@@ -1,3 +1,4 @@
+{-# LANGUAGE PackageImports #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Process.PosixString
@@ -79,7 +80,11 @@ import Foreign.C hiding (
 
 import System.OsPath.Types
 import System.OsString.Internal.Types (PosixString(..))
-import qualified System.OsPath.Data.ByteString.Short as BC
+#if MIN_VERSION_filepath(1, 5, 0)
+import qualified "os-string" System.OsString.Data.ByteString.Short as BC
+#else
+import qualified "filepath" System.OsPath.Data.ByteString.Short as BC
+#endif
 
 import System.Posix.PosixPath.FilePath
 

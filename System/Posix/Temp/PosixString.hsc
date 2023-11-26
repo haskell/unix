@@ -1,4 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE PackageImports #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  System.Posix.Temp.PosixString
@@ -20,7 +21,11 @@ module System.Posix.Temp.PosixString (
 
 #include "HsUnix.h"
 
-import qualified System.OsPath.Data.ByteString.Short as BC
+#if MIN_VERSION_filepath(1, 5, 0)
+import qualified "os-string" System.OsString.Data.ByteString.Short as BC
+#else
+import qualified "filepath" System.OsPath.Data.ByteString.Short as BC
+#endif
 import Data.Word
 
 import Foreign.C

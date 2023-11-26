@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PackageImports #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -45,7 +46,11 @@ import Data.ByteString.Internal (c_strlen)
 import Control.Monad
 import Control.Exception
 import System.OsPath.Posix as PS
-import System.OsPath.Data.ByteString.Short as BSS
+#if MIN_VERSION_filepath(1, 5, 0)
+import "os-string" System.OsString.Data.ByteString.Short as BSS
+#else
+import "filepath" System.OsPath.Data.ByteString.Short as BSS
+#endif
 import Prelude hiding (FilePath)
 import System.OsString.Internal.Types (PosixString(..), pattern PS)
 import GHC.IO.Exception

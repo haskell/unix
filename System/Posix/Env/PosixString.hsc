@@ -1,4 +1,5 @@
 {-# LANGUAGE CApiFFI #-}
+{-# LANGUAGE PackageImports #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -42,7 +43,11 @@ import GHC.IO.Encoding.Failure ( CodingFailureMode(..) )
 import System.Posix.Env ( clearEnv )
 import System.OsPath.Posix
 import System.OsString.Internal.Types
-import qualified System.OsPath.Data.ByteString.Short as B
+#if MIN_VERSION_filepath(1, 5, 0)
+import qualified "os-string" System.OsString.Data.ByteString.Short as B
+#else
+import qualified "filepath" System.OsPath.Data.ByteString.Short as B
+#endif
 import Data.ByteString.Short.Internal ( copyToPtr )
 
 import qualified System.Posix.Env.Internal as Internal

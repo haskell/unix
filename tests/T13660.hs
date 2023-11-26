@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PackageImports #-}
 
 module Main where
 
@@ -15,7 +16,11 @@ import System.Posix.IO (defaultFileFlags, OpenFileFlags(..), OpenMode(..))
 import System.Posix.ByteString.FilePath
 
 import qualified Data.ByteString.Char8 as C
-import qualified System.OsPath.Data.ByteString.Short as SBS
+#if MIN_VERSION_filepath(1, 5, 0)
+import qualified "os-string" System.OsString.Data.ByteString.Short as SBS
+#else
+import qualified "filepath" System.OsPath.Data.ByteString.Short as SBS
+#endif
 import qualified System.Posix.Env.PosixString as PS
 import qualified System.Posix.IO.PosixString as PS
 import qualified System.Posix.IO.ByteString as BS
