@@ -64,10 +64,10 @@ jobs:
         autoreconf -i
         cabal test all --test-show-details=direct
 
-  fedora36:
+  fedora37:
     runs-on: ubuntu-latest
     container:
-      image: fedora:36
+      image: fedora:37
     steps:
     - name: Install
       run: |
