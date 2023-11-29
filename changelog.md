@@ -5,6 +5,7 @@
   * add `haveStatx`
   * fix `statx.stx_mnt_id` detection on buggy glibc, see [GHC #24072](https://gitlab.haskell.org/ghc/ghc/-/issues/24072)
   * allow building with newer filepath/os-string
+  * Use `throwErrnoIfMinus1Retry` for mkstemp
 
 ## 2.8.3.0 *Oct 2023*
 

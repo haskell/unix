@@ -67,7 +67,7 @@ mkstemp :: PosixString -> IO (PosixPath, Handle)
 mkstemp (PosixString template') = do
   let template = PosixString $ template' `BC.append` (BC.pack [_X,_X,_X,_X,_X,_X])
   withFilePath template $ \ ptr -> do
-    fd <- throwErrnoIfMinus1 "mkstemp" (c_mkstemp ptr)
+    fd <- throwErrnoIfMinus1Retry "mkstemp" (c_mkstemp ptr)
     name <- peekFilePath ptr
     h <- fdToHandle (Fd fd)
     return (name, h)
