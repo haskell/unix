@@ -81,7 +81,8 @@ jobs:
         cabal update
         autoreconf --version
         autoreconf -i
-        cabal test all --test-show-details=direct
+        # test filepath >= 1.5
+        cabal test --constraint='filepath >= 1.5.0.0' all --test-show-details=direct
 
   i386:
     runs-on: ubuntu-latest
