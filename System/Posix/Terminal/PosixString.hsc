@@ -72,12 +72,18 @@ module System.Posix.Terminal.PosixString (
 import Foreign
 import System.Posix.Types
 import System.Posix.Terminal.Common
+
 #ifndef HAVE_OPENPTY
-import qualified System.OsPath.Data.ByteString.Short as SBS
-import System.Posix.IO.ByteString (defaultFileFlags, openFd, noctty, OpenMode(ReadWrite))
 import Data.ByteString.Char8 as B ( pack, )
-import qualified System.OsPath.Data.ByteString.Short as BC
+import System.Posix.IO.ByteString (defaultFileFlags, openFd, noctty, OpenMode(ReadWrite))
 import System.OsString.Internal.Types (PosixString(..))
+#if MIN_VERSION_filepath(1,5,0)
+import qualified System.OsString.Data.ByteString.Short as SBS
+import qualified System.OsString.Data.ByteString.Short as BC
+#else
+import qualified System.OsPath.Data.ByteString.Short as SBS
+import qualified System.OsPath.Data.ByteString.Short as BC
+#endif
 #endif
 
 import Foreign.C hiding (
