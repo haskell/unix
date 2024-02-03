@@ -131,3 +131,30 @@ jobs:
         name: Run build (arm64v8 linux)
         with:
           args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+
+  freebsd:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: [self-hosted, FreeBSD, X64]
+            ghc: 9.4.8
+          - os: [self-hosted, FreeBSD, X64]
+            ghc: 9.6.4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run build
+        run: |
+          pkg install -y curl gcc gmp gmake ncurses perl5 libffi libiconv git bash misc/compat10x misc/compat11x misc/compat12x gmake autoconf
+          . .github/scripts/env.sh
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
+          autoreconf --version
+          autoreconf -i
+          cabal sdist -z -o .
+          cabal get unix-*.tar.gz
+          cd unix-*/
+          cabal test all --test-show-details=direct
+
