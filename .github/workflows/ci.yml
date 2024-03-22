@@ -16,15 +16,15 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-22.04, macOS-latest]
-        ghc: ['9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
+        ghc: ['9.8', '9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup toolchain
       run: |
         which ghcup
         ghcup install cabal recommended
         ghcup install ghc --set ${{ matrix.ghc }}
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       name: Cache cabal stuff
       with:
         path: |
@@ -54,7 +54,7 @@ jobs:
       run: |
         yum install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_GHC_VERSION=9.2.8 sh
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Test
       run: |
         source ~/.ghcup/env
@@ -73,7 +73,7 @@ jobs:
       run: |
         dnf install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Test
       run: |
         source ~/.ghcup/env
@@ -117,7 +117,7 @@ jobs:
           args: "find . -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - if: matrix.arch == 'arm32v7'
         uses: docker://hasufell/arm32v7-ubuntu-haskell:focal
@@ -130,4 +130,3 @@ jobs:
         name: Run build (arm64v8 linux)
         with:
           args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
-
