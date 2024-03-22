@@ -43,7 +43,7 @@ jobs:
         cd unix-*/
         cabal test all --test-show-details=direct
     - name: Haddock
-      run: cabal haddock
+      run: cabal haddock --disable-documentation
 
   centos7:
     runs-on: ubuntu-latest
