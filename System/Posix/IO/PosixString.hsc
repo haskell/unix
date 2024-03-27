@@ -19,6 +19,7 @@
 
 module System.Posix.IO.PosixString (
     -- * Input \/ Output
+    Fd,
 
     -- ** Standard file descriptors
     stdInput, stdOutput, stdError,
