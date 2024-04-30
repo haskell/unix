@@ -551,7 +551,7 @@ foreign import capi unsafe "sys/stat.h futimens"
     c_futimens :: CInt -> Ptr CTimeSpec -> IO CInt
 #endif
 
-data CTimeVal = CTimeVal CLong CLong
+data CTimeVal = CTimeVal (#type time_t) (#type suseconds_t)
 
 instance Storable CTimeVal where
     sizeOf    _ = #size struct timeval
