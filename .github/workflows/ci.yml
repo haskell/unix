@@ -32,9 +32,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Setup toolchain
       run: |
-        which ghcup
-        ghcup install cabal recommended
-        ghcup install ghc --set ${{ matrix.ghc }}
+        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
+        . ~/.ghcup/env
     - uses: actions/cache@v4
       name: Cache cabal stuff
       with:
