@@ -58,7 +58,9 @@ jobs:
         cd unix-*/
         cabal test all --test-show-details=direct
     - name: Haddock
-      run: cabal haddock --disable-documentation
+      run: |
+        . ~/.ghcup/env
+        cabal haddock --disable-documentation
 
   centos7:
     runs-on: ubuntu-latest
