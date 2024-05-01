@@ -156,9 +156,9 @@ jobs:
       matrix:
         include:
           - os: [self-hosted, FreeBSD, X64]
-            ghc: 9.4.8
+            ghc: 9.4
           - os: [self-hosted, FreeBSD, X64]
-            ghc: 9.6.4
+            ghc: 9.6
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
