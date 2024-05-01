@@ -33,6 +33,11 @@ jobs:
     - name: Setup toolchain
       run: |
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
+
+    - if: runner.os == 'macOS'
+      name: install system deps via brew
+      run: brew install coreutils autoconf automake
+
     - uses: actions/cache@v4
       name: Cache cabal stuff
       with:
