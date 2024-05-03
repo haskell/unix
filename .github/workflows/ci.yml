@@ -26,8 +26,6 @@ jobs:
             ghc: '8.8'
           - os: macos-latest
             ghc: '8.6'
-          - os: macos-latest
-            ghc: '8.4'
     steps:
     - uses: actions/checkout@v4
     - name: Setup toolchain
@@ -35,7 +33,7 @@ jobs:
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
 
     - if: runner.os == 'macOS'
-      name: install system deps via brew
+      name: Install system deps via brew
       run: brew install coreutils autoconf automake
 
     - uses: actions/cache@v4
@@ -174,4 +172,3 @@ jobs:
           cabal get unix-*.tar.gz
           cd unix-*/
           cabal test all --test-show-details=direct
-
