@@ -1,6 +1,6 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
-## 2.8.5.1 *Apr 2023*
+## 2.8.5.1 *Apr 2024*
 
   * fix building with newer filepath/os-string when `#ifndef HAVE_OPENPTY`
 
