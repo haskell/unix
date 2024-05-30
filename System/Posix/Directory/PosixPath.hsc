@@ -27,26 +27,10 @@ module System.Posix.Directory.PosixPath (
    createDirectory, removeDirectory,
 
    -- * Reading directories
-   Common.DirStream, Common.DirStreamWithPath,
-   Common.fromDirStreamWithPath,
-   Common.DirType( UnknownType
-                 , NamedPipeType
-                 , CharacterDeviceType
-                 , DirectoryType
-                 , BlockDeviceType
-                 , RegularFileType
-                 , SymbolicLinkType
-                 , SocketType
-                 , WhiteoutType
-                 ),
-   Common.isUnknownType, Common.isBlockDeviceType, Common.isCharacterDeviceType,
-   Common.isNamedPipeType, Common.isRegularFileType, Common.isDirectoryType,
-   Common.isSymbolicLinkType, Common.isSocketType, Common.isWhiteoutType,
+   Common.DirStream,
    openDirStream,
-   openDirStreamWithPath,
    readDirStream,
    readDirStreamMaybe,
-   readDirStreamWithType,
    Common.rewindDirStream,
    Common.closeDirStream,
    Common.DirStreamOffset,
@@ -63,6 +47,7 @@ module System.Posix.Directory.PosixPath (
    Common.changeWorkingDirectoryFd,
   ) where
 
+import Control.Monad ((>=>))
 import Data.Maybe
 import System.Posix.Types
 import Foreign
@@ -70,7 +55,6 @@ import Foreign.C
 
 import System.OsPath.Posix
 import qualified System.Posix.Directory.Common as Common
-import System.Posix.Files.PosixString
 import System.Posix.PosixPath.FilePath
 
 -- | @createDirectory dir mode@ calls @mkdir@ to
@@ -94,11 +78,6 @@ openDirStream name =
     dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
     return (Common.DirStream dirp)
 
--- | A version of 'openDirStream' where the path of the directory is stored in
--- the returned 'DirStreamWithPath'.
-openDirStreamWithPath :: PosixPath -> IO (Common.DirStreamWithPath PosixPath)
-openDirStreamWithPath name = Common.toDirStreamWithPath name <$> openDirStream name
-
 foreign import capi unsafe "HsUnix.h opendir"
    c_opendir :: CString  -> IO (Ptr Common.CDir)
 
@@ -120,32 +99,7 @@ readDirStream = fmap (fromMaybe mempty) . readDirStreamMaybe
 --   the end of the directory stream was reached.
 readDirStreamMaybe :: Common.DirStream -> IO (Maybe PosixPath)
 readDirStreamMaybe = Common.readDirStreamWith
-  (\(Common.DirEnt dEnt) -> d_name dEnt >>= peekFilePath)
-
--- | @readDirStreamWithType dp@ calls @readdir@ to obtain the
---   next directory entry (@struct dirent@) for the open directory
---   stream @dp@. It returns the @d_name@ member of that
---   structure together with the entry's type (@d_type@) wrapped in a
---   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
---   the end of the directory stream was reached.
---
---   __Note__: The returned 'DirType' has some limitations; Please see its
---   documentation.
-readDirStreamWithType :: Common.DirStreamWithPath PosixPath -> IO (Maybe (PosixPath, Common.DirType))
-readDirStreamWithType (Common.DirStreamWithPath (base, ptr))= Common.readDirStreamWith
-  (\(Common.DirEnt dEnt) -> do
-    name <- d_name dEnt >>= peekFilePath
-    let getStat = getFileStatus (base </> name)
-    dtype <- d_type dEnt >>= Common.getRealDirType getStat . Common.DirType
-    return (name, dtype)
-  )
-  (Common.DirStream ptr)
-
-foreign import ccall unsafe "__hscore_d_name"
-  d_name :: Ptr Common.CDirent -> IO CString
-
-foreign import ccall unsafe "__hscore_d_type"
-  d_type :: Ptr Common.CDirent -> IO CChar
+  (Common.dirEntName >=> peekFilePath)
 
 
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name
