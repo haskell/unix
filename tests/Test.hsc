@@ -62,7 +62,6 @@ main = defaultMain $ testGroup "All"
     , posix010                     -- JS: missing "sysconf"
     , emptyDirStream
     , nonEmptyDirStream
-    , dirStreamWithTypes
     ]
 #endif
   , testWithFilePath
@@ -284,9 +283,6 @@ emptyDirStream = testCase "emptyDirStream" ReadDirStream.emptyDirStream
 
 nonEmptyDirStream :: TestTree
 nonEmptyDirStream = testCase "nonEmptyDirStream" ReadDirStream.nonEmptyDirStream
-
-dirStreamWithTypes :: TestTree
-dirStreamWithTypes = testCase "dirStreamWithTypes" ReadDirStream.dirStreamWithTypes
 
 -------------------------------------------------------------------------------
 -- Utils

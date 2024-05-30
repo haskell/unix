@@ -28,26 +28,10 @@ module System.Posix.Directory (
    createDirectory, removeDirectory,
 
    -- * Reading directories
-   DirStream, DirStreamWithPath,
-   fromDirStreamWithPath,
-   DirType( UnknownType
-          , NamedPipeType
-          , CharacterDeviceType
-          , DirectoryType
-          , BlockDeviceType
-          , RegularFileType
-          , SymbolicLinkType
-          , SocketType
-          , WhiteoutType
-          ),
-   isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
-   isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
-   isWhiteoutType,
+   DirStream,
    openDirStream,
-   openDirStreamWithPath,
    readDirStream,
    readDirStreamMaybe,
-   readDirStreamWithType,
    rewindDirStream,
    closeDirStream,
    DirStreamOffset,
@@ -64,15 +48,14 @@ module System.Posix.Directory (
    changeWorkingDirectoryFd,
   ) where
 
+import Control.Monad ((>=>))
 import Data.Maybe
-import System.FilePath ((</>))
 import System.Posix.Error
 import System.Posix.Types
 import Foreign
 import Foreign.C
 
 import System.Posix.Directory.Common
-import System.Posix.Files
 import System.Posix.Internals (withFilePath, peekFilePath)
 
 -- | @createDirectory dir mode@ calls @mkdir@ to
@@ -96,11 +79,6 @@ openDirStream name =
     dirp <- throwErrnoPathIfNullRetry "openDirStream" name $ c_opendir s
     return (DirStream dirp)
 
--- | A version of 'openDirStream' where the path of the directory is stored in
--- the returned 'DirStreamWithPath'.
-openDirStreamWithPath :: FilePath -> IO (DirStreamWithPath FilePath)
-openDirStreamWithPath name = toDirStreamWithPath name <$> openDirStream name
-
 foreign import capi unsafe "HsUnix.h opendir"
    c_opendir :: CString  -> IO (Ptr CDir)
 
@@ -121,33 +99,7 @@ readDirStream = fmap (fromMaybe "") . readDirStreamMaybe
 --   structure wrapped in a @Just d_name@ if an entry was read and @Nothing@ if
 --   the end of the directory stream was reached.
 readDirStreamMaybe :: DirStream -> IO (Maybe FilePath)
-readDirStreamMaybe = readDirStreamWith
-  (\(DirEnt dEnt) -> d_name dEnt >>= peekFilePath)
-
--- | @readDirStreamWithType dp@ calls @readdir@ to obtain the
---   next directory entry (@struct dirent@) for the open directory
---   stream @dp@. It returns the @d_name@ member of that
---   structure together with the entry's type (@d_type@) wrapped in a
---   @Just (d_name, d_type)@ if an entry was read and @Nothing@ if
---   the end of the directory stream was reached.
---
---   __Note__: The returned 'DirType' has some limitations; Please see its
---   documentation.
-readDirStreamWithType :: DirStreamWithPath FilePath -> IO (Maybe (FilePath, DirType))
-readDirStreamWithType (DirStreamWithPath (base, ptr)) = readDirStreamWith
-  (\(DirEnt dEnt) -> do
-    name <- d_name dEnt >>= peekFilePath
-    let getStat = getFileStatus (base </> name)
-    dtype <- d_type dEnt >>= getRealDirType getStat . DirType
-    return (name, dtype)
-  )
-  (DirStream ptr)
-
-foreign import ccall unsafe "__hscore_d_name"
-  d_name :: Ptr CDirent -> IO CString
-
-foreign import ccall unsafe "__hscore_d_type"
-  d_type :: Ptr CDirent -> IO CChar
+readDirStreamMaybe = readDirStreamWith (dirEntName >=> peekFilePath)
 
 
 -- | @getWorkingDirectory@ calls @getcwd@ to obtain the name

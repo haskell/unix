@@ -19,9 +19,16 @@
 ##include "HsUnixConfig.h"
 
 module System.Posix.Directory.Common (
-       DirStream(..), DirStreamWithPath(..),
-       fromDirStreamWithPath, toDirStreamWithPath,
-       DirEnt(..), CDir, CDirent, DirStreamOffset(..),
+       DirStream(..),
+       CDir,
+       DirStreamWithPath(..),
+       fromDirStreamWithPath,
+       toDirStreamWithPath,
+
+       DirEnt(..),
+       CDirent,
+       dirEntName,
+       dirEntType,
        DirType( DirType
               , UnknownType
               , NamedPipeType
@@ -40,6 +47,8 @@ module System.Posix.Directory.Common (
        unsafeOpenDirStreamFd,
        readDirStreamWith,
        readDirStreamWithPtr,
+
+       DirStreamOffset(..),
        rewindDirStream,
        closeDirStream,
 #ifdef HAVE_SEEKDIR
@@ -281,6 +290,18 @@ readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
                    if (eo == 0)
                       then return Nothing
                       else throwErrno "readDirStream"
+
+dirEntName :: DirEnt -> IO CString
+dirEntName (DirEnt dEntPtr) = d_name dEntPtr
+
+foreign import ccall unsafe "__hscore_d_name"
+  d_name :: Ptr CDirent -> IO CString
+
+dirEntType :: DirEnt -> IO DirType
+dirEntType (DirEnt dEntPtr) = DirType <$> d_type dEntPtr
+
+foreign import ccall unsafe "__hscore_d_type"
+  d_type :: Ptr CDirent -> IO CChar
 
 -- traversing directories
 foreign import ccall unsafe "__hscore_readdir"
