@@ -155,9 +155,6 @@ library
     ghc-options: -Wall
 
     include-dirs: include
-    includes:
-        HsUnix.h
-        execvpe.h
     install-includes:
         HsUnix.h
         execvpe.h
