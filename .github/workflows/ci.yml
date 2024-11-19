@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-22.04, macOS-latest]
-        ghc: ['9.8', '9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
+        os: [ubuntu-24.04, macOS-latest]
+        ghc: ['9.10', '9.8', '9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
         exclude:
           - os: macos-latest
             ghc: '9.0'
@@ -42,7 +42,8 @@ jobs:
         path: |
           ~/.cabal/store
           dist-newstyle
-        key: ${{ runner.os }}-${{ matrix.ghc }}
+        key: ${{ runner.os }}-${{ matrix.ghc }}-${{ github.sha }}
+        restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
     - name: Build
       run: |
         . ~/.ghcup/env
@@ -61,16 +62,15 @@ jobs:
         cabal haddock --disable-documentation
 
   centos7:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container:
-      image: centos:7
+      image: centos:9
     steps:
     - name: Install
       run: |
         yum install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
-        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_GHC_VERSION=9.2.8 sh
-    - uses: actions/checkout@v3
-        # actions/checkout@v4 (using node20) does not run on image: centos:7
+        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_GHC_VERSION=9.4.8 sh
+    - uses: actions/checkout@v4
     - name: Test
       run: |
         source ~/.ghcup/env
