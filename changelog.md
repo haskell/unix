@@ -3,6 +3,7 @@
 ## 2.8.6.0 *Nov 2024*
 
   * add `readDirStreamWith` and `readDirStreamWithPtr` to `System.Posix.Directory.Internals` wrt [#251](https://github.com/haskell/unix/pull/251)
+  * Fix CTimeVal definition for platforms where time_t isn't CLong, wrt [#252](https://github.com/haskell/unix/pull/252)
 
 ## 2.8.5.1 *Apr 2024*
 
