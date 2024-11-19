@@ -15,11 +15,13 @@
 module System.Posix.Directory.Internals (
     DirStream(..),
     CDir,
+    CDirent,
+    DirStreamOffset(..),
+
     DirStreamWithPath(..),
     fromDirStreamWithPath,
     toDirStreamWithPath,
     DirEnt(..),
-    CDirent,
     dirEntName,
     dirEntType,
     DirType( DirType
@@ -45,7 +47,6 @@ module System.Posix.Directory.Internals (
     getRealDirType,
     readDirStreamWith,
     readDirStreamWithPtr,
-    DirStreamOffset(..),
     ) where
 
 import System.Posix.Directory.Common

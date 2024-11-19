@@ -21,12 +21,13 @@
 module System.Posix.Directory.Common (
        DirStream(..),
        CDir,
+       CDirent,
+       DirStreamOffset(..),
+
        DirStreamWithPath(..),
        fromDirStreamWithPath,
        toDirStreamWithPath,
-
        DirEnt(..),
-       CDirent,
        dirEntName,
        dirEntType,
        DirType( DirType
@@ -40,15 +41,20 @@ module System.Posix.Directory.Common (
               , SocketType
               , WhiteoutType
               ),
-       isUnknownType, isBlockDeviceType, isCharacterDeviceType, isNamedPipeType,
-       isRegularFileType, isDirectoryType, isSymbolicLinkType, isSocketType,
+       isUnknownType,
+       isNamedPipeType,
+       isCharacterDeviceType,
+       isDirectoryType,
+       isBlockDeviceType,
+       isRegularFileType,
+       isSymbolicLinkType,
+       isSocketType,
        isWhiteoutType,
        getRealDirType,
        unsafeOpenDirStreamFd,
        readDirStreamWith,
        readDirStreamWithPtr,
 
-       DirStreamOffset(..),
        rewindDirStream,
        closeDirStream,
 #ifdef HAVE_SEEKDIR
@@ -75,12 +81,15 @@ import System.Posix.Files.Common
 
 newtype DirStream = DirStream (Ptr CDir)
 
+-- | @since 2.8.6.0
 newtype DirStreamWithPath a = DirStreamWithPath (a, Ptr CDir)
 
 -- | Convert a 'DirStreamWithPath' to a 'DirStream'.
 -- Note that the underlying pointer is shared by both values, hence any
 -- modification to the resulting 'DirStream' will also modify the original
 -- 'DirStreamWithPath'.
+--
+-- @since 2.8.6.0
 fromDirStreamWithPath :: DirStreamWithPath a -> DirStream
 fromDirStreamWithPath (DirStreamWithPath (_, ptr)) = DirStream ptr
 
@@ -88,9 +97,12 @@ fromDirStreamWithPath (DirStreamWithPath (_, ptr)) = DirStream ptr
 -- Note that the underlying pointer is shared by both values, hence any
 -- modification to the pointer of the resulting 'DirStreamWithPath' will also
 -- modify the original 'DirStream'.
+--
+-- @since 2.8.6.0
 toDirStreamWithPath :: a -> DirStream -> DirStreamWithPath a
 toDirStreamWithPath path (DirStream ptr) = DirStreamWithPath (path, ptr)
 
+-- | @since 2.8.6.0
 newtype DirEnt = DirEnt (Ptr CDirent)
 
 -- We provide a hand-written instance here since GeneralizedNewtypeDeriving and
@@ -126,6 +138,8 @@ data {-# CTYPE "struct dirent" #-} CDirent
 -- synonyms of this type may not be provided by the underlying platform. In that
 -- case none of those patterns will match and the application must handle that
 -- case accordingly.
+--
+-- @since 2.8.6.0
 newtype DirType = DirType CChar
     deriving (Eq, Ord, Show)
 
@@ -166,22 +180,40 @@ pattern WhiteoutType :: DirType
 pattern WhiteoutType = DirType (CONST_DT_WHT)
 
 -- | Checks if this 'DirType' refers to an entry of unknown type.
+--
+-- @since 2.8.6.0
 isUnknownType         :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a block device entry.
+--
+-- @since 2.8.6.0
 isBlockDeviceType     :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a character device entry.
+--
+-- @since 2.8.6.0
 isCharacterDeviceType :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a named pipe entry.
+--
+-- @since 2.8.6.0
 isNamedPipeType       :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a regular file entry.
+--
+-- @since 2.8.6.0
 isRegularFileType     :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a directory entry.
+--
+-- @since 2.8.6.0
 isDirectoryType       :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a symbolic link entry.
+--
+-- @since 2.8.6.0
 isSymbolicLinkType    :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a socket entry.
+--
+-- @since 2.8.6.0
 isSocketType          :: DirType -> Bool
 -- | Checks if this 'DirType' refers to a whiteout entry.
+--
+-- @since 2.8.6.0
 isWhiteoutType        :: DirType -> Bool
 
 isUnknownType dtype = dtype == UnknownType
@@ -194,6 +226,7 @@ isSymbolicLinkType dtype = dtype == SymbolicLinkType
 isSocketType dtype = dtype == SocketType
 isWhiteoutType dtype = dtype == WhiteoutType
 
+-- | @since 2.8.6.0
 getRealDirType :: IO FileStatus -> DirType -> IO DirType
 getRealDirType _ BlockDeviceType = return BlockDeviceType
 getRealDirType _ CharacterDeviceType = return CharacterDeviceType
@@ -225,6 +258,8 @@ getRealDirType getFileStatus _ = do
 --
 -- The input file descriptor must not have been used with @threadWaitRead@ or
 -- @threadWaitWrite@.
+--
+-- @since 2.8.6.0
 unsafeOpenDirStreamFd :: Fd -> IO DirStream
 unsafeOpenDirStreamFd (Fd fd) = mask_ $ do
     ptr <- c_fdopendir fd
@@ -257,6 +292,8 @@ foreign import capi unsafe "dirent.h fdopendir"
 --   __NOTE:__ The lifetime of the pointer wrapped in the `DirEnt` is limited to
 --   invocation of the callback and it will be freed automatically after. Do not
 --   pass it to the outside world!
+--
+-- @since 2.8.6.0
 readDirStreamWith :: (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
 readDirStreamWith f dstream = alloca
   (\ptr_dEnt  -> readDirStreamWithPtr ptr_dEnt f dstream)
@@ -270,6 +307,8 @@ readDirStreamWith f dstream = alloca
 --   call of these functions.
 --
 --   __NOTE__: You are responsible for releasing the pointer after you are done.
+--
+-- @since 2.8.6.0
 readDirStreamWithPtr :: Ptr DirEnt -> (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
 readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
   resetErrno
@@ -291,12 +330,14 @@ readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
                       then return Nothing
                       else throwErrno "readDirStream"
 
+-- | @since 2.8.6.0
 dirEntName :: DirEnt -> IO CString
 dirEntName (DirEnt dEntPtr) = d_name dEntPtr
 
 foreign import ccall unsafe "__hscore_d_name"
   d_name :: Ptr CDirent -> IO CString
 
+-- | @since 2.8.6.0
 dirEntType :: DirEnt -> IO DirType
 dirEntType (DirEnt dEntPtr) = DirType <$> d_type dEntPtr
 
