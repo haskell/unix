@@ -1,7 +1,7 @@
 name: ci
 on:
-  push:         { branches: [master] }
-  pull_request: { branches: [master] }
+  push:
+  pull_request:
   schedule:
     - cron: 0 0 * * *
 
@@ -10,56 +10,56 @@ defaults:
     shell: bash
 
 jobs:
-  # build:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     fail-fast: true
-  #     matrix:
-  #       os: [ubuntu-24.04, macOS-latest]
-  #       ghc: ['9.10', '9.8', '9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
-  #       exclude:
-  #         - os: macos-latest
-  #           ghc: '9.0'
-  #         - os: macos-latest
-  #           ghc: '8.10'
-  #         - os: macos-latest
-  #           ghc: '8.8'
-  #         - os: macos-latest
-  #           ghc: '8.6'
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - name: Setup toolchain
-  #     run: |
-  #       curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-24.04, macOS-latest]
+        ghc: ['9.10', '9.8', '9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
+        exclude:
+          - os: macos-latest
+            ghc: '9.0'
+          - os: macos-latest
+            ghc: '8.10'
+          - os: macos-latest
+            ghc: '8.8'
+          - os: macos-latest
+            ghc: '8.6'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup toolchain
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
 
-  #   - if: runner.os == 'macOS'
-  #     name: Install system deps via brew
-  #     run: brew install coreutils autoconf automake
+    - if: runner.os == 'macOS'
+      name: Install system deps via brew
+      run: brew install coreutils autoconf automake
 
-  #   - uses: actions/cache@v4
-  #     name: Cache cabal stuff
-  #     with:
-  #       path: |
-  #         ~/.cabal/store
-  #         dist-newstyle
-  #       key: ${{ runner.os }}-${{ matrix.ghc }}-${{ github.sha }}
-  #       restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
-  #   - name: Build
-  #     run: |
-  #       . ~/.ghcup/env
-  #       ghc --version
-  #       cabal --version
-  #       cabal update
-  #       autoreconf --version
-  #       autoreconf -i
-  #       cabal sdist -z -o .
-  #       cabal get unix-*.tar.gz
-  #       cd unix-*/
-  #       cabal test all --test-show-details=direct
-  #   - name: Haddock
-  #     run: |
-  #       . ~/.ghcup/env
-  #       cabal haddock --disable-documentation
+    - uses: actions/cache@v4
+      name: Cache cabal stuff
+      with:
+        path: |
+          ~/.cabal/store
+          dist-newstyle
+        key: ${{ runner.os }}-${{ matrix.ghc }}-${{ github.sha }}
+        restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
+    - name: Build
+      run: |
+        . ~/.ghcup/env
+        ghc --version
+        cabal --version
+        cabal update
+        autoreconf --version
+        autoreconf -i
+        cabal sdist -z -o .
+        cabal get unix-*.tar.gz
+        cd unix-*/
+        cabal test all --test-show-details=direct
+    - name: Haddock
+      run: |
+        . ~/.ghcup/env
+        cabal haddock --disable-documentation
 
   redhat-ubi9:
     runs-on: ubuntu-24.04
@@ -80,25 +80,25 @@ jobs:
         autoreconf -i
         cabal test all --test-show-details=direct
 
-  # fedora37:
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: fedora:37
-  #   steps:
-  #   - name: Install
-  #     run: |
-  #       dnf install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
-  #       curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
-  #   - uses: actions/checkout@v4
-  #   - name: Test
-  #     run: |
-  #       source ~/.ghcup/env
-  #       cabal --version
-  #       cabal update
-  #       autoreconf --version
-  #       autoreconf -i
-  #       # test filepath >= 1.5
-  #       cabal test --constraint='filepath >= 1.5.0.0' all --test-show-details=direct
+  fedora37:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:37
+    steps:
+    - name: Install
+      run: |
+        dnf install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
+        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
+    - uses: actions/checkout@v4
+    - name: Test
+      run: |
+        source ~/.ghcup/env
+        cabal --version
+        cabal update
+        autoreconf --version
+        autoreconf -i
+        # test filepath >= 1.5
+        cabal test --constraint='filepath >= 1.5.0.0' all --test-show-details=direct
 
   i386:
     runs-on: ubuntu-latest
@@ -120,55 +120,55 @@ jobs:
         autoreconf -i
         cabal v2-test --constraint 'optparse-applicative -process' --constraint 'QuickCheck +old-random' --constraint 'tasty -unix' all
 
-  # arm:
-  #   runs-on: [self-hosted, Linux, ARM64]
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       arch: [arm32v7, arm64v8]
-  #   steps:
-  #     - uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
-  #       name: Cleanup
-  #       with:
-  #         args: "find . -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
+  arm:
+    runs-on: [self-hosted, Linux, ARM64]
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm32v7, arm64v8]
+    steps:
+      - uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
+        name: Cleanup
+        with:
+          args: "find . -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
 
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - if: matrix.arch == 'arm32v7'
-  #       uses: docker://hasufell/arm32v7-ubuntu-haskell:focal
-  #       name: Run build (arm32v7 linux)
-  #       with:
-  #         args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+      - if: matrix.arch == 'arm32v7'
+        uses: docker://hasufell/arm32v7-ubuntu-haskell:focal
+        name: Run build (arm32v7 linux)
+        with:
+          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
 
-  #     - if: matrix.arch == 'arm64v8'
-  #       uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
-  #       name: Run build (arm64v8 linux)
-  #       with:
-  #         args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
+      - if: matrix.arch == 'arm64v8'
+        uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
+        name: Run build (arm64v8 linux)
+        with:
+          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
 
-  # freebsd:
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - os: [self-hosted, FreeBSD, X64]
-  #           ghc: 9.4
-  #         - os: [self-hosted, FreeBSD, X64]
-  #           ghc: 9.6
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  freebsd:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: [self-hosted, FreeBSD, X64]
+            ghc: 9.4
+          - os: [self-hosted, FreeBSD, X64]
+            ghc: 9.6
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Run build
-  #       run: |
-  #         pkg install -y curl gcc gmp gmake ncurses perl5 libffi libiconv git bash misc/compat10x misc/compat11x misc/compat12x gmake autoconf
-  #         . .github/scripts/env.sh
-  #         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
-  #         autoreconf --version
-  #         autoreconf -i
-  #         cabal sdist -z -o .
-  #         cabal get unix-*.tar.gz
-  #         cd unix-*/
-  #         cabal test all --test-show-details=direct
+      - name: Run build
+        run: |
+          pkg install -y curl gcc gmp gmake ncurses perl5 libffi libiconv git bash misc/compat10x misc/compat11x misc/compat12x gmake autoconf
+          . .github/scripts/env.sh
+          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
+          autoreconf --version
+          autoreconf -i
+          cabal sdist -z -o .
+          cabal get unix-*.tar.gz
+          cd unix-*/
+          cabal test all --test-show-details=direct
