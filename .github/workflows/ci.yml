@@ -61,10 +61,10 @@ jobs:
         . ~/.ghcup/env
         cabal haddock --disable-documentation
 
-  centos7:
+  redhat-ubi9:
     runs-on: ubuntu-24.04
     container:
-      image: centos:9
+      image: redhat/ubi9:latest
     steps:
     - name: Install
       run: |
@@ -110,7 +110,7 @@ jobs:
         apt-get update -y
         apt-get install -y autoconf build-essential zlib1g-dev libgmp-dev curl
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 sh
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Test
       run: |
         source ~/.ghcup/env
