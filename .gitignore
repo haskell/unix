@@ -16,6 +16,8 @@ dist-newstyle/
 ghc.mk
 include/HsUnixConfig.h
 include/HsUnixConfig.h.in
+.stack-work/
+stack*.yaml.lock
 unix.buildinfo
 tests/.hpc.*
 tests/*.eventlog
