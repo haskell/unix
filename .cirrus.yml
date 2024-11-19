@@ -12,9 +12,8 @@ task:
   name: OpenBSD
   compute_engine_instance:
     image_project: pg-ci-images
-    # OpenBSD version should match
-    # https://github.com/anarazel/pg-vm-images/blob/main/packer/openbsd.pkrvars.hcl
-    image: family/pg-ci-openbsd-vanilla-7-3
+    # See https://github.com/anarazel/pg-vm-images/blob/main/packer/openbsd.pkrvars.hcl
+    image: family/pg-ci-openbsd-vanilla
     platform: openbsd
   install_script: pkg_add ghc cabal-install git autoconf-2.71
   script:
@@ -30,9 +29,8 @@ task:
   name: NetBSD
   compute_engine_instance:
     image_project: pg-ci-images
-    # NetBSD version should match
-    # https://github.com/anarazel/pg-vm-images/blob/main/packer/netbsd.pkrvars.hcl
-    image: family/pg-ci-netbsd-vanilla-9-3
+    # See https://github.com/anarazel/pg-vm-images/blob/main/packer/netbsd.pkrvars.hcl
+    image: family/pg-ci-netbsd-vanilla
     platform: netbsd
   install_script:
     # Folders should be updated in line with
