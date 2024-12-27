@@ -28,9 +28,14 @@ jobs:
             ghc: '8.6'
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install GHCup
+      uses: haskell/ghcup-setup@v1
+
     - name: Setup toolchain
       run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
+        ghcup install ghc --set ${{ matrix.ghc }}
+        ghcup install cabal --set latest
 
     - if: runner.os == 'macOS'
       name: Install system deps via brew
@@ -46,7 +51,6 @@ jobs:
         restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
     - name: Build
       run: |
-        . ~/.ghcup/env
         ghc --version
         cabal --version
         cabal update
@@ -58,22 +62,42 @@ jobs:
         cabal test all --test-show-details=direct
     - name: Haddock
       run: |
-        . ~/.ghcup/env
         cabal haddock --disable-documentation
 
+<<<<<<< Updated upstream
   redhat-ubi9:
     runs-on: ubuntu-24.04
     container:
       image: redhat/ubi9:latest
+=======
+  rocky8:
+    runs-on: ubuntu-latest
+    container:
+      image: rockylinux:8
+>>>>>>> Stashed changes
     steps:
-    - name: Install
+    - name: Install prerequisites
       run: |
+<<<<<<< Updated upstream
         yum install -y gcc gmp gmp-devel make ncurses xz perl autoconf
         curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_GHC_VERSION=9.4.8 sh
     - uses: actions/checkout@v4
+=======
+        yum install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
+
+    - name: Install GHCup
+      uses: haskell/ghcup-setup@v1
+
+    - name: Setup toolchain
+      run: |
+        ghcup install ghc --set latest
+        ghcup install cabal --set latest
+
+    - uses: actions/checkout@v4
+
+>>>>>>> Stashed changes
     - name: Test
       run: |
-        source ~/.ghcup/env
         cabal --version
         cabal update
         autoreconf --version
@@ -85,14 +109,21 @@ jobs:
     container:
       image: fedora:37
     steps:
-    - name: Install
+    - name: Install prerequisites
       run: |
         dnf install -y gcc gmp gmp-devel make ncurses ncurses-compat-libs xz perl autoconf
-        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 sh
+
+    - name: Install GHCup
+      uses: haskell/ghcup-setup@v1
+
+    - name: Setup toolchain
+      run: |
+        ghcup install ghc --set latest
+        ghcup install cabal --set latest
+
     - uses: actions/checkout@v4
     - name: Test
       run: |
-        source ~/.ghcup/env
         cabal --version
         cabal update
         autoreconf --version
@@ -102,23 +133,14 @@ jobs:
 
   i386:
     runs-on: ubuntu-latest
-    container:
-      image: i386/ubuntu:bionic
     steps:
-    - name: Install
-      run: |
-        apt-get update -y
-        apt-get install -y autoconf build-essential zlib1g-dev libgmp-dev curl
-        curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 sh
-    - uses: actions/checkout@v1
-    - name: Test
-      run: |
-        source ~/.ghcup/env
-        cabal --version
-        cabal update
-        autoreconf --version
-        autoreconf -i
-        cabal v2-test --constraint 'optparse-applicative -process' --constraint 'QuickCheck +old-random' --constraint 'tasty -unix' all
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run build (32 bit linux)
+        uses: docker://hasufell/i386-alpine-haskell:3.12
+        with:
+          args: sh -c "cabal update && autoreconf --version && autoreconf -i cabal v2-test --constraint 'optparse-applicative -process' --constraint 'QuickCheck +old-random' --constraint 'tasty -unix' all"
 
   arm:
     runs-on: [self-hosted, Linux, ARM64]
@@ -161,11 +183,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install prerequisites
+        run: |
+          sudo pkg install -y curl gcc gmp gmake ncurses perl5 libffi libiconv git bash misc/compat10x misc/compat11x misc/compat12x gmake autoconf
+
+      - name: Install GHCup
+        uses: haskell/ghcup-setup@v1
+
+      - name: Setup toolchain
+        run: |
+          ghcup install ghc --set ${{ matrix.ghc }}
+          ghcup install cabal --set latest
+
       - name: Run build
         run: |
-          pkg install -y curl gcc gmp gmake ncurses perl5 libffi libiconv git bash misc/compat10x misc/compat11x misc/compat12x gmake autoconf
-          . .github/scripts/env.sh
-          curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 BOOTSTRAP_HASKELL_GHC_VERSION=${{ matrix.ghc }} BOOTSTRAP_HASKELL_ADJUST_BASHRC=yes sh
           autoreconf --version
           autoreconf -i
           cabal sdist -z -o .
