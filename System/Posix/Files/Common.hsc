@@ -993,7 +993,7 @@ defaultStatxMask = mempty
 newtype ExtendedFileStatus = ExtendedFileStatus (ForeignPtr CStatx) -- ^ The constructor is considered internal and may change.
 
 -- | The "preferred" block size for efficient filesystem I/O.
--- (Writing to a file in smaller chunks may cause an inefficient read-mod‐ify-rewrite.)
+-- (Writing to a file in smaller chunks may cause an inefficient read-modify-rewrite.)
 fileBlockSizeX             :: ExtendedFileStatus -> CBlkSize
 #if HAVE_STATX
 -- | Further status information about the file.
