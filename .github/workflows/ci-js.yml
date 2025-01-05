@@ -1,0 +1,48 @@
+name: ci-js
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    env:
+      GHC: 9.10.0.20240413
+      EMSDK: 3.1.57
+    steps:
+      - name: Install GHCup
+        id: ghcup
+        uses: haskell/ghcup-setup@v1
+        with:
+          cabal: latest-prerelease
+          config: |
+            url-source:
+              - GHCupURL
+              - cross
+              - prereleases
+
+      - uses: actions/checkout@v4
+
+      - name: setup GHCJS
+        run: |
+          set -eux
+          git clone https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          git checkout ${{ env.EMSDK }}
+          ./emsdk install ${{ env.EMSDK }}
+          ./emsdk activate ${{ env.EMSDK }}
+          source ./emsdk_env.sh
+          emconfigure ghcup install ghc --set javascript-unknown-ghcjs-${{ env.GHC }}
+
+      - name: test
+        run: |
+          set -eux
+
+          source ./emsdk/emsdk_env.sh
+          autoreconf -i
+          cabal update
+
+          cabal build -w javascript-unknown-ghcjs-ghc --with-ghc-pkg=javascript-unknown-ghcjs-ghc-pkg --with-hsc2hs=javascript-unknown-ghcjs-hsc2hs -f-os-string
+          $(cabal list-bin -w javascript-unknown-ghcjs-ghc --with-ghc-pkg=javascript-unknown-ghcjs-ghc-pkg --with-hsc2hs=javascript-unknown-ghcjs-hsc2hs -f-os-string T13660)
+
