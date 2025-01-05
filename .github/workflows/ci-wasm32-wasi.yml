@@ -17,7 +17,7 @@ jobs:
           ~/.ghc-wasm/add_to_github_path.sh
           popd
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: test
         run: |
