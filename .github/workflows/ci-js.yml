@@ -43,6 +43,7 @@ jobs:
           autoreconf -i
           cabal update
 
-          cabal build -w javascript-unknown-ghcjs-ghc --with-ghc-pkg=javascript-unknown-ghcjs-ghc-pkg --with-hsc2hs=javascript-unknown-ghcjs-hsc2hs -f-os-string
-          $(cabal list-bin -w javascript-unknown-ghcjs-ghc --with-ghc-pkg=javascript-unknown-ghcjs-ghc-pkg --with-hsc2hs=javascript-unknown-ghcjs-hsc2hs -f-os-string T13660)
+          cabal --project-file=cabal.project.js build --with-hsc2hs=javascript-unknown-ghcjs-hsc2hs
+          $(cabal --project-file=cabal.project.js list-bin T13660)
+          $(cabal --project-file=cabal.project.js list-bin unix-tests)
 
