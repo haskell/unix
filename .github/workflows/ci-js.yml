@@ -8,8 +8,8 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     env:
-      GHC: 9.10.0.20240413
-      EMSDK: 3.1.57
+      GHC: 9.12.1
+      EMSDK: 3.1.74
     steps:
       - name: Install GHCup
         id: ghcup
