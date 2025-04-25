@@ -30,6 +30,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Ptr
 import System.Posix.Types
+import qualified System.Posix.Internals as Base
 import Control.Concurrent
 import Data.Bits
 #if !defined(HAVE_SEM_GETVALUE)
@@ -61,11 +62,11 @@ newtype Semaphore = Semaphore (ForeignPtr ())
 --   value.
 semOpen :: String -> OpenSemFlags -> FileMode -> Int -> IO Semaphore
 semOpen name flags mode value =
-    let cflags = (if semCreate flags then #{const O_CREAT} else 0) .|.
-                 (if semExclusive flags then #{const O_EXCL} else 0)
+    let cflags = (if semCreate flags then Base.o_CREAT else 0) .|.
+                 (if semExclusive flags then Base.o_EXCL else 0)
         semOpen' cname =
             do sem <- throwErrnoPathIfNull "semOpen" name $
-                      sem_open cname (toEnum cflags) mode (toEnum value)
+                      sem_open cname (toEnum (fromIntegral cflags)) mode (toEnum value)
                fptr <- newForeignPtr sem (finalize sem)
                return $ Semaphore fptr
         finalize sem = throwErrnoPathIfMinus1_ "semOpen" name $

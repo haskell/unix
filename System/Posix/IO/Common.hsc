@@ -223,12 +223,18 @@ openat_ fdMay str how (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
     c_fd = maybe (#const AT_FDCWD) (\ (Fd fd) -> fd) fdMay
     all_flags  = creat .|. flags .|. open_mode
 
+    -- We have to use Base.o_* instead of raw #const O_*
+    -- due of the fact target platforms at stage1 could have
+    -- them overridden.
+    -- For example GHC JS Backend provides its own constants
+    -- which should be used at the target of cross compilation
+    -- into Node.JS environment.
     flags =
-       (if appendFlag       then (#const O_APPEND)    else 0) .|.
-       (if exclusiveFlag    then (#const O_EXCL)      else 0) .|.
-       (if nocttyFlag       then (#const O_NOCTTY)    else 0) .|.
-       (if nonBlockFlag     then (#const O_NONBLOCK)  else 0) .|.
-       (if truncateFlag     then (#const O_TRUNC)     else 0) .|.
+       (if appendFlag       then (Base.o_APPEND)      else 0) .|.
+       (if exclusiveFlag    then (Base.o_EXCL)        else 0) .|.
+       (if nocttyFlag       then (Base.o_NOCTTY)      else 0) .|.
+       (if nonBlockFlag     then (Base.o_NONBLOCK)    else 0) .|.
+       (if truncateFlag     then (Base.o_TRUNC)       else 0) .|.
        (if nofollowFlag     then (#const O_NOFOLLOW)  else 0) .|.
        (if cloexecFlag      then (#const O_CLOEXEC)   else 0) .|.
        (if directoryFlag    then (#const O_DIRECTORY) else 0) .|.
@@ -236,12 +242,12 @@ openat_ fdMay str how (OpenFileFlags appendFlag exclusiveFlag nocttyFlag
 
     (creat, mode_w) = case creatFlag of
                         Nothing -> (0,0)
-                        Just x  -> ((#const O_CREAT), x)
+                        Just x  -> ((Base.o_CREAT), x)
 
     open_mode = case how of
-                   ReadOnly  -> (#const O_RDONLY)
-                   WriteOnly -> (#const O_WRONLY)
-                   ReadWrite -> (#const O_RDWR)
+                   ReadOnly  -> (Base.o_RDONLY)
+                   WriteOnly -> (Base.o_WRONLY)
+                   ReadWrite -> (Base.o_RDWR)
 
 foreign import capi unsafe "HsUnix.h openat"
    c_openat :: CInt -> CString -> CInt -> CMode -> IO CInt
@@ -315,8 +321,8 @@ data FdOption = AppendOnWrite     -- ^O_APPEND
 
 fdOption2Int :: FdOption -> CInt
 fdOption2Int CloseOnExec       = (#const FD_CLOEXEC)
-fdOption2Int AppendOnWrite     = (#const O_APPEND)
-fdOption2Int NonBlockingRead   = (#const O_NONBLOCK)
+fdOption2Int AppendOnWrite     = (Base.o_APPEND)
+fdOption2Int NonBlockingRead   = (Base.o_NONBLOCK)
 fdOption2Int SynchronousWrites = (#const O_SYNC)
 
 -- | May throw an exception if this is an invalid descriptor.
