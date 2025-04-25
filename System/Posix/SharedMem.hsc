@@ -26,6 +26,7 @@ module System.Posix.SharedMem
 #include <fcntl.h>
 
 import System.Posix.Types
+import qualified System.Posix.Internals as Base
 #if defined(HAVE_SHM_OPEN) || defined(HAVE_SHM_UNLINK)
 import Foreign.C
 #endif
@@ -50,14 +51,14 @@ shmOpen :: String -> ShmOpenFlags -> FileMode -> IO Fd
 shmOpen name flags mode =
     do cflags0 <- return 0
        cflags1 <- return $ cflags0 .|. (if shmReadWrite flags
-                                        then #{const O_RDWR}
-                                        else #{const O_RDONLY})
-       cflags2 <- return $ cflags1 .|. (if shmCreate flags then #{const O_CREAT}
+                                        then Base.o_RDWR
+                                        else Base.o_RDONLY)
+       cflags2 <- return $ cflags1 .|. (if shmCreate flags then Base.o_CREAT
                                         else 0)
        cflags3 <- return $ cflags2 .|. (if shmExclusive flags
-                                        then #{const O_EXCL}
+                                        then Base.o_EXCL
                                         else 0)
-       cflags4 <- return $ cflags3 .|. (if shmTrunc flags then #{const O_TRUNC}
+       cflags4 <- return $ cflags3 .|. (if shmTrunc flags then Base.o_TRUNC
                                         else 0)
        withCAString name (shmOpen' cflags4)
     where shmOpen' cflags cname =
