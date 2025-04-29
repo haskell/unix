@@ -16,6 +16,7 @@
 -----------------------------------------------------------------------------
 
 #include "HsUnix.h"
+#include <fcntl.h>
 
 module System.Posix.Fcntl (
     -- * File allocation
@@ -41,9 +42,6 @@ import System.Posix.Internals (c_fcntl_read)
 
 import System.Posix.Internals (c_fcntl_write)
 
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <fcntl.h>
 
 -- -----------------------------------------------------------------------------
 -- File control
@@ -123,25 +121,26 @@ fileAllocate _ _ _ = ioError (ioeSetLocation unsupportedOperation
 -- writes are minimised or otherwise eliminated. If the cache mode is 'True',
 -- then cache effects occur like normal.
 --
+-- On Linux, FreeBSD, and NetBSD this checks whether the @O_DIRECT@ file flag is
+-- set.
+--
 -- Throws 'IOError' (\"unsupported operation\") if platform does not support
 -- reading the cache mode.
 --
--- (use @#ifdef darwin_HOST_OS@ CPP guard to detect availability).
---
--- On Linux, FreeBSD, and NetBSD this gets the @O_DIRECT@ file flag.
+-- (use @#if HAVE_O_DIRECT@ CPP guard to detect availability).
 --
 -- @since 2.8.x.y
 fileGetCaching :: Fd -> IO Bool
-#ifdef darwin_HOST_OS
-{-# WARNING fileGetCaching
-     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#ifdef darwin_HOST_OS@)" #-}
-fileGetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
-#else
+#if HAVE_O_DIRECT
 fileGetCaching (Fd fd) = do
     r <- throwErrnoIfMinus1 "fileGetCaching" (c_fcntl_read fd #{const F_GETFL})
     return ((r .&. opt_val) /= 0)
   where
     opt_val = #{const O_DIRECT}
+#else
+{-# WARNING fileGetCaching
+     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT@)" #-}
+fileGetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
 #endif
 
 -- | Performs the @fcntl(2)@ operation on a file-desciptor to set the cache
@@ -154,12 +153,14 @@ fileGetCaching (Fd fd) = do
 -- On Linux, FreeBSD, and NetBSD this sets the @O_DIRECT@ file flag. On OSX,
 -- this sets the @F_NOCACHE@ @fcntl@ flag.
 --
+-- Throws 'IOError' (\"unsupported operation\") if platform does not support
+-- reading the cache mode.
+--
+-- (use @#if HAVE_O_DIRECT || HAVE_F_NOCACHE@ CPP guard to detect availability).
+--
 -- @since 2.8.x.y
 fileSetCaching :: Fd -> Bool -> IO ()
-#ifdef darwin_HOST_OS
-fileSetCaching (Fd fd) val = do
-    throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_NOCACHE} (if val then 1 else 0))
-#else
+#if HAVE_O_DIRECT
 fileSetCaching (Fd fd) val = do
     r <- throwErrnoIfMinus1 "fileSetCaching" (c_fcntl_read fd #{const F_GETFL})
     let r' | val       = fromIntegral r .|. opt_val
@@ -167,4 +168,11 @@ fileSetCaching (Fd fd) val = do
     throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_SETFL} r')
   where
     opt_val = #{const O_DIRECT}
+#elif HAVE_F_NOCACHE
+fileSetCaching (Fd fd) val = do
+    throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_NOCACHE} (if val then 1 else 0))
+#else
+{-# WARNING fileGetCaching
+     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT || HAVE_F_NOCACHE @)" #-}
+fileGetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
 #endif

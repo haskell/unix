@@ -120,6 +120,34 @@ AC_EGREP_CPP(yes,
   AC_MSG_RESULT(no)
   ])
 
+AC_MSG_CHECKING(for O_DIRECT open flag)
+AC_EGREP_CPP(yes,
+[
+ #include <fcntl.h>
+ #ifdef O_DIRECT
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_O_DIRECT], [1], [Define to 1 if O_DIRECT open flag is available.])
+], [
+  AC_MSG_RESULT(no)
+  ])
+
+AC_MSG_CHECKING(for F_NOCACHE from fcntl.h)
+AC_EGREP_CPP(yes,
+[
+ #include <fcntl.h>
+ #ifdef F_NOCACHE
+        yes
+ #endif
+], [
+  AC_MSG_RESULT(yes)
+  AC_DEFINE([HAVE_F_NOCACHE], [1], [Define to 1 if F_NOCACHE available.])
+], [
+  AC_MSG_RESULT(no)
+  ])
+
 dnl not available on android so check for it
 AC_CANONICAL_TARGET
 AS_CASE([$target_os],[*-android*],[],[AC_CHECK_FUNCS([telldir seekdir])])
