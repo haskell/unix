@@ -30,18 +30,19 @@ module System.Posix.Fcntl (
 import Foreign.C
 import System.Posix.Types
 
-#if !HAVE_POSIX_FALLOCATE
+#if !HAVE_POSIX_FALLOCATE || !HAVE_O_DIRECT
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
 
-#ifndef darwin_HOST_OS
+#if HAVE_O_DIRECT
 import Data.Bits (complement, (.&.), (.|.))
 import System.Posix.Internals (c_fcntl_read)
 #endif
 
+#if HAVE_O_DIRECT || HAVE_F_NOCACHE
 import System.Posix.Internals (c_fcntl_write)
-
+#endif
 
 -- -----------------------------------------------------------------------------
 -- File control
@@ -140,7 +141,7 @@ fileGetCaching (Fd fd) = do
 #else
 {-# WARNING fileGetCaching
      "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT@)" #-}
-fileGetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
+fileGetCaching _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
 #endif
 
 -- | Performs the @fcntl(2)@ operation on a file-desciptor to set the cache
@@ -172,7 +173,7 @@ fileSetCaching (Fd fd) val = do
 fileSetCaching (Fd fd) val = do
     throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_NOCACHE} (if val then 1 else 0))
 #else
-{-# WARNING fileGetCaching
+{-# WARNING fileSetCaching
      "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT || HAVE_F_NOCACHE @)" #-}
-fileGetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
+fileSetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileSetCaching")
 #endif
