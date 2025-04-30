@@ -135,7 +135,7 @@ fileGetCaching :: Fd -> IO Bool
 #if HAVE_O_DIRECT
 fileGetCaching (Fd fd) = do
     r <- throwErrnoIfMinus1 "fileGetCaching" (c_fcntl_read fd #{const F_GETFL})
-    return ((r .&. opt_val) /= 0)
+    return ((r .&. opt_val) == 0)
   where
     opt_val = #{const O_DIRECT}
 #else
@@ -164,14 +164,14 @@ fileSetCaching :: Fd -> Bool -> IO ()
 #if HAVE_O_DIRECT
 fileSetCaching (Fd fd) val = do
     r <- throwErrnoIfMinus1 "fileSetCaching" (c_fcntl_read fd #{const F_GETFL})
-    let r' | val       = fromIntegral r .|. opt_val
-           | otherwise = fromIntegral r .&. complement opt_val
+    let r' | val       = fromIntegral r .&. complement opt_val
+           | otherwise = fromIntegral r .|. opt_val
     throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_SETFL} r')
   where
     opt_val = #{const O_DIRECT}
 #elif HAVE_F_NOCACHE
 fileSetCaching (Fd fd) val = do
-    throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_NOCACHE} (if val then 1 else 0))
+    throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_NOCACHE} (if val then 0 else 1))
 #else
 {-# WARNING fileSetCaching
      "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT || HAVE_F_NOCACHE @)" #-}
