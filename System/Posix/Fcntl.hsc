@@ -126,9 +126,10 @@ fileAllocate _ _ _ = ioError (ioeSetLocation unsupportedOperation
 -- set.
 --
 -- Throws 'IOError' (\"unsupported operation\") if platform does not support
--- reading the cache mode.
+-- getting the cache mode.
 --
--- (use @#if HAVE_O_DIRECT@ CPP guard to detect availability).
+-- Use @#if HAVE_O_DIRECT@ CPP guard to detect availability. Use @#include
+-- "HsUnix.h"@ to bring @HAVE_O_DIRECT@ into scope.
 --
 -- @since 2.8.x.y
 fileGetCaching :: Fd -> IO Bool
@@ -155,9 +156,11 @@ fileGetCaching _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching"
 -- this sets the @F_NOCACHE@ @fcntl@ flag.
 --
 -- Throws 'IOError' (\"unsupported operation\") if platform does not support
--- reading the cache mode.
+-- setting the cache mode.
 --
--- (use @#if HAVE_O_DIRECT || HAVE_F_NOCACHE@ CPP guard to detect availability).
+-- Use @#if HAVE_O_DIRECT || HAVE_F_NOCACHE@ CPP guard to detect availability.
+-- Use @#include "HsUnix.h"@ to bring @HAVE_O_DIRECT@ and @HAVE_F_NOCACHE@ into
+-- scope.
 --
 -- @since 2.8.x.y
 fileSetCaching :: Fd -> Bool -> IO ()
