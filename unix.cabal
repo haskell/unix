@@ -1,6 +1,6 @@
 cabal-version:  1.12
 name:           unix
-version:        2.8.6.0
+version:        2.8.7.0
 -- NOTE: Don't forget to update ./changelog.md
 
 license:        BSD3
