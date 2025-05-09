@@ -3,7 +3,7 @@
 ## 2.8.7.0 *May 2025*
 
   * Add portable support for file open with data caching supressed/eliminated wrt [#322](https://github.com/haskell/unix/issues/322)
-  * Support for ARM64 Windows
+  * Support for ARM64 Windows when cross-compilation from Linux/Darwin or other unix system is involved
   * Use `Base.o_*` instead of raw `{#const O_*}`, fixing a bug in GHC JS
 
 ## 2.8.6.0 *Nov 2024*
