@@ -131,7 +131,7 @@ fileAllocate _ _ _ = ioError (ioeSetLocation unsupportedOperation
 -- Use @#if HAVE_O_DIRECT@ CPP guard to detect availability. Use @#include
 -- "HsUnix.h"@ to bring @HAVE_O_DIRECT@ into scope.
 --
--- @since 2.8.x.y
+-- @since 2.8.7.0
 fileGetCaching :: Fd -> IO Bool
 #if HAVE_O_DIRECT
 fileGetCaching (Fd fd) = do
@@ -162,7 +162,7 @@ fileGetCaching _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching"
 -- Use @#include "HsUnix.h"@ to bring @HAVE_O_DIRECT@ and @HAVE_F_NOCACHE@ into
 -- scope.
 --
--- @since 2.8.x.y
+-- @since 2.8.7.0
 fileSetCaching :: Fd -> Bool -> IO ()
 #if HAVE_O_DIRECT
 fileSetCaching (Fd fd) val = do
