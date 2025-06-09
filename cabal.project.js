@@ -13,6 +13,5 @@ allow-newer: all:base
 tests: True
 
 constraints:
-  random < 1.2,
   tasty -unix, optparse-applicative -process,
   unix -os-string
