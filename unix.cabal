@@ -191,7 +191,7 @@ test-suite unix-tests
 
 test-suite FdReadBuf001
     -- JS: missing "pipe"
-    if arch(javascript)
+    if arch(javascript) || arch(wasm32)
         build-depends: unbuildable<0
         buildable: False
 
@@ -200,7 +200,9 @@ test-suite FdReadBuf001
     type: exitcode-stdio-1.0
     default-language: Haskell2010
     build-depends: base, unix
-    ghc-options: -Wall -threaded
+    ghc-options: -Wall
+    if !arch(wasm32)
+        ghc-options: -threaded
 
 test-suite ForkProcess01
     -- JS: missing "forkProcess"
@@ -356,7 +358,9 @@ test-suite Semaphore002
     type: exitcode-stdio-1.0
     default-language: Haskell2010
     build-depends: base, unix
-    ghc-options: -Wall -threaded
+    ghc-options: -Wall
+    if !arch(wasm32)
+        ghc-options: -threaded
 
 test-suite SemaphoreInterrupt
     -- JS: missing "sem_open"
@@ -369,7 +373,9 @@ test-suite SemaphoreInterrupt
     type: exitcode-stdio-1.0
     default-language: Haskell2010
     build-depends: base, unix
-    ghc-options: -Wall -threaded
+    ghc-options: -Wall
+    if !arch(wasm32)
+        ghc-options: -threaded
 
 test-suite T13660
     hs-source-dirs: tests

@@ -46,6 +46,6 @@ jobs:
           cp ~/.ghc-wasm/wasi-sdk/share/misc/config.* .
           autoreconf -i
 
-          cabal --project-file=cabal.project.wasm32-wasi build -w wasm32-wasi-ghc --with-ghc-pkg=wasm32-wasi-ghc-pkg --with-hsc2hs=wasm32-wasi-hsc2hs --with-gcc=wasm32-wasi-clang
+          cabal build -w wasm32-wasi-ghc --with-ghc-pkg=wasm32-wasi-ghc-pkg --with-hsc2hs=wasm32-wasi-hsc2hs --with-gcc=wasm32-wasi-clang
 
           ./test-wasm32-wasi.mjs
