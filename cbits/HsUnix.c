@@ -36,9 +36,9 @@ clock_t __hsunix_clocks_per_second (void) {return CLOCKS_PER_SEC;}
  * GNU glibc 2.23 and later deprecate `readdir_r` in favour of plain old
  * `readdir` which in some upcoming POSIX standard is going to required to be
  * re-entrant.
- * Eventually we want to drop `readder_r` all together, but want to be
+ * Eventually we want to drop `readdir_r` all together, but want to be
  * compatible with older unixen which may not have a re-entrant `readdir`.
- * Solution is to make systems with *known* re-entrant `readir` use that and use
+ * Solution is to make systems with *known* re-entrant `readdir` use that and use
  * `readdir_r` wherever we have it and don't *know* that `readdir` is
  * re-entrant.
  */
