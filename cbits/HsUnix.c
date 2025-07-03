@@ -106,7 +106,7 @@ char *__hscore_d_name( struct dirent* d )
 
 char __hscore_d_type( struct dirent* d )
 {
-#ifdef HAVE_DIRENT_D_TYPE
+#ifdef HAVE_STRUCT_DIRENT_D_TYPE
   return (d->d_type);
 #else
   return CONST_DT_UNKNOWN;
