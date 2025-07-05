@@ -383,10 +383,14 @@ test-suite T13660
       build-depends: filepath >= 1.4.100.0 && < 1.5.0.0
     ghc-options: -Wall
 
-test-suite DirEnt
+test-suite DirEntType
+    if !os(linux)
+        build-depends: unbuildable<0
+        buildable: False
+
     hs-source-dirs: tests
-    main-is: DirEnt.hs
+    main-is: DirEntType.hs
     type: exitcode-stdio-1.0
     default-language: Haskell2010
-    build-depends: base, unix, process
+    build-depends: base, unix
     ghc-options: -Wall
