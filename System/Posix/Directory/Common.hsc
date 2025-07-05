@@ -53,7 +53,6 @@ module System.Posix.Directory.Common (
        getRealDirType,
        unsafeOpenDirStreamFd,
        readDirStreamWith,
-       readDirStreamWithPtr,
 
        rewindDirStream,
        closeDirStream,
@@ -289,46 +288,23 @@ foreign import capi unsafe "dirent.h fdopendir"
 --   if an entry was read and @Nothing@ if the end of the directory stream was
 --   reached.
 --
---   __NOTE:__ The lifetime of the pointer wrapped in the `DirEnt` is limited to
---   invocation of the callback and it will be freed automatically after. Do not
---   pass it to the outside world!
+--   __NOTE:__ Accessing the `DirEnt` is not guaranteed to be valid after any
+--   subsequent operations on the same `DirStream`.  To be safe, do not pass
+--   references to the `DirEnt` to the outside world.
+--
+--   __NOTE:__ Multiple threads reading from the same `DirStream` is not safe.
 --
 -- @since 2.8.6.0
 readDirStreamWith :: (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
-readDirStreamWith f dstream = alloca
-  (\ptr_dEnt  -> readDirStreamWithPtr ptr_dEnt f dstream)
-
--- | A version of 'readDirStreamWith' that takes a pre-allocated pointer in
---   addition to the other arguments. This pointer is used to store the pointer
---   to the next directory entry, if there is any. This function is intended for
---   use cases where you need to read a lot of directory entries and want to
---   reuse the pointer for each of them. Using for example 'readDirStream' or
---   'readDirStreamWith' in this scenario would allocate a new pointer for each
---   call of these functions.
---
---   __NOTE__: You are responsible for releasing the pointer after you are done.
---
--- @since 2.8.6.0
-readDirStreamWithPtr :: Ptr DirEnt -> (DirEnt -> IO a) -> DirStream -> IO (Maybe a)
-readDirStreamWithPtr ptr_dEnt f dstream@(DirStream dirp) = do
+readDirStreamWith f (DirStream dirp) = do
   resetErrno
-  r <- c_readdir dirp (castPtr ptr_dEnt)
-  if (r == 0)
-       then do dEnt@(DirEnt dEntPtr) <- peek ptr_dEnt
-               if (dEntPtr == nullPtr)
+  cDirentPtr <- c_readdir dirp
+  if (cDirentPtr /= nullPtr)
+       then Just <$> f (DirEnt cDirentPtr)
+       else do (Errno eo) <- getErrno
+               if (eo == 0)
                   then return Nothing
-                  else do
-                   res <- f dEnt
-                   c_freeDirEnt dEntPtr
-                   return (Just res)
-       else do errno <- getErrno
-               if (errno == eINTR)
-                  then readDirStreamWithPtr ptr_dEnt f dstream
-                  else do
-                   let (Errno eo) = errno
-                   if (eo == 0)
-                      then return Nothing
-                      else throwErrno "readDirStream"
+                  else throwErrno "readDirStream"
 
 -- | @since 2.8.6.0
 dirEntName :: DirEnt -> IO CString
@@ -345,12 +321,8 @@ foreign import ccall unsafe "__hscore_d_type"
   d_type :: Ptr CDirent -> IO CChar
 
 -- traversing directories
-foreign import ccall unsafe "__hscore_readdir"
-  c_readdir  :: Ptr CDir -> Ptr (Ptr CDirent) -> IO CInt
-
-foreign import ccall unsafe "__hscore_free_dirent"
-  c_freeDirEnt  :: Ptr CDirent -> IO ()
-
+foreign import ccall unsafe "readdir"
+  c_readdir :: Ptr CDir -> IO (Ptr CDirent)
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
 --   the directory stream @dp@ at the beginning of the directory.
