@@ -46,7 +46,6 @@ module System.Posix.Directory.Internals (
     isWhiteoutType,
     getRealDirType,
     readDirStreamWith,
-    readDirStreamWithPtr,
     ) where
 
 import System.Posix.Directory.Common
