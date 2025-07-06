@@ -15,7 +15,7 @@ task:
     # See https://github.com/anarazel/pg-vm-images/blob/main/packer/openbsd.pkrvars.hcl
     image: family/pg-ci-openbsd-vanilla
     platform: openbsd
-  install_script: pkg_add ghc cabal-install git autoconf-2.71
+  install_script: pkg_add ghc cabal-install git autoconf-2.71p0
   script:
     - export AUTOCONF_VERSION=2.71
     - export CABAL_DIR=/tmp/.cabal
