@@ -79,7 +79,7 @@ library
     build-depends:
         base        >= 4.12.0.0  && < 4.23,
         bytestring  >= 0.9.2     && < 0.13,
-        time        >= 1.9.1     && < 1.15
+        time        >= 1.9.1     && < 1.16
 
     if flag(os-string)
       build-depends: filepath >= 1.5.0.0, os-string >= 2.0.0
