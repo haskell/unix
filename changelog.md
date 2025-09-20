@@ -1,5 +1,9 @@
 # Changelog for [`unix` package](http://hackage.haskell.org/package/unix)
 
+## 2.8.8.0 *May 2025*
+
+  * fix `dirEntType` always returning `UnknownType` wrt [#347](https://github.com/haskell/unix/issues/347) by @sjshuck
+
 ## 2.8.7.0 *May 2025*
 
   * Add portable support for file open with data caching supressed/eliminated wrt [#322](https://github.com/haskell/unix/issues/322)
