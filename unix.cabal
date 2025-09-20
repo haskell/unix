@@ -382,3 +382,12 @@ test-suite T13660
     else
       build-depends: filepath >= 1.4.100.0 && < 1.5.0.0
     ghc-options: -Wall
+
+test-suite DirEnt
+    hs-source-dirs: tests
+    main-is: DirEnt.hs
+    type: exitcode-stdio-1.0
+    default-language: Haskell2010
+    build-depends: base, unix
+    ghc-options: -Wall
+
