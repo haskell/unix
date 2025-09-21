@@ -57,7 +57,7 @@ jobs:
         cabal sdist -z -o .
         cabal get unix-*.tar.gz
         cd unix-*/
-        cabal test all --test-show-details=direct
+        cabal test -f+non-portable-tests all --test-show-details=direct
     - name: Haddock
       run: |
         cabal haddock --disable-documentation
@@ -85,7 +85,7 @@ jobs:
         cabal update
         autoreconf --version
         autoreconf -i
-        cabal test all --test-show-details=direct
+        cabal test -f+non-portable-tests all --test-show-details=direct
 
   fedora37:
     runs-on: ubuntu-latest
@@ -110,7 +110,7 @@ jobs:
         autoreconf --version
         autoreconf -i
         # test filepath >= 1.5
-        cabal test --constraint='filepath >= 1.5.0.0' all --test-show-details=direct
+        cabal test -f+non-portable-tests --constraint='filepath >= 1.5.0.0' all --test-show-details=direct
 
   i386:
     runs-on: ubuntu-latest
@@ -182,5 +182,5 @@ jobs:
           cabal sdist -z -o .
           cabal get unix-*.tar.gz
           cd unix-*/
-          cabal test all --test-show-details=direct
+          cabal test -f+non-portable-tests all --test-show-details=direct
 

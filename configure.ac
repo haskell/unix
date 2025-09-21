@@ -65,66 +65,6 @@ FP_CHECK_CONST([DT_WHT], [
 #include <dirent.h>
 #endif], [-9])
 
-AC_LANG(C)
-AC_MSG_CHECKING(whether kernel returns a useful d_type)
-AC_RUN_IFELSE(
-  [AC_LANG_SOURCE([[
-#if HAVE_STRUCT_DIRENT_D_TYPE
-#include <dirent.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-
-void check_error(const char *msg) {
-    if (errno) {
-        perror(msg);
-        exit(1);
-    }
-}
-
-int main() {
-    DIR *dir = opendir(".");
-    check_error("opendir");
-
-    struct dirent *de = NULL;
-
-    do {
-        de = readdir(dir);
-        check_error("readdir");
-    } while (de && strcmp(de->d_name, ".") != 0);
-    // We found the . dir or encountered end of dir stream
-
-    int status = 0;
-
-    if (!de) {
-        status = 1;
-    } else if (de->d_type == DT_DIR) {
-    } else if (de->d_type == DT_UNKNOWN) {
-        // Signal that we should skip test for non-zero d_type
-        status = 2;
-    } else {
-        status = 1;
-    }
-
-    closedir(dir);
-    check_error("closedir");
-
-    exit(status);
-}
-#else
-int main() { exit(2); }
-#endif
-]])],
-  [AC_MSG_RESULT(yes)],
-  [if test $? -eq 1 ; then
-     AC_MSG_FAILURE(Unexpected failure when testing for kernels d_type)
-   else
-     AC_MSG_RESULT(no (skipping DirEnt test))
-	 AC_DEFINE([NO_DTIR_TEST], [1], [Define to 1 if we want to stkip DirEnt test.])
-   fi])
-
 AC_CHECK_FUNCS([getgrgid_r getgrnam_r getpwnam_r getpwuid_r getpwnam getpwuid])
 AC_CHECK_FUNCS([getpwent getgrent])
 AC_CHECK_FUNCS([lchown setenv sysconf unsetenv clearenv])
