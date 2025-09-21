@@ -3,10 +3,10 @@
 #include "HsUnixConfig.h"
 
 module Main (main) where
-#if defined(NO_DTIR_TEST)
+#if !defined(HAVE_STRUCT_DIRENT_D_TYPE)
 main :: IO ()
 main = do
-    putStrLn "Skipping DirEnt test, since kernel seems to always return DT_UNKNOWN"
+    putStrLn "Skipping DirEnt test, since the system doesn't support d_type"
 #else
 
 import Control.Exception                (bracket, finally)
