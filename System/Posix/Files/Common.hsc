@@ -509,6 +509,9 @@ isSocket stat =
 
 -- | @getFdStatus fd@ acts as 'getFileStatus' but uses a file descriptor @fd@.
 --
+-- This will not dereference symbolic links by itself, but 'openFd' does so by default.
+-- To learn more about this, see `man 7 symlink` section "Obtaining a file descriptor that refers to a symbolic link".
+--
 -- Note: calls @fstat@.
 getFdStatus :: Fd -> IO FileStatus
 getFdStatus (Fd fd) = do
