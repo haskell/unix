@@ -160,8 +160,8 @@ data OpenMode = ReadOnly | WriteOnly | ReadWrite
 
 -- |Correspond to some of the int flags from C's fcntl.h.
 --
--- Using a combination of O_PATH and O_NOFOLLOW it would be possible to open an file-descriptor referring directly to a symbolic link, but this is currently not possible.
--- Fore more details, see `man 7 symlink` section "Obtaining a file descriptor that refers to a symbolic link".
+-- Using a combination of O_PATH and O_NOFOLLOW it would be possible to open an file-descriptor referring directly to a symbolic link, but this is currently not implemented.
+-- Fore more details, see @man 7 symlink@ section "Obtaining a file descriptor that refers to a symbolic link".
 data OpenFileFlags =
  OpenFileFlags {
     append    :: Bool,           -- ^ O_APPEND
