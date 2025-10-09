@@ -239,6 +239,8 @@ access name flags =
 -- | @getFileStatus path@ calls gets the @FileStatus@ information (user ID,
 -- size, access times, etc.) for the file @path@.
 --
+-- This will dereference symbolic links, if you want to get the status of a link file, use 'getSymbolicLinkStatus' instead.
+--
 -- Note: calls @stat@.
 getFileStatus :: PosixPath -> IO FileStatus
 getFileStatus path = do
