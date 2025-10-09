@@ -77,6 +77,8 @@ import System.Posix.Internals ( withFilePath )
 
 -- |Open and optionally create this file.  See 'System.Posix.Files'
 -- for information on how to use the 'FileMode' type.
+--
+-- It is currently not possible to obtain a file-descriptor to a symbolic link, they will always be dereferenced. See note in 'OpenFileFlags'.
 openFd :: FilePath
        -> OpenMode
        -> OpenFileFlags
@@ -89,6 +91,8 @@ openFd = openFdAt Nothing
 -- navigating changing directory trees, or to retain access to a portion of the
 -- directory tree that would otherwise become inaccessible after dropping
 -- privileges.
+--
+-- It is currently not possible to obtain a file-descriptor to a symbolic link, they will always be dereferenced. See note in 'OpenFileFlags'.
 openFdAt :: Maybe Fd -- ^ Optional directory file descriptor
          -> FilePath -- ^ Pathname to open
          -> OpenMode -- ^ Read-only, read-write or write-only
