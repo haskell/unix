@@ -507,10 +507,8 @@ isSymbolicLink stat =
 isSocket stat =
   (fileMode stat `intersectFileModes` fileTypeModes) == socketMode
 
--- | @getFdStatus fd@ acts as 'getFileStatus' but uses a file descriptor @fd@.
---
--- This will not dereference symbolic links by itself, but 'System.Posix.IO.openFd' may do so, depending on the flags passed.
--- To learn more about this, see @man 7 symlink@ section "Obtaining a file descriptor that refers to a symbolic link" or the documentation of 'System.Posix.IO.openFd'.
+-- | @getFdStatus fd@ is similar to 'getFileStatus', but returns data about
+-- the file associated with the descriptor @fd@.
 --
 -- Note: calls @fstat@.
 getFdStatus :: Fd -> IO FileStatus
