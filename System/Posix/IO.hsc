@@ -77,8 +77,6 @@ import System.Posix.Internals ( withFilePath )
 
 -- |Open and optionally create this file.  See 'System.Posix.Files'
 -- for information on how to use the 'FileMode' type.
---
--- It is currently not possible to obtain a file-descriptor to a symbolic link, they will always be dereferenced. See note in 'OpenFileFlags'.
 openFd :: FilePath
        -> OpenMode
        -> OpenFileFlags
