@@ -245,7 +245,7 @@ access name flags =
 -- | @getFileStatus path@ retrieves the @FileStatus@ information (user ID,
 -- size, access times, etc.) for the file @path@.
 --
--- 'getFileStatus' dereferences symbolic links, to retrieve the status of a symlink,
+-- 'getFileStatus' dereferences symbolic links, to retrieve the status of a symlink
 -- use 'getSymbolicLinkStatus' instead.
 --
 -- Note: calls @stat@.
