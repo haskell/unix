@@ -42,7 +42,7 @@ module System.Posix.Directory (
    seekDirStream,
 #endif
 
-   -- * The working dirctory
+   -- * The working directory
    getWorkingDirectory,
    changeWorkingDirectory,
    changeWorkingDirectoryFd,

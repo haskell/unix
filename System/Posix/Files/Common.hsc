@@ -1002,7 +1002,7 @@ fileAttributesX            :: ExtendedFileStatus -> CAttributes
 #endif
 -- | The number of hard links on a file.
 linkCountX                 :: ExtendedFileStatus -> CNlink
--- | Te user ID of the owner of the file.
+-- | The user ID of the owner of the file.
 fileOwnerX                 :: ExtendedFileStatus -> UserID
 -- | The ID of the group owner of the file.
 fileGroupX                 :: ExtendedFileStatus -> GroupID

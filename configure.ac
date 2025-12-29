@@ -194,7 +194,7 @@ AC_CHECK_FUNCS([lutimes futimes])
 # Additional temp functions
 dnl androids bionic doesn't have mkstemps
 # We explicitly check for android, as the check AC_CHECK_FUNCS performs returns "yes" for mkstemps
-# when targetting android. See similar conditionals for seekdir and telldir.
+# when targeting android. See similar conditionals for seekdir and telldir.
 AS_CASE([$target_os],[*-android*],[AC_CHECK_FUNCS([mkdtemp])],[AC_CHECK_FUNCS([mkstemps mkdtemp])])
 
 # Functions for file synchronization and allocation control
