@@ -15,15 +15,16 @@ task:
     # See https://github.com/anarazel/pg-vm-images/blob/main/packer/openbsd.pkrvars.hcl
     image: family/pg-ci-openbsd-vanilla
     platform: openbsd
-  install_script: pkg_add ghc cabal-install git autoconf-2.71
+  install_script: pkg_add ghc cabal-install git autoconf-2.71p0
   script:
     - export AUTOCONF_VERSION=2.71
-    - export CABAL_DIR=/tmp/.cabal
+    - export CABAL_DIR=/home/cabal
     - ghc --version
     - cabal --version
     - cabal update
     - autoreconf -i
-    - cabal test --test-show-details=direct
+    # https://github.com/haskellari/splitmix/issues/101
+    - cabal test --test-show-details=direct -c 'splitmix < 0.1.3 || > 0.1.3.1'
 
 task:
   name: NetBSD
