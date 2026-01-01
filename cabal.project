@@ -4,3 +4,7 @@ tests: True
 
 constraints:
   tasty -unix, optparse-applicative -process
+
+if impl(ghc>=9.14)
+  constraints: tagged -template-haskell
+  allow-newer: splitmix:base
