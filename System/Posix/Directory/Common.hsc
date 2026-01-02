@@ -321,7 +321,7 @@ foreign import ccall unsafe "__hscore_d_type"
   d_type :: Ptr CDirent -> IO CChar
 
 -- traversing directories
-foreign import ccall unsafe "readdir"
+foreign import capi unsafe "dirent.h readdir"
   c_readdir :: Ptr CDir -> IO (Ptr CDirent)
 
 -- | @rewindDirStream dp@ calls @rewinddir@ to reposition
