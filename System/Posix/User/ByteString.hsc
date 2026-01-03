@@ -456,7 +456,7 @@ getAllGroupEntries = error "System.Posix.User.getAllGroupEntries: not supported"
 
 #if defined(HAVE_GETGRGID_R) || defined(HAVE_GETGRNAM_R)
 grBufSize :: Int
-#if defined(HAVE_SYSCONF) && defined(HAVE_SC_GETGR_R_SIZE_MAX)
+#if defined(HAVE_SYSCONF) && defined(HAVE_DECL__SC_GETGR_R_SIZE_MAX)
 grBufSize = sysconfWithDefault 1024 (#const _SC_GETGR_R_SIZE_MAX)
 #else
 grBufSize = 1024
@@ -532,7 +532,7 @@ getAllUserEntries = error "System.Posix.User.getAllUserEntries: not supported"
 
 #if defined(HAVE_GETPWUID_R) || defined(HAVE_GETPWNAM_R)
 pwBufSize :: Int
-#if  defined(HAVE_SYSCONF) && defined(HAVE_SC_GETPW_R_SIZE_MAX)
+#if  defined(HAVE_SYSCONF) && defined(HAVE_DECL__SC_GETPW_R_SIZE_MAX)
 pwBufSize = sysconfWithDefault 1024 (#const _SC_GETPW_R_SIZE_MAX)
 #else
 pwBufSize = 1024

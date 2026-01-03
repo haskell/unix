@@ -60,16 +60,16 @@ import GHC.IO.Exception ( unsupportedOperation )
 
 haveRtldNext :: Bool
 
-#ifdef HAVE_RTLDNEXT
+#ifdef HAVE_DECL_RTLD_NEXT
 haveRtldNext = True
 foreign import ccall unsafe "__hsunix_rtldNext" rtldNext :: Ptr a
-#else  /* HAVE_RTLDNEXT */
+#else  /* HAVE_DECL_RTLD_NEXT */
 haveRtldNext = False
-#endif /* HAVE_RTLDNEXT */
+#endif /* HAVE_DECL_RTLD_NEXT */
 
-#ifdef HAVE_RTLDDEFAULT
+#ifdef HAVE_DECL_RTLD_DEFAULT
 foreign import ccall unsafe "__hsunix_rtldDefault" rtldDefault :: Ptr a
-#endif /* HAVE_RTLDDEFAULT */
+#endif /* HAVE_DECL_RTLD_DEFAULT */
 
 haveRtldLocal :: Bool
 haveRtldLocal = True
@@ -128,13 +128,13 @@ data DL = Null | Next | Default | DLHandle (Ptr ()) deriving (Show)
 packDL :: DL -> Ptr ()
 packDL Null = nullPtr
 
-#ifdef HAVE_RTLDNEXT
+#ifdef HAVE_DECL_RTLD_NEXT
 packDL Next = rtldNext
 #else
 packDL Next = error "RTLD_NEXT not available"
 #endif
 
-#ifdef HAVE_RTLDDEFAULT
+#ifdef HAVE_DECL_RTLD_DEFAULT
 packDL Default = rtldDefault
 #else
 packDL Default = nullPtr

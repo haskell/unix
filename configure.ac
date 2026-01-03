@@ -105,48 +105,11 @@ AC_MSG_RESULT(no)
 ]
 )
 
-
-AC_MSG_CHECKING(for F_GETLK from fcntl.h)
-AC_EGREP_CPP(yes,
-[
- #include <fcntl.h>
- #ifdef F_GETLK
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_F_GETLK], [1], [Define to 1 if F_GETLK is available.])
-], [
-  AC_MSG_RESULT(no)
-  ])
-
-AC_MSG_CHECKING(for O_DIRECT open flag)
-AC_EGREP_CPP(yes,
-[
- #include <fcntl.h>
- #ifdef O_DIRECT
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_O_DIRECT], [1], [Define to 1 if O_DIRECT open flag is available.])
-], [
-  AC_MSG_RESULT(no)
-  ])
-
-AC_MSG_CHECKING(for F_NOCACHE from fcntl.h)
-AC_EGREP_CPP(yes,
-[
- #include <fcntl.h>
- #ifdef F_NOCACHE
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_F_NOCACHE], [1], [Define to 1 if F_NOCACHE available.])
-], [
-  AC_MSG_RESULT(no)
-  ])
+AC_CHECK_DECLS([F_GETLK, O_DIRECT, F_NOCACHE], [], [], [AC_INCLUDES_DEFAULT
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+])
 
 dnl not available on android so check for it
 AC_CANONICAL_TARGET
@@ -232,29 +195,11 @@ FP_CHECK_CONSTS([SIGABRT SIGALRM SIGBUS SIGCHLD SIGCONT SIGFPE SIGHUP SIGILL SIG
 #include <signal.h>
 #endif])
 
-AC_MSG_CHECKING([for _SC_GETGR_R_SIZE_MAX])
-AC_EGREP_CPP(we_have_that_sysconf_thing,
-[
+AC_CHECK_DECLS([_SC_GETGR_R_SIZE_MAX, _SC_GETPW_R_SIZE_MAX], [], [], [AC_INCLUDES_DEFAULT
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#ifdef _SC_GETGR_R_SIZE_MAX
-we_have_that_sysconf_thing
 #endif
-],
-[AC_MSG_RESULT([yes])
-AC_DEFINE([HAVE_SC_GETGR_R_SIZE_MAX], [1], [Define to 1 if <unistd.h> defines _SC_GETGR_R_SIZE_MAX.])],
-[AC_MSG_RESULT([no])])
-
-AC_MSG_CHECKING([for _SC_GETPW_R_SIZE_MAX])
-AC_EGREP_CPP(we_have_that_sysconf_thing,
-[
-#include <unistd.h>
-#ifdef _SC_GETPW_R_SIZE_MAX
-we_have_that_sysconf_thing
-#endif
-],
-[AC_MSG_RESULT([yes])
-AC_DEFINE([HAVE_SC_GETPW_R_SIZE_MAX], [1], [Define to 1 if <unistd.h> defines _SC_GETPW_R_SIZE_MAX.])],
-[AC_MSG_RESULT([no])])
+])
 
 dnl ---------- usleep ----------
 dnl --- stolen from guile configure ---
@@ -288,33 +233,12 @@ esac
 dnl On some hosts (e.g. SuSe and Ubuntu Linux) RTLD_NEXT and RTLD_DEFAULT are
 dnl not visible without setting _GNU_SOURCE, which we really don't want to.
 dnl Also see comments in System/Posix/DynamicLinker/Prim.hsc.
-AC_MSG_CHECKING(for RTLD_NEXT from dlfcn.h)
-AC_EGREP_CPP(yes,
-[
- #include <dlfcn.h>
- #ifdef RTLD_NEXT
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_RTLDNEXT], [1], [Define to 1 if we can see RTLD_NEXT in dlfcn.h.])
-], [
-  AC_MSG_RESULT(no)
-  ])
 
-AC_MSG_CHECKING(for RTLD_DEFAULT from dlfcn.h)
-AC_EGREP_CPP(yes,
-[
- #include <dlfcn.h>
- #ifdef RTLD_DEFAULT
-        yes
- #endif
-], [
-  AC_MSG_RESULT(yes)
-  AC_DEFINE([HAVE_RTLDDEFAULT], [1], [Define to 1 if RTLD_DEFAULT is available.])
-], [
-  AC_MSG_RESULT(no)
-  ])
+AC_CHECK_DECLS([RTLD_NEXT, RTLD_DEFAULT], [], [], [AC_INCLUDES_DEFAULT
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
+])
 
 AC_CHECK_FUNCS(openpty,,
    AC_CHECK_LIB(util,openpty,

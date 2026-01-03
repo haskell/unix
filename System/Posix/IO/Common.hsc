@@ -371,21 +371,21 @@ data LockRequest = ReadLock
 
 type FileLock = (LockRequest, SeekMode, FileOffset, FileOffset)
 
-#if !defined(HAVE_F_GETLK)
+#if !HAVE_DECL_F_GETLK
 
 getLock :: Fd -> FileLock -> IO (Maybe (ProcessID, FileLock))
 {-# WARNING getLock
-    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_F_GETLK@)" #-}
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DECL_F_GETLK@)" #-}
 getLock _ _ = ioError (ioeSetLocation unsupportedOperation "getLock")
 
 setLock :: Fd -> FileLock -> IO ()
 {-# WARNING setLock
-    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_F_GETLK@)" #-}
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DECL_F_GETLK@)" #-}
 setLock _ _ = ioError (ioeSetLocation unsupportedOperation "setLock")
 
 waitToSetLock :: Fd -> FileLock -> IO ()
 {-# WARNING waitToSetLock
-    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_F_GETLK@)" #-}
+    "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DECL_F_GETLK@)" #-}
 waitToSetLock _ _ = ioError (ioeSetLocation unsupportedOperation "waitToSetLock")
 
 #else
@@ -449,7 +449,7 @@ waitToSetLock (Fd fd) lock = do
     throwErrnoIfMinus1_ "waitToSetLock"
         (Base.c_fcntl_lock fd (#const F_SETLKW) p_flock)
 
-#endif // HAVE_F_GETLK
+#endif // HAVE_DECL_F_GETLK
 
 -- -----------------------------------------------------------------------------
 -- fd{Read,Write}Buf

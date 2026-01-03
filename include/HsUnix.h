@@ -100,11 +100,11 @@ extern HsInt nocldstop;
 /* defined in libc */
 extern char **environ;
 
-#ifdef HAVE_RTLDNEXT
+#ifdef HAVE_DECL_RTLD_NEXT
 void *__hsunix_rtldNext (void);
 #endif
 
-#ifdef HAVE_RTLDDEFAULT
+#ifdef HAVE_DECL_RTLD_DEFAULT
 void *__hsunix_rtldDefault (void);
 #endif
 

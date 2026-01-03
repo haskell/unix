@@ -10,11 +10,11 @@
 
 char **__hsunix_get_environ (void) {return environ;}
 
-#ifdef HAVE_RTLDNEXT
+#ifdef HAVE_DECL_RTLD_NEXT
 void *__hsunix_rtldNext (void) {return RTLD_NEXT;}
 #endif
 
-#ifdef HAVE_RTLDDEFAULT
+#ifdef HAVE_DECL_RTLD_DEFAULT
 void *__hsunix_rtldDefault (void) {return RTLD_DEFAULT;}
 #endif
 

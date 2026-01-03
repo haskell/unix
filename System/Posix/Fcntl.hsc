@@ -30,17 +30,17 @@ module System.Posix.Fcntl (
 import Foreign.C
 import System.Posix.Types
 
-#if !HAVE_POSIX_FALLOCATE || !HAVE_O_DIRECT
+#if !HAVE_POSIX_FALLOCATE || !HAVE_DECL_O_DIRECT
 import System.IO.Error ( ioeSetLocation )
 import GHC.IO.Exception ( unsupportedOperation )
 #endif
 
-#if HAVE_O_DIRECT
+#if HAVE_DECL_O_DIRECT
 import Data.Bits (complement, (.&.), (.|.))
 import System.Posix.Internals (c_fcntl_read)
 #endif
 
-#if HAVE_O_DIRECT || HAVE_F_NOCACHE
+#if HAVE_DECL_O_DIRECT || HAVE_DECL_F_NOCACHE
 import System.Posix.Internals (c_fcntl_write)
 #endif
 
@@ -128,12 +128,12 @@ fileAllocate _ _ _ = ioError (ioeSetLocation unsupportedOperation
 -- Throws 'IOError' (\"unsupported operation\") if platform does not support
 -- getting the cache mode.
 --
--- Use @#if HAVE_O_DIRECT@ CPP guard to detect availability. Use @#include
--- "HsUnix.h"@ to bring @HAVE_O_DIRECT@ into scope.
+-- Use @#if HAVE_DECL_O_DIRECT@ CPP guard to detect availability. Use @#include
+-- "HsUnix.h"@ to bring @HAVE_DECL_O_DIRECT@ into scope.
 --
 -- @since 2.8.7.0
 fileGetCaching :: Fd -> IO Bool
-#if HAVE_O_DIRECT
+#if HAVE_DECL_O_DIRECT
 fileGetCaching (Fd fd) = do
     r <- throwErrnoIfMinus1 "fileGetCaching" (c_fcntl_read fd #{const F_GETFL})
     return ((r .&. opt_val) == 0)
@@ -141,7 +141,7 @@ fileGetCaching (Fd fd) = do
     opt_val = #{const O_DIRECT}
 #else
 {-# WARNING fileGetCaching
-     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT@)" #-}
+     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DECL_O_DIRECT@)" #-}
 fileGetCaching _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching")
 #endif
 
@@ -158,13 +158,13 @@ fileGetCaching _ = ioError (ioeSetLocation unsupportedOperation "fileGetCaching"
 -- Throws 'IOError' (\"unsupported operation\") if platform does not support
 -- setting the cache mode.
 --
--- Use @#if HAVE_O_DIRECT || HAVE_F_NOCACHE@ CPP guard to detect availability.
--- Use @#include "HsUnix.h"@ to bring @HAVE_O_DIRECT@ and @HAVE_F_NOCACHE@ into
+-- Use @#if HAVE_DECL_O_DIRECT || HAVE_DECL_F_NOCACHE@ CPP guard to detect availability.
+-- Use @#include "HsUnix.h"@ to bring @HAVE_DECL_O_DIRECT@ and @HAVE_DECL_F_NOCACHE@ into
 -- scope.
 --
 -- @since 2.8.7.0
 fileSetCaching :: Fd -> Bool -> IO ()
-#if HAVE_O_DIRECT
+#if HAVE_DECL_O_DIRECT
 fileSetCaching (Fd fd) val = do
     r <- throwErrnoIfMinus1 "fileSetCaching" (c_fcntl_read fd #{const F_GETFL})
     let r' | val       = fromIntegral r .&. complement opt_val
@@ -172,11 +172,11 @@ fileSetCaching (Fd fd) val = do
     throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_SETFL} r')
   where
     opt_val = #{const O_DIRECT}
-#elif HAVE_F_NOCACHE
+#elif HAVE_DECL_F_NOCACHE
 fileSetCaching (Fd fd) val = do
     throwErrnoIfMinus1_ "fileSetCaching" (c_fcntl_write fd #{const F_NOCACHE} (if val then 0 else 1))
 #else
 {-# WARNING fileSetCaching
-     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_O_DIRECT || HAVE_F_NOCACHE @)" #-}
+     "operation will throw 'IOError' \"unsupported operation\" (CPP guard: @#if HAVE_DECL_O_DIRECT || HAVE_DECL_F_NOCACHE @)" #-}
 fileSetCaching _ _ = ioError (ioeSetLocation unsupportedOperation "fileSetCaching")
 #endif
