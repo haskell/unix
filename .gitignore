@@ -27,3 +27,5 @@ tests/*.hi
 tests/*.normalised
 *~
 .vscode
+config.guess
+config.sub
