@@ -857,7 +857,7 @@ defaultStatxFlags = mempty
 --
 -- See the pattern synonyms for possible masks. These are combined via @(<>)@.
 -- Masks can be tested via `(.&.)`.
-newtype StatxMask = StatxMask CInt deriving (Read, Show, Eq, Ord, Integral, Num, Enum, Bits, Real)
+newtype StatxMask = StatxMask CUInt deriving (Read, Show, Eq, Ord, Integral, Num, Enum, Bits, Real)
 
 -- | ORs the masks.
 instance Semigroup StatxMask where
@@ -1321,7 +1321,7 @@ data {-# CTYPE "struct statx" #-} CStatx
 
 #ifdef HAVE_STATX
 foreign import capi unsafe "sys/stat.h statx"
-   c_statx :: CInt -> CFilePath -> CInt -> CInt -> Ptr CStatx -> IO CInt
+   c_statx :: CInt -> CFilePath -> CInt -> CUInt -> Ptr CStatx -> IO CInt
 
 #ifdef HAVE_SYS_SYSMACROS_H
 foreign import capi unsafe "sys/sysmacros.h makedev"
