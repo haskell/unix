@@ -10,22 +10,55 @@ defaults:
     shell: bash
 
 jobs:
+  tool-output:
+    runs-on: ubuntu-latest
+    outputs:
+      ghc_versions: ${{ steps.gen_output.outputs.ghc_versions }}
+
+    steps:
+
+    - uses: haskell/ghcup-setup@v1
+
+    - name: Generate output
+      id: gen_output
+      run: |
+        echo "${GHC_TEST_NUM}"
+        echo "${GHC_EXCLUDE}"
+
+        all="$(ghcup -s GHCupURL list -r -t ghc -c available)"
+        rec=$(echo "${all}"         | grep recommended | awk '{ print $2 }')
+        latest=$(echo "${all}"      | grep latest      | awk '{ print $2 }')
+
+        other_major=$(echo "${all}" | awk '{ print $2 }' | awk -F '.' '{ print $1 "." $2}' | sort -Vu | tail -${GHC_TEST_NUM:=5})
+        other=$(for v in $other_major ; do point_releases=$(echo "$all" | awk '{ print $2 }' | grep --color=never "^$v.") ; echo "${point_releases}" | tail -n1  ; done)
+
+        selected=$(echo -n ${rec} ${latest} ${other} | tr " " "\n"  | sort -Vu)
+        ghc_exclude=( $GHC_EXCLUDE )
+        selected_filtered=()
+        for ghc in $selected ; do
+          printf '%s\0' "${ghc_exclude[@]}" | grep --quiet --color=never -F -x -z -- $ghc || selected_filtered+=( $ghc )
+        done
+        unset ghc
+        selected_json=$(echo -n ${selected_filtered[@]} | jq -c -r -R 'split(" ") | [ .[] | if length > 0 then . else empty end ]')
+
+        echo "${selected}"
+        echo "${selected_filtered}"
+        echo "${selected_json}"
+
+        echo ghc_versions="${selected_json}" >> "$GITHUB_OUTPUT"
+      shell: bash
+      env:
+        GHC_TEST_NUM: ${{ vars.GHC_TEST_NUM }}
+        GHC_EXCLUDE: ${{ vars.GHC_EXCLUDE }}
+
   build:
     runs-on: ${{ matrix.os }}
+    needs: ["tool-output"]
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-24.04, macOS-latest]
-        ghc: ['9.14', '9.12', '9.10', '9.8', '9.6', '9.4', '9.2', '9.0', '8.10', '8.8', '8.6']
-        exclude:
-          - os: macos-latest
-            ghc: '9.0'
-          - os: macos-latest
-            ghc: '8.10'
-          - os: macos-latest
-            ghc: '8.8'
-          - os: macos-latest
-            ghc: '8.6'
+        os: [ubuntu-latest, ubuntu-24.04-arm, macOS-15-intel, macOS-latest]
+        ghc: ${{ fromJSON(needs.tool-output.outputs.ghc_versions) }}
     steps:
     - uses: actions/checkout@v4
 
@@ -34,6 +67,12 @@ jobs:
       with:
         ghc: ${{ matrix.ghc }}
         cabal: latest
+
+    - name: Install dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y install build-essential curl libffi-dev libgmp-dev libncurses-dev pkg-config
 
     - if: runner.os == 'macOS'
       name: Install system deps via brew
@@ -47,6 +86,7 @@ jobs:
           dist-newstyle
         key: ${{ runner.os }}-${{ matrix.ghc }}-${{ github.sha }}
         restore-keys: ${{ runner.os }}-${{ matrix.ghc }}-
+
     - name: Build
       run: |
         ghc --version
@@ -58,6 +98,7 @@ jobs:
         cabal get unix-*.tar.gz
         cd unix-*/
         cabal test -f+non-portable-tests all --test-show-details=direct
+
     - name: Haddock
       run: |
         cabal haddock --disable-documentation
@@ -123,33 +164,6 @@ jobs:
         with:
           args: sh -c "apk update && apk add --no-cache autoconf automake make && cabal update && autoreconf --version && autoreconf -i && cabal v2-test --constraint 'optparse-applicative -process' --constraint 'QuickCheck +old-random' --constraint 'tasty -unix' all"
 
-  arm:
-    runs-on: [self-hosted, Linux, ARM64]
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [arm32v7, arm64v8]
-    steps:
-      - uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
-        name: Cleanup
-        with:
-          args: "find . -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +"
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - if: matrix.arch == 'arm32v7'
-        uses: docker://hasufell/arm32v7-ubuntu-haskell:focal
-        name: Run build (arm32v7 linux)
-        with:
-          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
-
-      - if: matrix.arch == 'arm64v8'
-        uses: docker://hasufell/arm64v8-ubuntu-haskell:focal
-        name: Run build (arm64v8 linux)
-        with:
-          args: sh -c "cabal update && autoreconf -i && cabal test all --test-show-details=direct"
-
   freebsd:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -157,9 +171,9 @@ jobs:
       matrix:
         include:
           - os: [self-hosted, FreeBSD, X64]
-            ghc: 9.4
-          - os: [self-hosted, FreeBSD, X64]
             ghc: 9.6
+          - os: [self-hosted, FreeBSD, X64]
+            ghc: 9.14
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
