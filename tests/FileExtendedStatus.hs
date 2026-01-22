@@ -90,8 +90,8 @@ ignoreIOExceptions io = io `E.catch`
                         ((\_ -> return ()) :: IOException -> IO ())
 
 getStatus f = do
-  fs  <- getExtendedFileStatus Nothing f defaultStatxFlags defaultStatxMask
-  ls  <- getExtendedFileStatus Nothing f SymlinkNoFollow defaultStatxMask
+  fs  <- getExtendedFileStatus Nothing f defaultStatxFlags StatxAll
+  ls  <- getExtendedFileStatus Nothing f SymlinkNoFollow StatxAll
   fs' <- getFileStatus f
 
   statusExtendedElementsMinimal fs @?= statusElementsMinimal fs'
