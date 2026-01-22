@@ -77,6 +77,7 @@ module System.Posix.Files.PosixString (
     -- ** Mask
     StatxMask(..),
     defaultStatxMask,
+    supportsStatxMask,
     pattern StatxType,
     pattern StatxMode,
     pattern StatxNlink,

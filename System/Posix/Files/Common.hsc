@@ -90,6 +90,7 @@ module System.Posix.Files.Common (
     pattern StatxBasicStats,
     pattern StatxAll,
     defaultStatxMask,
+    supportsStatxMask,
     ExtendedFileStatus(..),
     CAttributes(..),
     getExtendedFileStatus_,
@@ -991,7 +992,31 @@ pattern StatxAll = StatxMask 0
 defaultStatxMask :: StatxMask
 defaultStatxMask = mempty
 
+-- | The @statx@ type. Before retrieving certain fields via the query functions, you may need to
+-- check for kernel/filesystem support via 'supportsStatxMask'.
+--
+-- E.g.:
+--
+-- > statx <- getExtendedFileStatus Nothing "unix.cabal" defaultStatxFlags (defaultStatxMask .&. StatxMtime)
+-- > if supportsStatxMask statx StatxMtime
+-- > then pure (modificationTimeHiResX statx)
+-- > else fail "StatxMtime not supported!"
 newtype ExtendedFileStatus = ExtendedFileStatus (ForeignPtr CStatx) -- ^ The constructor is considered internal and may change.
+
+-- | Check if the kernel/filesystem supports the given extended file attributes.
+--
+-- You need to generally check this prior to retrieving fields from 'ExtendedFileStatus'.
+--
+-- @since 2.8.9.0
+supportsStatxMask :: ExtendedFileStatus -> StatxMask -> Bool
+#if HAVE_STATX
+supportsStatxMask (ExtendedFileStatus statx) (StatxMask masks) = unsafePerformIO $ do
+  statxMask <- withForeignPtr statx $ (#peek struct statx, stx_mask) :: IO CUInt
+  pure $ (statxMask .&. masks) /= 0
+#else
+{-# WARNING supportsStatxMask "supportsStatxMask: not available on this platform, will default to 'False' (CPP guard: @#if HAVE_STATX@)" #-}
+supportsStatxMask _ _ = False
+#endif
 
 -- | The "preferred" block size for efficient filesystem I/O.
 -- (Writing to a file in smaller chunks may cause an inefficient read-modify-rewrite.)

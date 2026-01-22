@@ -81,6 +81,7 @@ module System.Posix.Files.ByteString (
     -- ** Mask
     StatxMask(..),
     defaultStatxMask,
+    supportsStatxMask,
     pattern StatxType,
     pattern StatxMode,
     pattern StatxNlink,
