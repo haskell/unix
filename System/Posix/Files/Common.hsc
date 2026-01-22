@@ -995,87 +995,149 @@ newtype ExtendedFileStatus = ExtendedFileStatus (ForeignPtr CStatx) -- ^ The con
 
 -- | The "preferred" block size for efficient filesystem I/O.
 -- (Writing to a file in smaller chunks may cause an inefficient read-modify-rewrite.)
+--
+-- Retrieves @stx_blksize@.
 fileBlockSizeX             :: ExtendedFileStatus -> CBlkSize
 #if HAVE_STATX
 -- | Further status information about the file.
+--
+-- Retrieves @stx_attributes@.
 fileAttributesX            :: ExtendedFileStatus -> CAttributes
 #endif
 -- | The number of hard links on a file.
+--
+-- Retrieves @stx_nlink@.
 linkCountX                 :: ExtendedFileStatus -> CNlink
 -- | The user ID of the owner of the file.
+--
+-- Retrieves @stx_uid@.
 fileOwnerX                 :: ExtendedFileStatus -> UserID
 -- | The ID of the group owner of the file.
+--
+-- Retrieves @stx_gid@.
 fileGroupX                 :: ExtendedFileStatus -> GroupID
 -- | The file type and mode.  See @inode(7)@ for details.
+--
+-- Retrieves @stx_mode@.
 fileModeX                  :: ExtendedFileStatus -> FileMode
 -- | The inode number of the file.
+--
+-- Retrieves @stx_ino@.
 fileIDX                    :: ExtendedFileStatus -> FileID
 -- | The size of the file (if it is a regular file or a symbolic link) in bytes.
 -- The size of a symbolic link is the length of the pathname it contains,
 -- without a terminating null byte.
+--
+-- Retrieves @stx_size@.
 fileSizeX                  :: ExtendedFileStatus -> Word64
 -- | The  number of blocks allocated to the file on the medium, in 512-byte units.
 -- (This may be smaller than stx_size/512 when the file has holes.)
+--
+-- Retrieves @stx_blocks@.
 fileBlocksX                :: ExtendedFileStatus -> Word64
 #if HAVE_STATX
 -- | A mask indicating which bits in 'fileAttributesX' are supported by the VFS and the filesystem.
+--
+-- Retrieves @stx_attributes@.
 fileAttributesMaskX        :: ExtendedFileStatus -> CAttributes
 #endif
 -- | The file's last access timestamp.
+--
+-- Retrieves @stx_atime@.
 accessTimeHiResX           :: ExtendedFileStatus -> POSIXTime
 -- | The file's creation timestamp.
+--
+-- Retrieves @stx_btime@.
 creationTimeHiResX         :: ExtendedFileStatus -> POSIXTime
 -- | The file's last status change timestamp.
+--
+-- Retrieves @stx_ctime@.
 statusChangeTimeHiResX     :: ExtendedFileStatus -> POSIXTime
 -- | The file's last modification timestamp.
+--
+-- Retrieves @stx_mtime@.
 modificationTimeHiResX     :: ExtendedFileStatus -> POSIXTime
 -- | ID of the device on which this file resides.
+--
+-- Retrieves @stx_dev_major@ and @stx_dev_minor@.
 deviceIDX                  :: ExtendedFileStatus -> DeviceID
 -- | Describes the device that this file represents.
+--
+-- Retrieves @stx_rdev_major@ and @stx_rdev_minor@.
 specialDeviceIDX       :: ExtendedFileStatus -> DeviceID
 -- | The mount ID of the mount containing the file. This is the same number
 -- reported by name_to_handle_at(2) and corresponds to the number in the
 -- first field in one of the records in /proc/self/mountinfo.
+--
+-- Retrieves @stx_mnt_id@.
 mountIDX               :: ExtendedFileStatus -> Word64
 -- | The file is compressed by the filesystem and may take extra resources to access.
 -- This is an extended attribute.
+--
+-- Retrieves @stx_attributes@.
 fileCompressedX            :: ExtendedFileStatus -> Bool
 -- | The file cannot be modified: it cannot be deleted or renamed, no hard links can
 -- be created to this file and no data can be written to it. See @chattr(1)@.
 -- This is an extended attribute.
+--
+-- Retrieves @stx_attributes@.
 fileImmutableX             :: ExtendedFileStatus -> Bool
 -- | The file can only be opened in append mode for writing. Random access writing is not permitted. See @chattr(1)@.
 -- This is an extended attribute.
+--
+-- Retrieves @stx_attributes@.
 fileAppendX                :: ExtendedFileStatus -> Bool
 -- | File is not a candidate for backup when a backup program such as @dump(8)@ is run. See @chattr(1)@.
 -- This is an extended attribute.
+--
+-- Retrieves @stx_attributes@.
 fileNoDumpX                :: ExtendedFileStatus -> Bool
 -- | A key is required for the file to be encrypted by the filesystem.
 -- This is an extended attribute.
+--
+-- Retrieves @stx_attributes@.
 fileEncryptedX             :: ExtendedFileStatus -> Bool
 -- | The file has fs-verity enabled.  It cannot be written to, and all reads from it
 -- will be verified  against a cryptographic hash that covers the entire file (e.g., via a Merkle tree).
 -- This is an extended attribute.
 -- Since Linux 5.5.
+--
+-- Retrieves @stx_attributes@.
 fileVerityX                :: ExtendedFileStatus -> Bool
 -- | The  file is in the DAX (cpu direct access) state.
 -- This is an extended attribute.
 -- Since Linux 5.8.
+--
+-- Retrieves @stx_attributes@.
 fileDaxX                   :: ExtendedFileStatus -> Bool
 
 -- | Checks if this file is a block device.
+--
+-- Retrieves @stx_mode@.
 isBlockDeviceX     :: ExtendedFileStatus -> Bool
 -- | Checks if this file is a character device.
+--
+-- Retrieves @stx_mode@.
 isCharacterDeviceX :: ExtendedFileStatus -> Bool
 -- | Checks if this file is a named pipe device.
+--
+-- Retrieves @stx_mode@.
 isNamedPipeX       :: ExtendedFileStatus -> Bool
 -- | Checks if this file is a regular file device.
+--
+-- Retrieves @stx_mode@.
 isRegularFileX     :: ExtendedFileStatus -> Bool
 -- | Checks if this file is a directory device.
+--
+-- Retrieves @stx_mode@.
 isDirectoryX       :: ExtendedFileStatus -> Bool
 -- | Checks if this file is a symbolic link device.
+--
+-- Retrieves @stx_mode@.
 isSymbolicLinkX    :: ExtendedFileStatus -> Bool
 -- | Checks if this file is a socket device.
+--
+-- Retrieves @stx_mode@.
 isSocketX          :: ExtendedFileStatus -> Bool
 
 isBlockDeviceX statx =
