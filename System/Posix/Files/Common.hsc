@@ -1,6 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE Trustworthy #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE NumDecimals #-}
@@ -73,7 +74,7 @@ module System.Posix.Files.Common (
     pattern ForceSync,
     pattern DontSync,
     defaultStatxFlags,
-    StatxMask(..),
+    StatxMask(.., StatxMask),
     pattern StatxType,
     pattern StatxMode,
     pattern StatxNlink,
@@ -858,7 +859,12 @@ defaultStatxFlags = mempty
 --
 -- See the pattern synonyms for possible masks. These are combined via @(<>)@.
 -- Masks can be tested via `(.&.)`.
-newtype StatxMask = StatxMask CUInt deriving (Read, Show, Eq, Ord, Integral, Num, Enum, Bits, Real)
+newtype StatxMask = StatxMaskUnsigned CUInt deriving (Read, Show, Eq, Ord, Integral, Num, Enum, Bits, Real)
+
+-- | Only for backwards compat. Please use 'StatxMaskUnsigned'
+pattern StatxMask :: CInt -> StatxMask
+pattern StatxMask x <- StatxMaskUnsigned (fromIntegral -> x) where
+  StatxMask x = StatxMaskUnsigned (fromIntegral x)
 
 -- | ORs the masks.
 instance Semigroup StatxMask where
@@ -871,121 +877,121 @@ instance Monoid StatxMask where
 -- | Want @stx_mode & S_IFMT@.
 pattern StatxType :: StatxMask
 #ifdef STATX_TYPE
-pattern StatxType = StatxMask (#const STATX_TYPE)
+pattern StatxType = StatxMaskUnsigned (#const STATX_TYPE)
 #else
-pattern StatxType = StatxMask 0
+pattern StatxType = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_mode & ~S_IFMT@.
 pattern StatxMode :: StatxMask
 #ifdef STATX_MODE
-pattern StatxMode = StatxMask (#const STATX_MODE)
+pattern StatxMode = StatxMaskUnsigned (#const STATX_MODE)
 #else
-pattern StatxMode = StatxMask 0
+pattern StatxMode = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_nlink@.
 pattern StatxNlink :: StatxMask
 #ifdef STATX_NLINK
-pattern StatxNlink = StatxMask (#const STATX_NLINK)
+pattern StatxNlink = StatxMaskUnsigned (#const STATX_NLINK)
 #else
-pattern StatxNlink = StatxMask 0
+pattern StatxNlink = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_uid@.
 pattern StatxUid :: StatxMask
 #ifdef STATX_UID
-pattern StatxUid = StatxMask (#const STATX_UID)
+pattern StatxUid = StatxMaskUnsigned (#const STATX_UID)
 #else
-pattern StatxUid = StatxMask 0
+pattern StatxUid = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_gid@.
 pattern StatxGid :: StatxMask
 #ifdef STATX_GID
-pattern StatxGid = StatxMask (#const STATX_GID)
+pattern StatxGid = StatxMaskUnsigned (#const STATX_GID)
 #else
-pattern StatxGid = StatxMask 0
+pattern StatxGid = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_atime@.
 pattern StatxAtime :: StatxMask
 #ifdef STATX_ATIME
-pattern StatxAtime = StatxMask (#const STATX_ATIME)
+pattern StatxAtime = StatxMaskUnsigned (#const STATX_ATIME)
 #else
-pattern StatxAtime = StatxMask 0
+pattern StatxAtime = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_mtime@.
 pattern StatxMtime :: StatxMask
 #ifdef STATX_MTIME
-pattern StatxMtime = StatxMask (#const STATX_MTIME)
+pattern StatxMtime = StatxMaskUnsigned (#const STATX_MTIME)
 #else
-pattern StatxMtime = StatxMask 0
+pattern StatxMtime = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_ctime@.
 pattern StatxCtime :: StatxMask
 #ifdef STATX_CTIME
-pattern StatxCtime = StatxMask (#const STATX_CTIME)
+pattern StatxCtime = StatxMaskUnsigned (#const STATX_CTIME)
 #else
-pattern StatxCtime = StatxMask 0
+pattern StatxCtime = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_btime@.
 pattern StatxBtime :: StatxMask
 #ifdef STATX_BTIME
-pattern StatxBtime = StatxMask (#const STATX_BTIME)
+pattern StatxBtime = StatxMaskUnsigned (#const STATX_BTIME)
 #else
-pattern StatxBtime = StatxMask 0
+pattern StatxBtime = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_mnt_id@.
 pattern StatxMntId :: StatxMask
 #ifdef HAVE_STATX_MNT_ID
-pattern StatxMntId = StatxMask (#const STATX_MNT_ID)
+pattern StatxMntId = StatxMaskUnsigned (#const STATX_MNT_ID)
 #else
-pattern StatxMntId = StatxMask 0
+pattern StatxMntId = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_ino@.
 pattern StatxIno :: StatxMask
 #ifdef STATX_INO
-pattern StatxIno = StatxMask (#const STATX_INO)
+pattern StatxIno = StatxMaskUnsigned (#const STATX_INO)
 #else
-pattern StatxIno = StatxMask 0
+pattern StatxIno = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_size@.
 pattern StatxSize :: StatxMask
 #ifdef STATX_SIZE
-pattern StatxSize = StatxMask (#const STATX_SIZE)
+pattern StatxSize = StatxMaskUnsigned (#const STATX_SIZE)
 #else
-pattern StatxSize = StatxMask 0
+pattern StatxSize = StatxMaskUnsigned 0
 #endif
 
 -- | Want @stx_blocks@.
 pattern StatxBlocks :: StatxMask
 #ifdef STATX_BLOCKS
-pattern StatxBlocks = StatxMask (#const STATX_BLOCKS)
+pattern StatxBlocks = StatxMaskUnsigned (#const STATX_BLOCKS)
 #else
-pattern StatxBlocks = StatxMask 0
+pattern StatxBlocks = StatxMaskUnsigned 0
 #endif
 
 -- | Want all of the above.
 pattern StatxBasicStats :: StatxMask
 #ifdef STATX_BASIC_STATS
-pattern StatxBasicStats = StatxMask (#const STATX_BASIC_STATS)
+pattern StatxBasicStats = StatxMaskUnsigned (#const STATX_BASIC_STATS)
 #else
-pattern StatxBasicStats = StatxMask 0
+pattern StatxBasicStats = StatxMaskUnsigned 0
 #endif
 
 -- | Want all currently available fields.
 pattern StatxAll :: StatxMask
 #ifdef STATX_ALL
-pattern StatxAll = StatxMask (#const STATX_ALL)
+pattern StatxAll = StatxMaskUnsigned (#const STATX_ALL)
 #else
-pattern StatxAll = StatxMask 0
+pattern StatxAll = StatxMaskUnsigned 0
 #endif
 
 
@@ -1010,7 +1016,7 @@ newtype ExtendedFileStatus = ExtendedFileStatus (ForeignPtr CStatx) -- ^ The con
 -- @since 2.8.9.0
 supportsStatxMask :: ExtendedFileStatus -> StatxMask -> Bool
 #if HAVE_STATX
-supportsStatxMask (ExtendedFileStatus statx) (StatxMask masks) = unsafePerformIO $ do
+supportsStatxMask (ExtendedFileStatus statx) (StatxMaskUnsigned masks) = unsafePerformIO $ do
   statxMask <- withForeignPtr statx $ (#peek struct statx, stx_mask) :: IO CUInt
   pure $ (statxMask .&. masks) /= 0
 #else
@@ -1423,7 +1429,7 @@ getExtendedFileStatus_ :: Maybe Fd  -- ^ Optional directory file descriptor
                        -> StatxMask
                        -> IO ExtendedFileStatus
 #ifdef HAVE_STATX
-getExtendedFileStatus_ fdMay str (StatxFlags flags) (StatxMask masks) = do
+getExtendedFileStatus_ fdMay str (StatxFlags flags) (StatxMaskUnsigned masks) = do
   fp <- mallocForeignPtrBytes (#const sizeof(struct statx))
   withForeignPtr fp $ \p ->
       throwErrnoIfMinus1_ "getExtendedFileStatus_" (c_statx c_fd str flags masks p)
