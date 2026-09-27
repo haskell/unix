@@ -11,8 +11,6 @@ AC_USE_SYSTEM_EXTENSIONS
 
 AC_CONFIG_HEADERS([include/HsUnixConfig.h])
 
-AC_C_CONST
-
 dnl ** Enable large file support.  NB. do this before testing the type of
 dnl    off_t, because it will affect the result of that test.
 dnl
